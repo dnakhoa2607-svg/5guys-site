@@ -207,6 +207,10 @@
         refund_already_requested: 'Đơn này đã có yêu cầu hoàn tiền.',
         order_not_refundable: 'Đơn này chưa thanh toán nên không thể hoàn tiền.',
         product_not_found: 'Không tìm thấy sản phẩm.',
+        wrong_password: 'Mật khẩu hiện tại không đúng.',
+        address_not_found: 'Không tìm thấy địa chỉ.',
+        too_many_addresses: 'Tối đa 10 địa chỉ giao hàng.',
+        invalid_phone: 'Số điện thoại phải gồm 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09.',
         'Failed to fetch': 'Không kết nối được API. Hãy kiểm tra backend đang chạy (npm run dev).'
       })[code] || ('Có lỗi xảy ra: ' + (code || 'không rõ'));
     },

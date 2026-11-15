@@ -565,7 +565,6 @@
                 G5.promptLogin('Vui lòng đăng nhập hoặc đăng ký tài khoản để thêm game vào giỏ hàng.');
                 return;
             }
-            playCoinSound();
             G5.add(title, kind || 'digital', G5.vnd(price) / G5.RATE);
             showNotification(`Đã chuyển thẻ game vào Kho Đồ (Giỏ hàng)!<br><span class="text-vault-primary font-bold">${title}</span>`);
         }

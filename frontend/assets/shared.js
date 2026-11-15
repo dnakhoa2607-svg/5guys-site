@@ -16,6 +16,64 @@
     return fetch(API_BASE + path, options).then(function (r) { return r.json().catch(function () { return {}; }).then(function (data) { if (!r.ok) throw new Error(data.error || 'api_error'); return data; }); });
   }
 
+  /* ---- Easter egg âm thanh (tự tổng hợp bằng Web Audio, không cần file) ---- */
+  var sfxCtx = null;
+  function sfx() {
+    try {
+      if (!sfxCtx) sfxCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (sfxCtx.state === 'suspended') sfxCtx.resume();
+    } catch (e) { sfxCtx = null; }
+    return sfxCtx;
+  }
+  // Mở khóa audio ngay ở thao tác đầu tiên, để tiếng phát được cả sau khi gọi API xong
+  ['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, sfx, { capture: true, once: true }); });
+  // Tiếng "ăn xu" kiểu 8-bit: 2 nốt sóng vuông B5 -> E6
+  function playCoin() {
+    var ctx = sfx(); if (!ctx) return;
+    var t = ctx.currentTime, osc = ctx.createOscillator(), g = ctx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(987.77, t);
+    osc.frequency.setValueAtTime(1318.51, t + 0.085);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.linearRampToValueAtTime(0.12, t + 0.005);
+    g.gain.setValueAtTime(0.12, t + 0.085);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + 0.55);
+    osc.connect(g); g.connect(ctx.destination);
+    osc.start(t); osc.stop(t + 0.6);
+  }
+  // Tiếng mở giỏ: "cộc" nhẹ của nắp rương + chuỗi chuông lấp lánh đi lên (tìm thấy kho báu)
+  function chime(ctx, freq, at, vol, len) {
+    var o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle'; o.frequency.value = freq;
+    g.gain.setValueAtTime(0.0001, at);
+    g.gain.linearRampToValueAtTime(vol, at + 0.01);
+    g.gain.exponentialRampToValueAtTime(0.0001, at + len);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(at); o.stop(at + len + 0.05);
+  }
+  function playChest() {
+    var ctx = sfx(); if (!ctx) return 0;
+    var t = ctx.currentTime;
+    var lid = ctx.createOscillator(), lg = ctx.createGain();
+    lid.type = 'sine';
+    lid.frequency.setValueAtTime(160, t); lid.frequency.exponentialRampToValueAtTime(70, t + 0.12);
+    lg.gain.setValueAtTime(0.3, t); lg.gain.exponentialRampToValueAtTime(0.0001, t + 0.15);
+    lid.connect(lg); lg.connect(ctx.destination); lid.start(t); lid.stop(t + 0.2);
+    // G5 - B5 - D6 - G6, kèm tiếng vọng nhỏ cho cảm giác lấp lánh
+    [783.99, 987.77, 1174.66, 1567.98].forEach(function (f, i) {
+      var at = t + 0.08 + i * 0.07;
+      chime(ctx, f, at, 0.11, 0.5);
+      chime(ctx, f * 2, at + 0.12, 0.025, 0.35);
+    });
+    return 550;
+  }
+  // Âm báo nhẹ cho các easter egg khác
+  function playSecret() {
+    var ctx = sfx(); if (!ctx) return;
+    var t = ctx.currentTime;
+    [659.25, 830.61, 987.77, 1318.51].forEach(function (f, i) { chime(ctx, f, t + i * 0.09, 0.08, 0.45); });
+  }
+
   function rd(k, d) { try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; } }
   function wr(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
   function accountKey() {
@@ -111,15 +169,17 @@
           });
         return findId.then(function (id) {
           return api('/cart/items', { method: 'PUT', body: { productId: id, quantity: (qty || 1) } });
-        }).then(function () { G5.syncCart(); G5.notify('Đã thêm "' + name + '" (' + (kind === 'digital' ? 'bản số' : 'bản đĩa') + ') vào giỏ hàng.'); })
+        }).then(function () { playCoin(); G5.syncCart(); G5.notify('Đã thêm "' + name + '" (' + (kind === 'digital' ? 'bản số' : 'bản đĩa') + ') vào giỏ hàng.'); })
           .catch(function (err) { G5.notify(G5.errorText(err)); });
       }
       var c = G5.getCart(), i;
       for (i = 0; i < c.length; i++) if (c[i][0] === name) break;
       if (i < c.length) c[i][3] += (qty || 1); else c.push([name, kind || 'digital', usd || 0, qty || 1]);
       G5.setCart(c);
+      playCoin();
       return Promise.resolve(c);
     },
+    sfx: { coin: playCoin, chest: playChest },
     vnd: function (s) { return parseInt(String(s).replace(/[^\d]/g, ''), 10) || 0; },
     /* ---- Đơn hàng: [mã, ngày, tên, loại, giá, trạng thái(0-3)] ---- */
     getOrders: function () {
@@ -278,6 +338,59 @@
     }
     G5.refresh();
     if (apiMode) { G5.syncCart().catch(function () { G5.notify('Không thể tải giỏ hàng từ API.'); }); G5.syncOrders().catch(function () { G5.notify('Không thể tải đơn hàng từ API.'); }); }
+  });
+
+  // Easter egg: mã Konami (↑ ↑ ↓ ↓ ← → ← → B A) -> bật/tắt con trỏ tay cầm chơi game
+  (function () {
+    var seq = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'], pos = 0;
+    var style = null;
+    function setCursor(on) {
+      if (on && !style) {
+        var svg = "<svg xmlns='http://www.w3.org/2000/svg' width='32' height='32'><text x='2' y='24' font-size='22'>🎮</text></svg>";
+        style = document.createElement('style');
+        style.textContent = 'html,body,body *{cursor:url("data:image/svg+xml;utf8,' + encodeURIComponent(svg) + '") 4 4,auto!important}';
+        document.head.appendChild(style);
+      } else if (!on && style) { style.remove(); style = null; }
+      try { on ? sessionStorage.setItem('5guys_konami', '1') : sessionStorage.removeItem('5guys_konami'); } catch (e) {}
+    }
+    try { if (sessionStorage.getItem('5guys_konami')) setCursor(true); } catch (e) {}
+    document.addEventListener('keydown', function (e) {
+      var tag = e.target && e.target.tagName;
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || (e.target && e.target.isContentEditable)) return;
+      var key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+      pos = key === seq[pos] ? pos + 1 : (key === seq[0] ? 1 : 0);
+      if (pos < seq.length) return;
+      pos = 0;
+      var on = !style;
+      setCursor(on);
+      playSecret();
+      G5.notify(on ? '🎮 Cheat code được chấp nhận! Con trỏ tay cầm đã mở khóa. (Nhập lại để tắt)' : 'Đã tắt con trỏ tay cầm. Hẹn gặp lại, game thủ!');
+    });
+  })();
+
+  // Easter egg: rời tab thì tiêu đề tab "gọi" bạn quay lại, quay lại thì được chào mừng
+  (function () {
+    var original = null, timer = null;
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        clearTimeout(timer);
+        if (original === null) original = document.title;
+        document.title = '💤 Player 1 đã AFK...';
+      } else if (original !== null) {
+        document.title = '🎮 Welcome back, player!';
+        timer = setTimeout(function () { document.title = original; original = null; }, 2000);
+      }
+    });
+  })();
+
+  // Easter egg: bấm mở giỏ hàng -> tiếng mở rương, chờ tiếng phát xong rồi mới chuyển trang
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest && e.target.closest('a[href]');
+    if (!a || !/(^|\/)cart\.html(\?|#|$)/.test(a.getAttribute('href'))) return;
+    if (e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === '_blank') return;
+    e.preventDefault();
+    var wait = playChest();
+    setTimeout(function () { location.href = a.href; }, Math.max(250, wait));
   });
 
   // Nút "thêm vào giỏ" ở mọi trang (bắt sự kiện ở pha capture, chạy cùng các handler cũ)

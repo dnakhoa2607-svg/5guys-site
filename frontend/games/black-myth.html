@@ -1,0 +1,2197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Black Myth: Sun Wukong — Trial of the Destined One</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;900&family=Noto+Serif+SC:wght@600;900&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #08090c;
+            font-family: 'Cinzel', serif;
+            color: #e8e2d5;
+        }
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        .font-cn {
+            font-family: 'Noto Serif SC', serif;
+        }
+        .font-ui {
+            font-family: 'Inter', sans-serif;
+        }
+        .gold-glow {
+            text-shadow: 0 0 12px rgba(245, 194, 66, 0.7), 0 0 24px rgba(217, 119, 6, 0.4);
+        }
+        .crimson-glow {
+            text-shadow: 0 0 18px rgba(220, 38, 38, 0.85), 0 0 36px rgba(153, 27, 27, 0.6);
+        }
+        .mythic-btn {
+            background: linear-gradient(180deg, rgba(38, 32, 24, 0.9) 0%, rgba(16, 14, 12, 0.95) 100%);
+            border: 1px solid rgba(217, 167, 74, 0.55);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.75), inset 0 0 12px rgba(217, 167, 74, 0.15);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .mythic-btn:hover {
+            border-color: #f5c242;
+            box-shadow: 0 0 25px rgba(245, 194, 66, 0.45), inset 0 0 16px rgba(245, 194, 66, 0.25);
+            transform: translateY(-2px);
+            color: #fff8e7;
+        }
+        .mythic-btn:active {
+            transform: translateY(1px);
+        }
+        .diff-active {
+            border-color: #f5c242 !important;
+            background: linear-gradient(180deg, rgba(120, 82, 22, 0.65) 0%, rgba(45, 30, 10, 0.9) 100%) !important;
+            box-shadow: 0 0 18px rgba(245, 194, 66, 0.4) !important;
+        }
+        /* Subtle ink vignette */
+        .vignette {
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 52%, rgba(4, 5, 7, 0.88) 100%);
+        }
+        @keyframes pulseSlow {
+            0%, 100% { opacity: 0.75; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.03); }
+        }
+        .animate-pulse-slow {
+            animation: pulseSlow 3.5s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="relative overflow-hidden">
+
+    <!-- Main Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Atmospheric Vignette Overlay -->
+    <div class="vignette fixed inset-0 z-10"></div>
+
+    <!-- Top-Right Audio & Controls Toggle -->
+    <div class="fixed top-4 right-4 z-30 flex items-center gap-2">
+        <button id="audioToggleBtn" class="mythic-btn px-3 py-2 rounded-lg text-xs tracking-widest uppercase flex items-center gap-2 text-amber-200/90">
+            <span id="audioIcon">🔊</span>
+            <span class="hidden sm:inline" id="audioLabel">Sound On</span>
+        </button>
+        <button id="helpToggleBtn" class="mythic-btn px-3 py-2 rounded-lg text-xs tracking-widest uppercase text-amber-200/90">
+            Controls [H]
+        </button>
+    </div>
+
+    <!-- In-Game Souls-Like HUD (Hidden on Title Screen) -->
+    <div id="hudLayer" class="fixed inset-0 z-20 pointer-events-none hidden flex-col justify-between p-4 sm:p-7">
+        <!-- Top Left: Destined One Status (Gourd, HP, Stamina, Spell, Focus) -->
+        <div class="flex flex-col gap-2.5 max-w-md">
+            <div class="flex items-center gap-3">
+                <!-- Supreme Gourd Indicator -->
+                <div class="relative flex flex-col items-center justify-center w-12 h-14 rounded-xl bg-stone-950/85 border border-amber-500/50 shadow-lg">
+                    <svg viewBox="0 0 36 44" class="w-7 h-8">
+                        <defs>
+                            <linearGradient id="gourdGrad" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="#f59e0b"/>
+                                <stop offset="100%" stop-color="#92400e"/>
+                            </linearGradient>
+                        </defs>
+                        <path d="M15 4 h6 v4 h-6 z" fill="#dc2626"/>
+                        <path d="M18 8 c-5 0 -7 4 -6 8 c1 3 3 4 3 5 c-4 2 -7 6 -7 11 c0 6 4.5 9 10 9 s10 -3 10 -9 c0 -5 -3 -9 -7 -11 c0 -1 2 -2 3 -5 c1 -4 -1 -8 -6 -8 z" fill="url(#gourdGrad)" stroke="#fcd34d" stroke-width="1.5"/>
+                        <path d="M13 21 h10" stroke="#dc2626" stroke-width="2.5"/>
+                    </svg>
+                    <span id="gourdCountText" class="text-xs font-bold text-amber-300 -mt-1">3/3</span>
+                    <span class="absolute -bottom-2 bg-stone-900 border border-amber-500/40 px-1.5 rounded text-[9px] font-ui text-amber-200">[R]</span>
+                </div>
+
+                <!-- HP & Stamina Bars -->
+                <div class="flex-1 flex flex-col gap-1.5">
+                    <div class="flex justify-between items-end">
+                        <span class="text-xs tracking-[0.2em] text-amber-200/80 uppercase font-semibold">The Destined One</span>
+                        <span id="hpNumeric" class="text-[11px] font-ui text-stone-300">100 / 100</span>
+                    </div>
+                    <!-- Health Bar -->
+                    <div class="w-full h-3.5 bg-stone-950/90 border border-stone-700/80 rounded-sm overflow-hidden p-[1px] shadow-inner relative">
+                        <div id="playerHpTrail" class="h-full bg-amber-500/70 transition-all duration-300 rounded-xs" style="width: 100%;"></div>
+                        <div id="playerHpBar" class="h-full bg-gradient-to-r from-red-800 via-red-600 to-rose-500 -mt-[12px] transition-all duration-100 rounded-xs" style="width: 100%;"></div>
+                    </div>
+                    <!-- Stamina Bar -->
+                    <div class="w-4/5 h-2 bg-stone-950/90 border border-stone-700/70 rounded-sm overflow-hidden p-[1px]">
+                        <div id="playerStaminaBar" class="h-full bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-200 transition-all duration-75" style="width: 100%;"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Spells & Focus Pips Row -->
+            <div class="flex items-center gap-4 mt-1 pl-1">
+                <!-- Immobilize Spell ("Ding!") -->
+                <div class="relative flex items-center gap-2 bg-stone-950/80 border border-amber-500/40 rounded-lg px-2.5 py-1.5">
+                    <div id="spellIconBox" class="relative w-8 h-8 rounded-full border border-amber-400 flex items-center justify-center bg-amber-500/20 shadow-[0_0_12px_rgba(245,158,11,0.45)] overflow-hidden">
+                        <span class="font-cn text-amber-300 font-black text-base z-10">定</span>
+                        <div id="spellCooldownOverlay" class="absolute inset-0 bg-stone-950/85 origin-bottom transition-transform duration-100" style="transform: scaleY(0);"></div>
+                    </div>
+                    <div class="flex flex-col">
+                        <span class="text-[11px] font-bold tracking-wider text-amber-200">IMMOBILIZE</span>
+                        <span id="spellStatusText" class="text-[10px] font-ui text-amber-400">READY [E / 1]</span>
+                    </div>
+                </div>
+
+                <!-- Focus Meter & 3 Golden Orbs -->
+                <div class="flex flex-col gap-1 bg-stone-950/80 border border-amber-500/30 rounded-lg px-3 py-1.5">
+                    <div class="flex items-center justify-between gap-3">
+                        <span class="text-[10px] tracking-widest text-amber-200/80 uppercase">Focus</span>
+                        <div class="flex items-center gap-1.5">
+                            <div id="focusOrb1" class="w-3.5 h-3.5 rounded-full border border-amber-400/70 bg-stone-900 transition-all duration-200"></div>
+                            <div id="focusOrb2" class="w-3.5 h-3.5 rounded-full border border-amber-400/70 bg-stone-900 transition-all duration-200"></div>
+                            <div id="focusOrb3" class="w-3.5 h-3.5 rounded-full border border-amber-400/70 bg-stone-900 transition-all duration-200"></div>
+                        </div>
+                    </div>
+                    <div class="w-28 h-1.5 bg-stone-900 rounded-full overflow-hidden border border-stone-700/60">
+                        <div id="focusProgressBar" class="h-full bg-gradient-to-r from-amber-500 to-yellow-200 transition-all duration-75" style="width: 0%;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Center Dynamic Combat Callout Banner (Perfect Dodge, Immobilized, Staggered) -->
+        <div id="combatCallout" class="self-center text-center opacity-0 transition-opacity duration-200">
+            <div id="calloutCn" class="font-cn text-2xl sm:text-3xl font-black text-amber-300 gold-glow tracking-widest">定身</div>
+            <div id="calloutEn" class="text-xs sm:text-sm tracking-[0.35em] text-amber-100 uppercase mt-0.5">IMMOBILIZED</div>
+        </div>
+
+        <!-- Bottom Center: Boss Health & Poise Bar -->
+        <div class="w-full max-w-3xl mx-auto mb-1 sm:mb-2 flex flex-col gap-1.5">
+            <div class="flex items-baseline justify-between px-1">
+                <div class="flex items-center gap-2.5">
+                    <span class="font-cn text-amber-400 text-sm sm:text-base font-bold">黑风大王</span>
+                    <span class="text-xs sm:text-sm tracking-[0.25em] text-stone-200 font-bold uppercase">Black Wind King — Yaoguai</span>
+                </div>
+                <span id="bossPhaseTag" class="text-[10px] tracking-[0.2em] uppercase text-amber-400/90 font-semibold">Phase I</span>
+            </div>
+            <!-- Boss HP Bar -->
+            <div class="w-full h-4 bg-stone-950/95 border border-amber-600/50 rounded-sm p-[1.5px] shadow-[0_0_20px_rgba(0,0,0,0.9)] relative overflow-hidden">
+                <div id="bossHpTrail" class="h-full bg-amber-400/80 transition-all duration-300" style="width: 100%;"></div>
+                <div id="bossHpBar" class="h-full bg-gradient-to-r from-red-950 via-red-700 to-red-500 -mt-[13px] transition-all duration-100" style="width: 100%;"></div>
+            </div>
+            <!-- Boss Poise / Stagger Bar -->
+            <div class="w-3/5 mx-auto h-1.5 bg-stone-950/90 border border-stone-700/70 rounded-full overflow-hidden">
+                <div id="bossPoiseBar" class="h-full bg-gradient-to-r from-amber-500 via-yellow-300 to-white transition-all duration-100" style="width: 0%;"></div>
+            </div>
+            <!-- Quick Action Bar Hint for Desktop & Touch -->
+            <div class="hidden md:flex justify-center gap-5 text-[10px] font-ui tracking-wider text-stone-400/80 mt-1">
+                <span>[A/D] Move</span>
+                <span>[SPACE] Jump</span>
+                <span>[SHIFT / K] Cloud Step Dodge</span>
+                <span>[J / L-Click] Light Combo</span>
+                <span>[L / R-Click] Heavy Smash</span>
+                <span>[F / 2] Hold Staff Spin</span>
+                <span>[E / 1] Immobilize</span>
+                <span>[R] Gourd</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls Overlay (Shown on touch devices or narrow screens during gameplay) -->
+    <div id="touchControls" class="fixed inset-x-0 bottom-20 z-30 px-4 flex justify-between items-end md:hidden pointer-events-none hidden">
+        <!-- Left D-Pad -->
+        <div class="flex gap-2 pointer-events-auto">
+            <button data-key="KeyA" class="touch-btn w-12 h-12 rounded-xl bg-stone-900/80 border border-amber-500/40 text-amber-200 font-bold active:bg-amber-600/40">◀</button>
+            <button data-key="KeyD" class="touch-btn w-12 h-12 rounded-xl bg-stone-900/80 border border-amber-500/40 text-amber-200 font-bold active:bg-amber-600/40">▶</button>
+            <button data-key="Space" class="touch-btn w-12 h-12 rounded-xl bg-stone-900/80 border border-amber-500/40 text-amber-200 text-xs font-bold active:bg-amber-600/40">JUMP</button>
+        </div>
+        <!-- Right Action Cluster -->
+        <div class="grid grid-cols-3 gap-2 pointer-events-auto">
+            <button data-key="KeyE" class="touch-btn w-12 h-12 rounded-xl bg-amber-950/85 border border-amber-400 text-amber-300 font-cn font-bold text-base">定</button>
+            <button data-key="KeyF" class="touch-btn w-12 h-12 rounded-xl bg-stone-900/85 border border-amber-500/40 text-amber-200 text-[10px] font-bold">SPIN</button>
+            <button data-key="KeyR" class="touch-btn w-12 h-12 rounded-xl bg-red-950/85 border border-red-500/50 text-amber-200 text-[10px] font-bold">HEAL</button>
+            <button data-key="ShiftLeft" class="touch-btn w-12 h-12 rounded-xl bg-stone-900/85 border border-cyan-400/50 text-cyan-200 text-[10px] font-bold">DODGE</button>
+            <button data-key="KeyJ" class="touch-btn w-12 h-12 rounded-xl bg-amber-900/85 border border-amber-400 text-amber-100 text-[10px] font-bold">LIGHT</button>
+            <button data-key="KeyL" class="touch-btn w-12 h-12 rounded-xl bg-amber-700/85 border border-yellow-300 text-white text-[10px] font-bold">SMASH</button>
+        </div>
+    </div>
+
+    <!-- Title Screen Overlay -->
+    <div id="titleScreen" class="fixed inset-0 z-30 flex flex-col items-center justify-center p-6 bg-stone-950/65 backdrop-blur-[2px]">
+        <div class="max-w-2xl w-full text-center flex flex-col items-center">
+            <div class="font-cn text-amber-400/90 text-xl sm:text-2xl tracking-[0.5em] mb-2 font-bold">黑神话：悟空</div>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-[0.14em] text-stone-100 gold-glow uppercase leading-tight">
+                Black Myth:<br><span class="text-amber-400">Sun Wukong</span>
+            </h1>
+            <div class="h-[1px] w-64 bg-gradient-to-r from-transparent via-amber-400 to-transparent my-4"></div>
+            <p class="text-xs sm:text-sm tracking-[0.3em] text-amber-200/85 uppercase mb-7">
+                Trial of the Destined One — Black Wind Mountain
+            </p>
+
+            <!-- Difficulty Selector -->
+            <div class="flex flex-col items-center gap-2 mb-7">
+                <span class="text-[11px] tracking-[0.25em] text-stone-400 uppercase">Select Destiny</span>
+                <div class="flex gap-3">
+                    <button id="diffStoryBtn" class="mythic-btn px-5 py-2.5 rounded-lg text-xs tracking-widest uppercase">
+                        Story Pilgrim
+                    </button>
+                    <button id="diffDestinedBtn" class="mythic-btn diff-active px-5 py-2.5 rounded-lg text-xs tracking-widest uppercase text-amber-300 font-bold">
+                        Destined One
+                    </button>
+                </div>
+            </div>
+
+            <!-- Start Trial Button -->
+            <button id="startBtn" class="mythic-btn px-10 py-4 rounded-xl text-base sm:text-lg font-bold tracking-[0.28em] text-amber-300 uppercase animate-pulse-slow">
+                Begin Trial
+            </button>
+
+            <!-- Compact Controls Legend -->
+            <div class="mt-8 grid grid-cols-2 sm:grid-cols-4 gap-2.5 w-full text-left bg-stone-950/80 border border-amber-500/25 rounded-xl p-4 font-ui text-xs">
+                <div class="flex flex-col">
+                    <span class="text-amber-400 font-semibold">Move & Jump</span>
+                    <span class="text-stone-400 text-[11px]">A/D or Arrows, Space</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-amber-400 font-semibold">Cloud Step Dodge</span>
+                    <span class="text-stone-400 text-[11px]">Shift / K (Perfect = Decoy)</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-amber-400 font-semibold">Staff Combos</span>
+                    <span class="text-stone-400 text-[11px]">L-Click / J (Light) • R-Click / L (Smash)</span>
+                </div>
+                <div class="flex flex-col">
+                    <span class="text-amber-400 font-semibold">Mystic Arts & Gourd</span>
+                    <span class="text-stone-400 text-[11px]">E/1 Immobilize • Hold F/2 Spin • R Heal</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Modal (Togglable mid-game) -->
+    <div id="helpModal" class="fixed inset-0 z-40 hidden items-center justify-center p-6 bg-stone-950/80 backdrop-blur-sm">
+        <div class="max-w-lg w-full bg-stone-900/95 border border-amber-500/50 rounded-2xl p-6 shadow-2xl">
+            <div class="flex justify-between items-center border-b border-amber-500/30 pb-3 mb-4">
+                <h2 class="text-lg font-bold tracking-[0.2em] text-amber-300 uppercase">Scripture of Combat</h2>
+                <button id="closeHelpBtn" class="text-stone-400 hover:text-amber-300 text-lg font-bold px-2">✕</button>
+            </div>
+            <ul class="space-y-2.5 text-xs font-ui text-stone-300 leading-relaxed">
+                <li><strong class="text-amber-300">Light Attack (Left Click / J):</strong> 4-hit Ruyi Jingu Bang combo. Builds <span class="text-amber-300">Focus</span> on hit.</li>
+                <li><strong class="text-amber-300">Smash Stance Heavy (Right Click / L):</strong> Leaps skyward and extends the golden staff. Consumes up to 3 <span class="text-amber-300">Focus Orbs</span> for devastating shockwave & stagger damage.</li>
+                <li><strong class="text-amber-300">Cloud Step Dodge (Shift / K):</strong> Dash with invulnerability frames. Dodging right before an attack leaves an <span class="text-cyan-300">Illusory Decoy</span> and grants bonus Focus.</li>
+                <li><strong class="text-amber-300">Immobilize "Ding!" (E / 1):</strong> Freezes the Yaoguai boss in golden Sanskrit rings for 3 seconds (14s cooldown).</li>
+                <li><strong class="text-amber-300">Staff Spin (Hold F / 2):</strong> Deflects dark-fire projectiles back at the boss and builds rapid Focus.</li>
+                <li><strong class="text-amber-300">Supreme Gourd (R):</strong> Restores 45% HP (3 charges per battle).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- End-of-Battle Overlay (Victory or Defeat) -->
+    <div id="endScreen" class="fixed inset-0 z-30 hidden flex-col items-center justify-center p-6 bg-stone-950/80 backdrop-blur-sm transition-opacity duration-500">
+        <div class="text-center max-w-xl flex flex-col items-center">
+            <div id="endCnTitle" class="font-cn text-5xl sm:text-7xl font-black tracking-widest mb-2">身陨</div>
+            <h2 id="endEnTitle" class="text-3xl sm:text-5xl font-black tracking-[0.3em] uppercase mb-3">Defeated</h2>
+            <p id="endSubtitle" class="text-xs sm:text-sm tracking-[0.2em] text-stone-300 uppercase mb-6">
+                The Great Sage's relic awaits a worthier vessel.
+            </p>
+            <div id="endStatsBox" class="flex gap-6 bg-stone-900/85 border border-amber-500/30 rounded-xl px-6 py-3 mb-7 text-xs font-ui">
+                <div class="flex flex-col items-center">
+                    <span class="text-stone-400 uppercase text-[10px]">Time</span>
+                    <span id="statTime" class="text-amber-300 font-bold text-sm">00:00</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-stone-400 uppercase text-[10px]">Perfect Dodges</span>
+                    <span id="statDodges" class="text-cyan-300 font-bold text-sm">0</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-stone-400 uppercase text-[10px]">Heavy Smashes</span>
+                    <span id="statSmashes" class="text-amber-300 font-bold text-sm">0</span>
+                </div>
+            </div>
+            <button id="restartBtn" class="mythic-btn px-9 py-3.5 rounded-xl text-sm sm:text-base font-bold tracking-[0.25em] text-amber-300 uppercase">
+                Reincarnate at Shrine
+            </button>
+        </div>
+    </div>
+
+    <script>
+    /**
+     * BLACK MYTH: SUN WUKONG — TRIAL OF THE DESTINED ONE
+     * Complete self-contained 2.5D Action-Combat Engine + Procedural Web Audio Synthesizer
+     */
+    (() => {
+        'use strict';
+
+        // =========================================================================
+        // 1. WEB AUDIO API PROCEDURAL MYTHIC SOUND SYNTHESIZER
+        // =========================================================================
+        class MythicAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.ambientTimer = null;
+                this.droneNodes = [];
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopAmbient();
+                } else {
+                    this.init();
+                    this.startAmbient();
+                }
+                return this.enabled;
+            }
+
+            startAmbient() {
+                if (!this.enabled || !this.ctx || this.ambientTimer) return;
+                // Deep temple taiko pulse + mythic pentatonic chime ambiance
+                const scale = [146.83, 174.61, 196.00, 220.00, 261.63, 293.66]; // D minor pentatonic
+                let step = 0;
+                this.ambientTimer = setInterval(() => {
+                    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+                    const now = this.ctx.currentTime;
+                    // Deep war drum every 2 beats
+                    if (step % 2 === 0) {
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(72, now);
+                        osc.frequency.exponentialRampToValueAtTime(34, now + 0.45);
+                        gain.gain.setValueAtTime(0.14, now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                        osc.connect(gain).connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 0.52);
+                    }
+                    // Sparse guqin/chime pluck
+                    if (Math.random() < 0.45) {
+                        const freq = scale[Math.floor(Math.random() * scale.length)];
+                        const osc = this.ctx.createOscillator();
+                        const gain = this.ctx.createGain();
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(freq, now);
+                        gain.gain.setValueAtTime(0.045, now);
+                        gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.4);
+                        osc.connect(gain).connect(this.ctx.destination);
+                        osc.start(now);
+                        osc.stop(now + 1.45);
+                    }
+                    step++;
+                }, 650);
+            }
+
+            stopAmbient() {
+                if (this.ambientTimer) {
+                    clearInterval(this.ambientTimer);
+                    this.ambientTimer = null;
+                }
+            }
+
+            playWhoosh(pitch = 1.0) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const bufferSize = this.ctx.sampleRate * 0.16;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.sin((i / bufferSize) * Math.PI);
+                }
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(350 * pitch, now);
+                filter.frequency.exponentialRampToValueAtTime(1100 * pitch, now + 0.14);
+                filter.Q.value = 2.2;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.16);
+
+                noise.connect(filter).connect(gain).connect(this.ctx.destination);
+                noise.start(now);
+            }
+
+            playHit(heavy = false) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                // Metallic staff impact + sub punch
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = heavy ? 'sawtooth' : 'triangle';
+                osc.frequency.setValueAtTime(heavy ? 160 : 240, now);
+                osc.frequency.exponentialRampToValueAtTime(42, now + (heavy ? 0.35 : 0.14));
+
+                gain.gain.setValueAtTime(heavy ? 0.35 : 0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + (heavy ? 0.36 : 0.15));
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + (heavy ? 0.37 : 0.16));
+
+                // Golden metallic ring overtone
+                const ring = this.ctx.createOscillator();
+                const rGain = this.ctx.createGain();
+                ring.type = 'sine';
+                ring.frequency.setValueAtTime(heavy ? 880 : 1240, now);
+                rGain.gain.setValueAtTime(0.11, now);
+                rGain.gain.exponentialRampToValueAtTime(0.001, now + 0.22);
+                ring.connect(rGain).connect(this.ctx.destination);
+                ring.start(now);
+                ring.stop(now + 0.23);
+            }
+
+            playSlam() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(115, now);
+                osc.frequency.exponentialRampToValueAtTime(26, now + 0.55);
+                gain.gain.setValueAtTime(0.45, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.58);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.6);
+                this.playHit(true);
+            }
+
+            playImmobilize() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                // Iconic resonant Buddhist/Sanskrit bell chime ("Ding!")
+                const freqs = [1046.5, 1567.98, 2093.0];
+                freqs.forEach((f, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now);
+                    gain.gain.setValueAtTime(0.18 / (idx + 1), now);
+                    gain.gain.exponentialRampToValueAtTime(0.0008, now + 1.3);
+                    osc.connect(gain).connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 1.35);
+                });
+            }
+
+            playPerfectDodge() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(520, now);
+                osc.frequency.exponentialRampToValueAtTime(980, now + 0.25);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.28);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.3);
+            }
+
+            playGourd() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                [320, 440, 620].forEach((freq, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, now + i * 0.08);
+                    gain.gain.setValueAtTime(0.16, now + i * 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.08 + 0.25);
+                    osc.connect(gain).connect(this.ctx.destination);
+                    osc.start(now + i * 0.08);
+                    osc.stop(now + i * 0.08 + 0.26);
+                });
+            }
+
+            playDeflect() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(1450, now);
+                osc.frequency.exponentialRampToValueAtTime(720, now + 0.12);
+                gain.gain.setValueAtTime(0.14, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.13);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.14);
+            }
+        }
+
+        const audio = new MythicAudio();
+
+        // =========================================================================
+        // 2. CANVAS & VIEWPORT SETUP
+        // =========================================================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let groundY = height * 0.80;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            groundY = height * 0.80;
+            if (player) player.y = Math.min(player.y, groundY);
+            if (boss) boss.y = Math.min(boss.y, groundY);
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // =========================================================================
+        // 3. GAME STATE & CONFIGURATION
+        // =========================================================================
+        let gameState = 'TITLE'; // TITLE | PLAYING | VICTORY | DEFEAT
+        let difficulty = 'DESTINED'; // STORY | DESTINED
+        let hitstopTimer = 0;
+        let screenShake = { x: 0, y: 0, intensity: 0 };
+        let slowMoFactor = 1.0;
+        let slowMoTimer = 0;
+        let battleTime = 0;
+        let stats = { perfectDodges: 0, heavySmashes: 0 };
+
+        // Input tracking
+        const keys = {};
+        window.addEventListener('keydown', (e) => {
+            keys[e.code] = true;
+            if (e.code === 'KeyH') toggleHelpModal();
+            if (gameState !== 'PLAYING') return;
+
+            if (e.code === 'Space' || e.code === 'ArrowUp' || e.code === 'KeyW') {
+                player.jump();
+            }
+            if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyK') {
+                player.dodge();
+            }
+            if (e.code === 'KeyJ') {
+                player.lightAttack();
+            }
+            if (e.code === 'KeyL') {
+                player.heavyAttack();
+            }
+            if (e.code === 'KeyE' || e.code === 'Digit1') {
+                player.castImmobilize();
+            }
+            if (e.code === 'KeyR') {
+                player.drinkGourd();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+        });
+
+        // Mouse Combat Controls
+        canvas.addEventListener('mousedown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            if (e.button === 0) {
+                player.lightAttack();
+            } else if (e.button === 2) {
+                player.heavyAttack();
+            }
+        });
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Touch buttons binding
+        document.querySelectorAll('.touch-btn').forEach(btn => {
+            const code = btn.dataset.key;
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[code] = true;
+                if (gameState !== 'PLAYING') return;
+                if (code === 'Space') player.jump();
+                if (code === 'ShiftLeft') player.dodge();
+                if (code === 'KeyJ') player.lightAttack();
+                if (code === 'KeyL') player.heavyAttack();
+                if (code === 'KeyE') player.castImmobilize();
+                if (code === 'KeyR') player.drinkGourd();
+            }, { passive: false });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[code] = false;
+            }, { passive: false });
+        });
+
+        // =========================================================================
+        // 4. VISUAL FX: PARTICLES, SHOCKWAVES, FLOATING NUMBERS & DECOY CLONES
+        // =========================================================================
+        const particles = [];
+        const shockwaves = [];
+        const damagePopups = [];
+        const decoys = [];
+        const projectiles = [];
+        const ambientLeaves = [];
+
+        // Initialize drifting autumn leaves / embers
+        for (let i = 0; i < 42; i++) {
+            ambientLeaves.push({
+                x: Math.random() * 1920,
+                y: Math.random() * 1080,
+                size: 2.5 + Math.random() * 4.5,
+                vx: -25 - Math.random() * 45,
+                vy: 18 + Math.random() * 35,
+                rot: Math.random() * Math.PI * 2,
+                vrot: (Math.random() - 0.5) * 4,
+                isEmber: Math.random() < 0.35
+            });
+        }
+
+        function spawnParticles(x, y, count, color, speedMin, speedMax, life = 0.5, gravity = 300) {
+            for (let i = 0; i < count; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const spd = speedMin + Math.random() * (speedMax - speedMin);
+                particles.push({
+                    x, y,
+                    vx: Math.cos(angle) * spd,
+                    vy: Math.sin(angle) * spd - 60,
+                    size: 2 + Math.random() * 4,
+                    color,
+                    alpha: 1,
+                    life,
+                    maxLife: life,
+                    gravity
+                });
+            }
+        }
+
+        function spawnShockwave(x, y, maxRadius, color, lineWidth = 4) {
+            shockwaves.push({
+                x, y,
+                radius: 12,
+                maxRadius,
+                color,
+                lineWidth,
+                alpha: 1
+            });
+        }
+
+        function spawnDamagePopup(x, y, amount, isCrit = false, label = '') {
+            damagePopups.push({
+                x: x + (Math.random() - 0.5) * 30,
+                y: y - 30,
+                vy: -65,
+                text: label || Math.round(amount).toString(),
+                isCrit,
+                life: 0.9,
+                maxLife: 0.9
+            });
+        }
+
+        function triggerShake(intensity) {
+            screenShake.intensity = Math.max(screenShake.intensity, intensity);
+        }
+
+        function showCombatCallout(cn, en, colorClass = 'text-amber-300') {
+            const box = document.getElementById('combatCallout');
+            const cnEl = document.getElementById('calloutCn');
+            const enEl = document.getElementById('calloutEn');
+            cnEl.textContent = cn;
+            enEl.textContent = en;
+            cnEl.className = `font-cn text-2xl sm:text-3xl font-black gold-glow tracking-widest ${colorClass}`;
+            box.style.opacity = '1';
+            clearTimeout(box._timer);
+            box._timer = setTimeout(() => {
+                box.style.opacity = '0';
+            }, 1150);
+        }
+
+        // =========================================================================
+        // 5. THE DESTINED ONE (WUKONG) ENTITY
+        // =========================================================================
+        class Wukong {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = width * 0.25;
+                this.y = groundY;
+                this.vx = 0;
+                this.vy = 0;
+                this.facing = 1; // 1 right, -1 left
+                this.maxHp = difficulty === 'STORY' ? 145 : 100;
+                this.hp = this.maxHp;
+                this.trailHp = this.maxHp;
+                this.maxStamina = 100;
+                this.stamina = 100;
+                this.gourdCharges = 3;
+                this.maxGourd = 3;
+
+                // Focus System (0 to 300 -> 3 orbs of 100 each)
+                this.focus = 0;
+                this.maxFocus = 300;
+
+                // Combat states
+                this.state = 'IDLE'; // IDLE, RUN, JUMP, DODGE, LIGHT_ATTACK, HEAVY_SMASH, SPIN, HURT
+                this.stateTimer = 0;
+                this.comboStep = 0;
+                this.comboResetTimer = 0;
+                this.attackHasHit = false;
+                this.heavyFocusUsed = 0;
+
+                // Dodge & Cloud Step
+                this.invulnTimer = 0;
+                this.dodgeCooldown = 0;
+
+                // Immobilize Spell ("Ding!")
+                this.immobilizeCooldown = 0;
+                this.immobilizeMaxCd = 14.0;
+
+                // Animation timers
+                this.animTime = 0;
+                this.staffAngle = -0.4;
+                this.staffScale = 1.0;
+                this.capePoints = Array.from({ length: 6 }, (_, i) => ({ x: this.x - i * 10, y: this.y - 65 }));
+            }
+
+            getFocusOrbs() {
+                return Math.floor(this.focus / 100);
+            }
+
+            addFocus(amount) {
+                this.focus = Math.min(this.maxFocus, this.focus + amount);
+            }
+
+            jump() {
+                if (this.y >= groundY - 2 && ['IDLE', 'RUN'].includes(this.state)) {
+                    this.vy = -660;
+                    this.state = 'JUMP';
+                    audio.playWhoosh(1.2);
+                    spawnParticles(this.x, groundY, 8, 'rgba(210, 200, 180, 0.5)', 40, 120, 0.35, 100);
+                }
+            }
+
+            dodge() {
+                if (this.dodgeCooldown > 0 || this.stamina < 18) return;
+                if (['HURT', 'HEAVY_SMASH'].includes(this.state)) return;
+
+                this.stamina -= 18;
+                this.state = 'DODGE';
+                this.stateTimer = 0.28;
+                this.dodgeCooldown = 0.42;
+                this.invulnTimer = 0.32;
+
+                // Direction based on held keys or current facing
+                let dir = this.facing;
+                if (keys['KeyA'] || keys['ArrowLeft']) dir = -1;
+                if (keys['KeyD'] || keys['ArrowRight']) dir = 1;
+                this.facing = dir;
+                this.vx = dir * 680;
+
+                audio.playWhoosh(1.45);
+                spawnParticles(this.x, this.y - 45, 12, 'rgba(245, 194, 66, 0.75)', 50, 180, 0.4, 0);
+
+                // Check if boss is currently winding up or swinging -> PERFECT DODGE (Cloud Step!)
+                if (boss && boss.isThreatening()) {
+                    this.triggerPerfectDodge();
+                }
+            }
+
+            triggerPerfectDodge() {
+                stats.perfectDodges++;
+                this.addFocus(85);
+                this.stamina = Math.min(this.maxStamina, this.stamina + 30);
+                audio.playPerfectDodge();
+                slowMoTimer = 0.28;
+                slowMoFactor = 0.35;
+                showCombatCallout('聚形散气', 'CLOUD STEP — PERFECT DODGE', 'text-cyan-300');
+                spawnShockwave(this.x, this.y - 45, 95, 'rgba(103, 232, 249, 0.85)', 3);
+
+                // Spawn golden illusory decoy clone at dodge origin
+                decoys.push({
+                    x: this.x,
+                    y: this.y,
+                    facing: this.facing,
+                    life: 1.4,
+                    maxLife: 1.4
+                });
+            }
+
+            lightAttack() {
+                if (['DODGE', 'HEAVY_SMASH', 'HURT'].includes(this.state)) return;
+                if (this.state === 'LIGHT_ATTACK' && this.stateTimer > 0.14) return;
+                if (this.stamina < 10) return;
+
+                this.stamina -= 10;
+                this.comboStep = (this.comboStep % 4) + 1;
+                this.comboResetTimer = 1.1;
+                this.state = 'LIGHT_ATTACK';
+                this.stateTimer = this.comboStep === 4 ? 0.42 : 0.28;
+                this.attackHasHit = false;
+
+                // Auto-face boss if close
+                if (boss && Math.abs(boss.x - this.x) < 280) {
+                    this.facing = boss.x >= this.x ? 1 : -1;
+                }
+
+                // Forward lunge on strike
+                this.vx = this.facing * (this.comboStep === 4 ? 260 : 150);
+                audio.playWhoosh(0.95 + this.comboStep * 0.12);
+            }
+
+            heavyAttack() {
+                if (['DODGE', 'HEAVY_SMASH', 'HURT'].includes(this.state)) return;
+                if (this.stamina < 20) return;
+
+                const orbs = this.getFocusOrbs();
+                this.heavyFocusUsed = orbs;
+                if (orbs > 0) {
+                    this.focus -= orbs * 100;
+                    stats.heavySmashes++;
+                }
+                this.stamina -= 20;
+                this.state = 'HEAVY_SMASH';
+                this.stateTimer = 0.58;
+                this.attackHasHit = false;
+
+                if (boss) {
+                    this.facing = boss.x >= this.x ? 1 : -1;
+                }
+                // Leap upward into Smash Stance!
+                this.vy = -440 - orbs * 55;
+                this.vx = this.facing * (240 + orbs * 65);
+                audio.playWhoosh(0.75);
+                spawnParticles(this.x, this.y - 30, 14 + orbs * 6, '#fbbf24', 80, 240, 0.45, 50);
+            }
+
+            castImmobilize() {
+                if (this.immobilizeCooldown > 0 || !boss || boss.hp <= 0) return;
+                this.immobilizeCooldown = this.immobilizeMaxCd;
+                this.facing = boss.x >= this.x ? 1 : -1;
+
+                // Boss can resist if already staggered, otherwise freezes in golden ring!
+                boss.applyImmobilize(3.1);
+                audio.playImmobilize();
+                triggerShake(8);
+                showCombatCallout('定身法', 'IMMOBILIZE — DING!', 'text-amber-300');
+                spawnShockwave(boss.x, boss.y - 75, 160, '#f59e0b', 5);
+                spawnParticles(boss.x, boss.y - 75, 28, '#fde047', 60, 220, 0.7, 0);
+            }
+
+            drinkGourd() {
+                if (this.gourdCharges <= 0 || this.hp >= this.maxHp) return;
+                if (['HURT', 'HEAVY_SMASH'].includes(this.state)) return;
+
+                this.gourdCharges--;
+                const healAmount = this.maxHp * 0.45;
+                this.hp = Math.min(this.maxHp, this.hp + healAmount);
+                this.stamina = Math.min(this.maxStamina, this.stamina + 35);
+                audio.playGourd();
+                spawnParticles(this.x, this.y - 50, 24, '#f59e0b', 40, 150, 0.65, -80);
+                spawnDamagePopup(this.x, this.y - 60, healAmount, false, `+${Math.round(healAmount)}`);
+            }
+
+            takeDamage(amount, knockbackDir) {
+                if (this.invulnTimer > 0 || gameState !== 'PLAYING') return;
+
+                // Staff Spin reduces frontal projectile/light damage
+                if (this.state === 'SPIN') {
+                    amount *= 0.35;
+                    this.addFocus(15);
+                    audio.playDeflect();
+                    spawnParticles(this.x + this.facing * 35, this.y - 50, 10, '#fde047', 80, 220, 0.3, 0);
+                } else {
+                    this.state = 'HURT';
+                    this.stateTimer = 0.28;
+                    this.invulnTimer = 0.65;
+                    this.vx = knockbackDir * 280;
+                    audio.playHit(true);
+                    triggerShake(12);
+                    spawnParticles(this.x, this.y - 50, 18, '#ef4444', 80, 260, 0.45, 250);
+                }
+
+                this.hp = Math.max(0, this.hp - amount);
+                if (this.hp <= 0) {
+                    endBattle(false);
+                }
+            }
+
+            update(dt) {
+                this.animTime += dt;
+                if (this.invulnTimer > 0) this.invulnTimer -= dt;
+                if (this.dodgeCooldown > 0) this.dodgeCooldown -= dt;
+                if (this.immobilizeCooldown > 0) this.immobilizeCooldown = Math.max(0, this.immobilizeCooldown - dt);
+                if (this.comboResetTimer > 0) {
+                    this.comboResetTimer -= dt;
+                    if (this.comboResetTimer <= 0) this.comboStep = 0;
+                }
+
+                // Smooth HP trail bar
+                if (this.trailHp > this.hp) {
+                    this.trailHp = Math.max(this.hp, this.trailHp - 45 * dt);
+                } else {
+                    this.trailHp = this.hp;
+                }
+
+                // Check Staff Spin hold ('F' or '2')
+                const holdingSpin = (keys['KeyF'] || keys['Digit2']) && this.stamina > 5 && ['IDLE', 'RUN', 'SPIN'].includes(this.state);
+                if (holdingSpin) {
+                    this.state = 'SPIN';
+                    this.stamina = Math.max(0, this.stamina - 22 * dt);
+                    this.addFocus(28 * dt);
+                    if (Math.random() < 0.22) audio.playWhoosh(1.75);
+                } else if (this.state === 'SPIN') {
+                    this.state = 'IDLE';
+                }
+
+                // Movement input during neutral states
+                if (['IDLE', 'RUN', 'JUMP', 'SPIN'].includes(this.state)) {
+                    let moveDir = 0;
+                    if (keys['KeyA'] || keys['ArrowLeft']) moveDir -= 1;
+                    if (keys['KeyD'] || keys['ArrowRight']) moveDir += 1;
+
+                    const moveSpeed = this.state === 'SPIN' ? 190 : 340;
+                    if (moveDir !== 0) {
+                        this.vx = moveDir * moveSpeed;
+                        if (this.state !== 'SPIN') this.facing = moveDir;
+                        if (this.y >= groundY - 1 && this.state !== 'SPIN') this.state = 'RUN';
+                    } else {
+                        this.vx *= 0.78;
+                        if (this.y >= groundY - 1 && this.state === 'RUN') this.state = 'IDLE';
+                    }
+
+                    // Stamina regeneration
+                    if (this.state !== 'SPIN') {
+                        this.stamina = Math.min(this.maxStamina, this.stamina + 28 * dt);
+                    }
+                } else {
+                    // State timer countdown for attacks / dodge / hurt
+                    this.stateTimer -= dt;
+                    this.vx *= 0.90;
+
+                    // Light attack hit detection window
+                    if (this.state === 'LIGHT_ATTACK' && !this.attackHasHit && this.stateTimer < 0.18) {
+                        this.checkLightHit();
+                    }
+
+                    // Heavy smash impact upon landing or timer threshold
+                    if (this.state === 'HEAVY_SMASH' && !this.attackHasHit && this.stateTimer < 0.24) {
+                        this.checkHeavySmashHit();
+                    }
+
+                    if (this.stateTimer <= 0) {
+                        this.state = this.y < groundY - 2 ? 'JUMP' : 'IDLE';
+                        this.staffScale = 1.0;
+                    }
+                }
+
+                // Gravity & Physics integration
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                if (this.y < groundY) {
+                    this.vy += 1650 * dt;
+                } else {
+                    this.y = groundY;
+                    this.vy = 0;
+                    if (this.state === 'JUMP') this.state = 'IDLE';
+                }
+
+                // Arena boundaries
+                const margin = 55;
+                this.x = Math.max(margin, Math.min(width - margin, this.x));
+
+                // Update staff visual orientation & extension
+                this.updateStaffPose(dt);
+
+                // Update flowing red cape & headband ribbons
+                let targetX = this.x - this.facing * 14;
+                let targetY = this.y - 68;
+                this.capePoints[0].x = targetX;
+                this.capePoints[0].y = targetY;
+                for (let i = 1; i < this.capePoints.length; i++) {
+                    const prev = this.capePoints[i - 1];
+                    const curr = this.capePoints[i];
+                    const windX = -this.facing * 11 - this.vx * 0.025 + Math.sin(this.animTime * 7 + i) * 3;
+                    const windY = 7 + Math.cos(this.animTime * 6 + i) * 2.5;
+                    curr.x += ((prev.x + windX) - curr.x) * Math.min(1, dt * 18);
+                    curr.y += ((prev.y + windY) - curr.y) * Math.min(1, dt * 18);
+                }
+            }
+
+            updateStaffPose(dt) {
+                if (this.state === 'SPIN') {
+                    this.staffAngle += dt * 34;
+                    this.staffScale = 1.15;
+                } else if (this.state === 'LIGHT_ATTACK') {
+                    const progress = 1 - (this.stateTimer / 0.28);
+                    if (this.comboStep === 1) this.staffAngle = -1.2 + progress * 2.4;
+                    else if (this.comboStep === 2) this.staffAngle = 1.2 - progress * 2.5;
+                    else if (this.comboStep === 3) this.staffAngle = progress * Math.PI * 2;
+                    else this.staffAngle = -1.5 + progress * 2.1;
+                    this.staffScale = this.comboStep === 4 ? 1.35 : 1.1;
+                } else if (this.state === 'HEAVY_SMASH') {
+                    const progress = 1 - (this.stateTimer / 0.58);
+                    this.staffAngle = -2.1 + progress * 2.35;
+                    this.staffScale = 1.4 + this.heavyFocusUsed * 0.42;
+                } else {
+                    this.staffAngle = -0.45 + Math.sin(this.animTime * 3) * 0.06;
+                    this.staffScale = 1.0;
+                }
+            }
+
+            checkLightHit() {
+                if (!boss || boss.hp <= 0) return;
+                const reach = 135;
+                const dx = (boss.x - this.x) * this.facing;
+                const dy = Math.abs(boss.y - this.y);
+                if (dx > -30 && dx < reach && dy < 110) {
+                    this.attackHasHit = true;
+                    const baseDmg = this.comboStep === 4 ? 26 : 14 + this.comboStep * 2;
+                    const poiseDmg = this.comboStep === 4 ? 18 : 8;
+                    this.addFocus(this.comboStep === 4 ? 42 : 24);
+                    boss.takeDamage(baseDmg, poiseDmg, this.facing, false);
+                    hitstopTimer = this.comboStep === 4 ? 0.055 : 0.025;
+                    triggerShake(this.comboStep === 4 ? 7 : 3);
+                    audio.playHit(this.comboStep === 4);
+                }
+            }
+
+            checkHeavySmashHit() {
+                this.attackHasHit = true;
+                const orbs = this.heavyFocusUsed;
+                const reach = 175 + orbs * 38;
+                const impactX = this.x + this.facing * (75 + orbs * 20);
+
+                audio.playSlam();
+                triggerShake(10 + orbs * 5);
+                spawnShockwave(impactX, groundY, 120 + orbs * 55, '#fbbf24', 5 + orbs);
+                spawnParticles(impactX, groundY - 10, 26 + orbs * 10, '#f59e0b', 100, 380, 0.55, 450);
+
+                if (!boss || boss.hp <= 0) return;
+                const dist = Math.abs(boss.x - impactX);
+                if (dist < reach) {
+                    const dmg = 34 + orbs * 28;
+                    const poiseDmg = 24 + orbs * 22;
+                    boss.takeDamage(dmg, poiseDmg, this.facing, true);
+                    hitstopTimer = 0.075;
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                // Invulnerability flicker
+                if (this.invulnTimer > 0 && Math.floor(this.invulnTimer * 25) % 2 === 0) {
+                    ctx.globalAlpha = 0.55;
+                }
+
+                // Ground contact shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+                ctx.beginPath();
+                ctx.ellipse(this.x, groundY + 4, 28, 7, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Flowing Crimson Cape
+                ctx.strokeStyle = '#991b1b';
+                ctx.lineCap = 'round';
+                for (let i = 0; i < this.capePoints.length - 1; i++) {
+                    ctx.lineWidth = 14 - i * 1.6;
+                    ctx.beginPath();
+                    ctx.moveTo(this.capePoints[i].x, this.capePoints[i].y);
+                    ctx.lineTo(this.capePoints[i + 1].x, this.capePoints[i + 1].y);
+                    ctx.stroke();
+                }
+
+                ctx.translate(this.x, this.y);
+
+                // Legs (Agile Monkey Stance)
+                const runCycle = this.state === 'RUN' ? Math.sin(this.animTime * 16) * 14 : 0;
+                ctx.strokeStyle = '#1c1917';
+                ctx.lineWidth = 7;
+                ctx.lineCap = 'round';
+                // Back leg
+                ctx.beginPath();
+                ctx.moveTo(-4 * this.facing, -36);
+                ctx.lineTo(-10 * this.facing - runCycle, -16);
+                ctx.lineTo(-12 * this.facing - runCycle, 0);
+                ctx.stroke();
+                // Front leg
+                ctx.beginPath();
+                ctx.moveTo(4 * this.facing, -36);
+                ctx.lineTo(12 * this.facing + runCycle, -16);
+                ctx.lineTo(14 * this.facing + runCycle, 0);
+                ctx.stroke();
+
+                // Torso & Golden Mountain-Pattern Armor
+                ctx.fillStyle = '#292524';
+                ctx.beginPath();
+                ctx.roundRect(-11, -68, 22, 34, 6);
+                ctx.fill();
+
+                // Golden chestplate trim & sash
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(-9, -65, 18, 22);
+                ctx.fillStyle = '#b91c1c';
+                ctx.fillRect(-11, -41, 22, 6);
+
+                // Head & Golden Tightening Headband (Jin Gu)
+                ctx.fillStyle = '#44403c';
+                ctx.beginPath();
+                ctx.arc(this.facing * 2, -77, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glowing Amber Eyes
+                ctx.fillStyle = '#fde047';
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(this.facing * 7, -78, 2.1, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Golden Coronet & Two Long Pheasant-Tail Feathers (Zi Jin Guan)
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 2.5;
+                ctx.beginPath();
+                ctx.moveTo(-7, -82);
+                ctx.lineTo(9, -82);
+                ctx.stroke();
+
+                // Twin Long Crest Feathers flowing dramatically
+                for (let f = 0; f < 2; f++) {
+                    ctx.strokeStyle = f === 0 ? '#dc2626' : '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(this.facing * 2, -85);
+                    const wave1 = Math.sin(this.animTime * 8 + f) * 8;
+                    const wave2 = Math.cos(this.animTime * 6 + f) * 14;
+                    ctx.bezierCurveTo(
+                        -this.facing * 22, -108 + wave1,
+                        -this.facing * 52, -98 + wave2,
+                        -this.facing * 78, -82 + wave1
+                    );
+                    ctx.stroke();
+                }
+
+                // Ruyi Jingu Bang (Golden-Banded Staff)
+                ctx.save();
+                ctx.translate(this.facing * 6, -54);
+                ctx.rotate(this.facing === 1 ? this.staffAngle : Math.PI - this.staffAngle);
+
+                const halfLen = 58 * this.staffScale;
+                const thickness = 5 * Math.min(1.8, this.staffScale);
+
+                // Staff Aura Glow when Focus Orbs active or Heavy Smash
+                if (this.getFocusOrbs() > 0 || this.state === 'HEAVY_SMASH' || this.state === 'SPIN') {
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 16;
+                }
+
+                // Crimson-iron shaft
+                ctx.fillStyle = '#7f1d1d';
+                ctx.fillRect(-halfLen, -thickness / 2, halfLen * 2, thickness);
+
+                // Golden-banded tips
+                const tipLen = 15 * this.staffScale;
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(-halfLen, -thickness / 2 - 0.5, tipLen, thickness + 1);
+                ctx.fillRect(halfLen - tipLen, -thickness / 2 - 0.5, tipLen, thickness + 1);
+
+                // Slash arc trail during attacks or spin
+                if (this.state === 'LIGHT_ATTACK' || this.state === 'HEAVY_SMASH' || this.state === 'SPIN') {
+                    ctx.strokeStyle = 'rgba(253, 224, 71, 0.55)';
+                    ctx.lineWidth = this.state === 'HEAVY_SMASH' ? 14 : 6;
+                    ctx.beginPath();
+                    ctx.arc(0, 0, halfLen, -0.7, 0.7);
+                    ctx.stroke();
+                }
+                ctx.restore();
+
+                ctx.restore();
+            }
+        }
+
+        // =========================================================================
+        // 6. MYTHIC YAOGUAI BOSS: BLACK WIND KING (黑风大王)
+        // =========================================================================
+        class BlackWindBoss {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = width * 0.74;
+                this.y = groundY;
+                this.vx = 0;
+                this.vy = 0;
+                this.facing = -1;
+
+                this.maxHp = difficulty === 'STORY' ? 540 : 780;
+                this.hp = this.maxHp;
+                this.trailHp = this.maxHp;
+
+                // Poise / Stagger meter
+                this.poise = 0;
+                this.maxPoise = 100;
+                this.staggerTimer = 0;
+
+                // Immobilize status
+                this.immobilizeTimer = 0;
+
+                // Phase 2 Rage at 50% HP
+                this.phase = 1;
+
+                // AI State Machine
+                this.aiState = 'IDLE'; // IDLE, ADVANCE, TELEGRAPH_SLASH, SLASH, TELEGRAPH_SLAM, SLAM, TELEGRAPH_WAVE, CAST_WAVE, RECOVER, STAGGERED
+                this.stateTimer = 0.8;
+                this.comboCount = 0;
+                this.hasDealtDamage = false;
+                this.animTime = 0;
+                this.glaiveAngle = -0.6;
+            }
+
+            isThreatening() {
+                return ['TELEGRAPH_SLASH', 'SLASH', 'TELEGRAPH_SLAM', 'SLAM'].includes(this.aiState) && this.stateTimer < 0.32;
+            }
+
+            applyImmobilize(duration) {
+                this.immobilizeTimer = duration;
+                this.vx = 0;
+            }
+
+            takeDamage(amount, poiseDmg, hitDir, isHeavy) {
+                if (this.hp <= 0) return;
+
+                // Bonus damage while immobilized or staggered!
+                if (this.immobilizeTimer > 0) amount *= 1.25;
+                if (this.staggerTimer > 0) amount *= 1.4;
+
+                this.hp = Math.max(0, this.hp - amount);
+                spawnDamagePopup(this.x, this.y - 110, amount, isHeavy || this.staggerTimer > 0);
+                spawnParticles(this.x - hitDir * 25, this.y - 80, isHeavy ? 20 : 10, '#fbbf24', 60, 240, 0.4, 200);
+
+                // Break Immobilize if hit by a massive heavy smash
+                if (this.immobilizeTimer > 0 && isHeavy) {
+                    this.immobilizeTimer = 0;
+                    spawnShockwave(this.x, this.y - 80, 130, '#fde047', 4);
+                }
+
+                // Accumulate Poise damage
+                if (this.staggerTimer <= 0) {
+                    this.poise = Math.min(this.maxPoise, this.poise + poiseDmg);
+                    if (this.poise >= this.maxPoise) {
+                        this.triggerStagger();
+                    }
+                }
+
+                // Trigger Phase 2 Rage at 50% HP
+                if (this.phase === 1 && this.hp <= this.maxHp * 0.5 && this.hp > 0) {
+                    this.phase = 2;
+                    document.getElementById('bossPhaseTag').textContent = 'Phase II — Black Wind Fury';
+                    document.getElementById('bossPhaseTag').className = 'text-[10px] tracking-[0.2em] uppercase text-red-400 font-bold';
+                    showCombatCallout('黑风狂怒', 'BLACK WIND RAGE', 'text-red-400');
+                    triggerShake(14);
+                    audio.playSlam();
+                    spawnShockwave(this.x, this.y - 80, 240, '#dc2626', 6);
+                    spawnParticles(this.x, this.y - 80, 40, '#ef4444', 100, 360, 0.7, 50);
+                }
+
+                if (this.hp <= 0) {
+                    endBattle(true);
+                }
+            }
+
+            triggerStagger() {
+                this.poise = 0;
+                this.staggerTimer = 2.8;
+                this.aiState = 'STAGGERED';
+                this.vx = 0;
+                audio.playSlam();
+                triggerShake(12);
+                showCombatCallout('破绽百出', 'STANCE BROKEN', 'text-amber-300');
+                spawnShockwave(this.x, this.y - 70, 170, '#fbbf24', 5);
+            }
+
+            update(dt) {
+                this.animTime += dt;
+
+                // Smooth HP trail
+                if (this.trailHp > this.hp) {
+                    this.trailHp = Math.max(this.hp, this.trailHp - 95 * dt);
+                } else {
+                    this.trailHp = this.hp;
+                }
+
+                // Slowly decay poise when not staggered
+                if (this.staggerTimer <= 0 && this.poise > 0) {
+                    this.poise = Math.max(0, this.poise - 3.5 * dt);
+                }
+
+                // Phase 2 dark flame aura particles
+                if (this.phase === 2 && Math.random() < 0.35) {
+                    spawnParticles(
+                        this.x + (Math.random() - 0.5) * 70,
+                        this.y - 20 - Math.random() * 120,
+                        1, '#dc2626', 10, 45, 0.45, -90
+                    );
+                }
+
+                // Frozen by Immobilize Spell ("Ding!")
+                if (this.immobilizeTimer > 0) {
+                    this.immobilizeTimer -= dt;
+                    return;
+                }
+
+                // Staggered vulnerability state
+                if (this.staggerTimer > 0) {
+                    this.staggerTimer -= dt;
+                    this.glaiveAngle = 0.5;
+                    if (this.staggerTimer <= 0) {
+                        this.aiState = 'IDLE';
+                        this.stateTimer = 0.4;
+                    }
+                    return;
+                }
+
+                // Determine target (Decoy if active, otherwise Wukong)
+                let targetX = player.x;
+                if (decoys.length > 0) {
+                    targetX = decoys[0].x;
+                }
+
+                const speedMult = this.phase === 2 ? 1.28 : 1.0;
+                const dist = Math.abs(targetX - this.x);
+
+                this.stateTimer -= dt;
+
+                switch (this.aiState) {
+                    case 'IDLE':
+                        this.facing = targetX >= this.x ? 1 : -1;
+                        this.vx *= 0.85;
+                        this.glaiveAngle = -0.65 + Math.sin(this.animTime * 2.5) * 0.08;
+                        if (this.stateTimer <= 0) {
+                            this.chooseNextAttack(dist);
+                        }
+                        break;
+
+                    case 'ADVANCE':
+                        this.facing = targetX >= this.x ? 1 : -1;
+                        this.vx = this.facing * 210 * speedMult;
+                        this.glaiveAngle = -0.75 + Math.sin(this.animTime * 8) * 0.12;
+                        if (dist < 175 || this.stateTimer <= 0) {
+                            this.chooseNextAttack(dist);
+                        }
+                        break;
+
+                    case 'TELEGRAPH_SLASH':
+                        this.facing = targetX >= this.x ? 1 : -1;
+                        this.vx *= 0.8;
+                        // Wind-up heavy Black-Iron Glaive behind back
+                        this.glaiveAngle = -2.1;
+                        if (this.stateTimer <= 0) {
+                            this.aiState = 'SLASH';
+                            this.stateTimer = 0.34;
+                            this.hasDealtDamage = false;
+                            this.vx = this.facing * 430 * speedMult;
+                            audio.playWhoosh(0.65);
+                        }
+                        break;
+
+                    case 'SLASH':
+                        this.vx *= 0.88;
+                        const slashProg = 1 - (this.stateTimer / 0.34);
+                        this.glaiveAngle = -2.1 + slashProg * 2.75;
+                        if (!this.hasDealtDamage && slashProg > 0.25 && slashProg < 0.75) {
+                            const reach = 185;
+                            const dx = (player.x - this.x) * this.facing;
+                            if (dx > -20 && dx < reach && Math.abs(player.y - this.y) < 115) {
+                                this.hasDealtDamage = true;
+                                player.takeDamage(this.phase === 2 ? 24 : 18, this.facing);
+                            }
+                        }
+                        if (this.stateTimer <= 0) {
+                            // Chain a second follow-up slash in Phase 2 or 50% chance
+                            if (this.comboCount < (this.phase === 2 ? 2 : 1) && Math.random() < 0.65) {
+                                this.comboCount++;
+                                this.aiState = 'TELEGRAPH_SLASH';
+                                this.stateTimer = 0.42 / speedMult;
+                            } else {
+                                this.comboCount = 0;
+                                this.aiState = 'RECOVER';
+                                this.stateTimer = 0.68 / speedMult;
+                            }
+                        }
+                        break;
+
+                    case 'TELEGRAPH_SLAM':
+                        this.facing = targetX >= this.x ? 1 : -1;
+                        this.vx = this.facing * 120;
+                        this.glaiveAngle = -1.6;
+                        if (this.stateTimer <= 0) {
+                            this.aiState = 'SLAM';
+                            this.stateTimer = 0.42;
+                            this.hasDealtDamage = false;
+                            this.vy = -480;
+                            this.vx = this.facing * 320;
+                            audio.playWhoosh(0.55);
+                        }
+                        break;
+
+                    case 'SLAM':
+                        this.glaiveAngle = 0.45;
+                        if (this.y >= groundY - 2 && !this.hasDealtDamage && this.stateTimer < 0.25) {
+                            this.hasDealtDamage = true;
+                            const slamX = this.x + this.facing * 85;
+                            audio.playSlam();
+                            triggerShake(15);
+                            spawnShockwave(slamX, groundY, 220, '#ef4444', 6);
+                            spawnParticles(slamX, groundY - 10, 32, '#dc2626', 120, 420, 0.6, 400);
+
+                            // Shockwave hits grounded player within range (can be jumped or dodged!)
+                            const pDist = Math.abs(player.x - slamX);
+                            if (pDist < 205 && player.y >= groundY - 35) {
+                                player.takeDamage(this.phase === 2 ? 30 : 23, this.facing);
+                            }
+                        }
+                        if (this.stateTimer <= 0) {
+                            this.aiState = 'RECOVER';
+                            this.stateTimer = 0.85 / speedMult;
+                        }
+                        break;
+
+                    case 'TELEGRAPH_WAVE':
+                        this.facing = targetX >= this.x ? 1 : -1;
+                        this.vx = 0;
+                        this.glaiveAngle = -1.3;
+                        if (this.stateTimer <= 0) {
+                            this.aiState = 'RECOVER';
+                            this.stateTimer = 0.7 / speedMult;
+                            audio.playWhoosh(0.8);
+                            // Launch dark-fire crescent wave (can be deflected with Staff Spin!)
+                            projectiles.push({
+                                x: this.x + this.facing * 75,
+                                y: groundY - 58,
+                                vx: this.facing * (440 * speedMult),
+                                radius: 28,
+                                isReflected: false,
+                                damage: 18
+                            });
+                        }
+                        break;
+
+                    case 'RECOVER':
+                        this.vx *= 0.82;
+                        this.glaiveAngle = -0.5;
+                        if (this.stateTimer <= 0) {
+                            this.aiState = 'IDLE';
+                            this.stateTimer = 0.35 / speedMult;
+                        }
+                        break;
+                }
+
+                // Integrate Boss Physics
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                if (this.y < groundY) {
+                    this.vy += 1550 * dt;
+                } else {
+                    this.y = groundY;
+                    this.vy = 0;
+                }
+                this.x = Math.max(85, Math.min(width - 85, this.x));
+            }
+
+            chooseNextAttack(dist) {
+                const speedMult = this.phase === 2 ? 1.25 : 1.0;
+                if (dist > 340) {
+                    if (Math.random() < 0.45) {
+                        this.aiState = 'TELEGRAPH_WAVE';
+                        this.stateTimer = 0.58 / speedMult;
+                    } else {
+                        this.aiState = 'ADVANCE';
+                        this.stateTimer = 1.1;
+                    }
+                } else if (dist > 195) {
+                    if (Math.random() < 0.55) {
+                        this.aiState = 'TELEGRAPH_SLAM';
+                        this.stateTimer = 0.65 / speedMult;
+                    } else {
+                        this.aiState = 'ADVANCE';
+                        this.stateTimer = 0.6;
+                    }
+                } else {
+                    const roll = Math.random();
+                    if (roll < 0.62) {
+                        this.aiState = 'TELEGRAPH_SLASH';
+                        this.stateTimer = 0.56 / speedMult;
+                    } else {
+                        this.aiState = 'TELEGRAPH_SLAM';
+                        this.stateTimer = 0.68 / speedMult;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+
+                // Heavy Ground Shadow
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+                ctx.beginPath();
+                ctx.ellipse(this.x, groundY + 6, 52, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.translate(this.x, this.y);
+
+                // Stagger kneel offset
+                const kneelOffset = this.staggerTimer > 0 ? 22 : 0;
+                ctx.translate(0, kneelOffset);
+
+                // Tattered Black-Gold War Tassets / Armor Skirt
+                ctx.fillStyle = '#18181b';
+                ctx.beginPath();
+                ctx.moveTo(-36, -65);
+                ctx.lineTo(36, -65);
+                ctx.lineTo(46, -12 - kneelOffset);
+                ctx.lineTo(-46, -12 - kneelOffset);
+                ctx.closePath();
+                ctx.fill();
+                ctx.strokeStyle = '#78350f';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Massive Armored Torso & Pauldrons (Black Bear / Wind Yaoguai silhouette)
+                const breathe = Math.sin(this.animTime * 3) * 3;
+                ctx.fillStyle = '#09090b';
+                ctx.beginPath();
+                ctx.roundRect(-42, -138 + breathe, 84, 78, 16);
+                ctx.fill();
+
+                // Ornate Bronze/Gold Demon Chestplate & Shoulder Pauldrons
+                ctx.strokeStyle = this.phase === 2 ? '#ef4444' : '#b45309';
+                ctx.lineWidth = 3;
+                ctx.strokeRect(-32, -128 + breathe, 64, 52);
+
+                // Spiked Shoulder Pauldrons
+                [-1, 1].forEach(side => {
+                    ctx.fillStyle = '#1c1917';
+                    ctx.beginPath();
+                    ctx.arc(side * 44, -126 + breathe, 20, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#d97706';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                });
+
+                // Ferocious Yaoguai Head, Horns & Glowing Eyes
+                ctx.fillStyle = '#0c0a09';
+                ctx.beginPath();
+                ctx.arc(this.facing * 6, -152 + breathe, 22, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Curved Obsidian Horns
+                ctx.strokeStyle = '#44403c';
+                ctx.lineWidth = 5;
+                ctx.beginPath();
+                ctx.moveTo(-10, -166 + breathe);
+                ctx.quadraticCurveTo(-26, -192 + breathe, -12, -204 + breathe);
+                ctx.moveTo(16, -166 + breathe);
+                ctx.quadraticCurveTo(32, -192 + breathe, 18, -204 + breathe);
+                ctx.stroke();
+
+                // Glowing Crimson/Amber Eyes
+                ctx.fillStyle = this.phase === 2 ? '#ff2a2a' : '#f59e0b';
+                ctx.shadowColor = this.phase === 2 ? '#dc2626' : '#f59e0b';
+                ctx.shadowBlur = 14;
+                ctx.beginPath();
+                ctx.arc(this.facing * 14, -154 + breathe, 3.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Towering Black-Iron Crescent Glaive (Guandao)
+                ctx.save();
+                ctx.translate(this.facing * 16, -105 + breathe);
+                ctx.rotate(this.facing === 1 ? this.glaiveAngle : Math.PI - this.glaiveAngle);
+
+                // Telegraph Weapon Glow before strike!
+                const isTelegraph = this.aiState.startsWith('TELEGRAPH');
+                if (isTelegraph) {
+                    ctx.shadowColor = '#ef4444';
+                    ctx.shadowBlur = 24;
+                }
+
+                // Heavy Iron Shaft
+                ctx.fillStyle = '#27272a';
+                ctx.fillRect(-75, -4, 175, 8);
+
+                // Massive Crescent Blade
+                ctx.fillStyle = isTelegraph ? '#fca5a5' : '#a1a1aa';
+                ctx.beginPath();
+                ctx.moveTo(75, -5);
+                ctx.quadraticCurveTo(125, -34, 148, 4);
+                ctx.quadraticCurveTo(115, 22, 75, 6);
+                ctx.closePath();
+                ctx.fill();
+
+                // Red tassel on blade collar
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.arc(74, 6, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Telegraph glint flash
+                if (isTelegraph) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.beginPath();
+                    ctx.arc(135, -8, 7 + Math.sin(this.animTime * 40) * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.restore();
+                ctx.restore();
+
+                // Golden Sanskrit Immobilize Ring Overlay when frozen!
+                if (this.immobilizeTimer > 0) {
+                    ctx.save();
+                    ctx.translate(this.x, this.y - 85);
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.shadowColor = '#f59e0b';
+                    ctx.shadowBlur = 18;
+                    ctx.lineWidth = 3.5;
+
+                    // Rotating outer mythic ring
+                    ctx.save();
+                    ctx.rotate(this.animTime * 1.5);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 78, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Runic tick marks around ring
+                    for (let i = 0; i < 12; i++) {
+                        const a = (i / 12) * Math.PI * 2;
+                        ctx.beginPath();
+                        ctx.moveTo(Math.cos(a) * 70, Math.sin(a) * 70);
+                        ctx.lineTo(Math.cos(a) * 86, Math.sin(a) * 86);
+                        ctx.stroke();
+                    }
+                    ctx.restore();
+
+                    // Center glowing character "定"
+                    ctx.font = '900 34px "Noto Serif SC", serif';
+                    ctx.fillStyle = 'rgba(253, 224, 71, 0.85)';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText('定', 0, 0);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // =========================================================================
+        // 7. ATMOSPHERIC CHINESE INK-WASH & TEMPLE COURTYARD RENDERER
+        // =========================================================================
+        function drawEnvironment(time) {
+            // 1. Deep Nocturnal Mythic Sky Gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, groundY);
+            skyGrad.addColorStop(0, '#07090d');
+            skyGrad.addColorStop(0.55, '#12161f');
+            skyGrad.addColorStop(1, '#1d1c1a');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, width, height);
+
+            // 2. Giant Pale Golden-Amber Harvest Moon
+            const moonX = width * 0.5;
+            const moonY = height * 0.25;
+            const moonR = Math.min(width, height) * 0.13;
+            const moonGlow = ctx.createRadialGradient(moonX, moonY, moonR * 0.2, moonX, moonY, moonR * 2.6);
+            moonGlow.addColorStop(0, 'rgba(253, 230, 138, 0.32)');
+            moonGlow.addColorStop(0.5, 'rgba(217, 119, 6, 0.09)');
+            moonGlow.addColorStop(1, 'rgba(0, 0, 0, 0)');
+            ctx.fillStyle = moonGlow;
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, moonR * 2.6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = 'rgba(254, 243, 199, 0.85)';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, moonR, 0, Math.PI * 2);
+            ctx.fill();
+
+            // 3. Distant Ink-Wash Karst Mountains (Parallax Layer 1)
+            const camShift = player ? (player.x - width * 0.5) * 0.03 : 0;
+            ctx.fillStyle = '#0d1016';
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            for (let x = 0; x <= width + 100; x += 80) {
+                const peak = Math.sin((x + camShift) * 0.0045) * 110 + Math.cos((x + camShift) * 0.011) * 55;
+                ctx.lineTo(x, groundY - 190 - peak);
+            }
+            ctx.lineTo(width, groundY);
+            ctx.closePath();
+            ctx.fill();
+
+            // 4. Midground Ancient Pagoda Silhouette & Stone Torii Pillars (Parallax Layer 2)
+            const midShift = player ? (player.x - width * 0.5) * 0.07 : 0;
+            drawTempleArchitecture(width * 0.5 - midShift, groundY);
+
+            // 5. Drifting Mountain Mist Layers
+            const mistGrad = ctx.createLinearGradient(0, groundY - 130, 0, groundY + 10);
+            mistGrad.addColorStop(0, 'rgba(28, 32, 40, 0)');
+            mistGrad.addColorStop(0.7, 'rgba(34, 36, 42, 0.48)');
+            mistGrad.addColorStop(1, 'rgba(18, 17, 16, 0.85)');
+            ctx.fillStyle = mistGrad;
+            ctx.fillRect(0, groundY - 130, width, 140);
+
+            // 6. Ancient Weathered Stone Courtyard Floor
+            const floorGrad = ctx.createLinearGradient(0, groundY, 0, height);
+            floorGrad.addColorStop(0, '#23201d');
+            floorGrad.addColorStop(0.15, '#161412');
+            floorGrad.addColorStop(1, '#090807');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, groundY, width, height - groundY);
+
+            // Golden rim highlight along stone floor edge
+            ctx.strokeStyle = 'rgba(217, 167, 74, 0.28)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(width, groundY);
+            ctx.stroke();
+
+            // Stone slab perspective lines
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.lineWidth = 1.5;
+            for (let i = -6; i <= 6; i++) {
+                const topX = width * 0.5 + i * 130 - midShift;
+                const botX = width * 0.5 + i * 210 - midShift * 1.4;
+                ctx.beginPath();
+                ctx.moveTo(topX, groundY);
+                ctx.lineTo(botX, height);
+                ctx.stroke();
+            }
+        }
+
+        function drawTempleArchitecture(cx, baseY) {
+            ctx.save();
+            ctx.fillStyle = '#0b0c0f';
+            ctx.strokeStyle = 'rgba(217, 167, 74, 0.14)';
+            ctx.lineWidth = 1.5;
+
+            // Flanking Stone Lantern Pillars with warm flickering flame
+            [-width * 0.34, width * 0.34].forEach((offset, idx) => {
+                const lx = cx + offset;
+                ctx.fillRect(lx - 10, baseY - 125, 20, 125);
+                ctx.fillRect(lx - 18, baseY - 132, 36, 10);
+                // Lantern Roof
+                ctx.beginPath();
+                ctx.moveTo(lx - 26, baseY - 152);
+                ctx.lineTo(lx, baseY - 170);
+                ctx.lineTo(lx + 26, baseY - 152);
+                ctx.closePath();
+                ctx.fill();
+
+                // Warm lantern light
+                const flicker = 0.75 + Math.sin(performance.now() * 0.008 + idx) * 0.2;
+                ctx.fillStyle = `rgba(245, 158, 11, ${flicker})`;
+                ctx.fillRect(lx - 6, baseY - 150, 12, 16);
+                ctx.fillStyle = '#0b0c0f';
+            });
+
+            // Central Ruined Temple Gate & Curved Eaves
+            ctx.fillRect(cx - 115, baseY - 180, 18, 180);
+            ctx.fillRect(cx + 97, baseY - 180, 18, 180);
+
+            // Sweeping Chinese Roof Eaves
+            ctx.beginPath();
+            ctx.moveTo(cx - 165, baseY - 180);
+            ctx.quadraticCurveTo(cx, baseY - 162, cx + 165, baseY - 180);
+            ctx.lineTo(cx + 135, baseY - 202);
+            ctx.quadraticCurveTo(cx, baseY - 190, cx - 135, baseY - 202);
+            ctx.closePath();
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // =========================================================================
+        // 8. MAIN UPDATE & RENDER LOOP
+        // =========================================================================
+        let player = new Wukong();
+        let boss = new BlackWindBoss();
+        let lastTimestamp = 0;
+
+        function updateHUD() {
+            // Player HP & Stamina
+            const hpPct = (player.hp / player.maxHp) * 100;
+            const trailPct = (player.trailHp / player.maxHp) * 100;
+            document.getElementById('playerHpBar').style.width = `${hpPct}%`;
+            document.getElementById('playerHpTrail').style.width = `${trailPct}%`;
+            document.getElementById('hpNumeric').textContent = `${Math.ceil(player.hp)} / ${player.maxHp}`;
+            document.getElementById('playerStaminaBar').style.width = `${(player.stamina / player.maxStamina) * 100}%`;
+
+            // Gourd Charges
+            document.getElementById('gourdCountText').textContent = `${player.gourdCharges}/${player.maxGourd}`;
+
+            // Focus Bar & 3 Golden Orbs
+            const orbs = player.getFocusOrbs();
+            const partialPct = (player.focus % 100);
+            document.getElementById('focusProgressBar').style.width = orbs === 3 ? '100%' : `${partialPct}%`;
+            [1, 2, 3].forEach(i => {
+                const orbEl = document.getElementById(`focusOrb${i}`);
+                if (orbs >= i) {
+                    orbEl.className = 'w-3.5 h-3.5 rounded-full border border-yellow-200 bg-amber-400 shadow-[0_0_10px_#fbbf24] scale-110 transition-all duration-200';
+                } else {
+                    orbEl.className = 'w-3.5 h-3.5 rounded-full border border-amber-400/50 bg-stone-900 transition-all duration-200';
+                }
+            });
+
+            // Immobilize Spell Cooldown
+            const cdRatio = player.immobilizeCooldown / player.immobilizeMaxCd;
+            document.getElementById('spellCooldownOverlay').style.transform = `scaleY(${cdRatio})`;
+            const statusText = document.getElementById('spellStatusText');
+            if (cdRatio > 0) {
+                statusText.textContent = `${player.immobilizeCooldown.toFixed(1)}s`;
+                statusText.className = 'text-[10px] font-ui text-stone-400';
+            } else {
+                statusText.textContent = 'READY [E / 1]';
+                statusText.className = 'text-[10px] font-ui text-amber-400 font-semibold';
+            }
+
+            // Boss HP & Poise
+            const bossHpPct = (boss.hp / boss.maxHp) * 100;
+            const bossTrailPct = (boss.trailHp / boss.maxHp) * 100;
+            document.getElementById('bossHpBar').style.width = `${bossHpPct}%`;
+            document.getElementById('bossHpTrail').style.width = `${bossTrailPct}%`;
+            document.getElementById('bossPoiseBar').style.width = `${(boss.poise / boss.maxPoise) * 100}%`;
+        }
+
+        function gameLoop(timestamp) {
+            if (!lastTimestamp) lastTimestamp = timestamp;
+            let rawDt = Math.min(0.05, (timestamp - lastTimestamp) / 1000);
+            lastTimestamp = timestamp;
+
+            // Hitstop freeze frames for visceral impact feel
+            if (hitstopTimer > 0) {
+                hitstopTimer -= rawDt;
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            // Slow-motion effect on Perfect Dodge
+            if (slowMoTimer > 0) {
+                slowMoTimer -= rawDt;
+                if (slowMoTimer <= 0) slowMoFactor = 1.0;
+            }
+            const dt = rawDt * slowMoFactor;
+
+            // Update Ambient Leaves / Embers
+            ambientLeaves.forEach(leaf => {
+                leaf.x += leaf.vx * rawDt;
+                leaf.y += leaf.vy * rawDt;
+                leaf.rot += leaf.vrot * rawDt;
+                if (leaf.x < -20) leaf.x = width + 20;
+                if (leaf.y > height + 20) {
+                    leaf.y = -20;
+                    leaf.x = Math.random() * width;
+                }
+            });
+
+            if (gameState === 'PLAYING') {
+                battleTime += rawDt;
+                player.update(dt);
+                boss.update(dt);
+
+                // Update Decoys
+                for (let i = decoys.length - 1; i >= 0; i--) {
+                    decoys[i].life -= dt;
+                    if (decoys[i].life <= 0) decoys.splice(i, 1);
+                }
+
+                // Update Boss Projectiles & Check Deflection / Collision
+                for (let i = projectiles.length - 1; i >= 0; i--) {
+                    const p = projectiles[i];
+                    p.x += p.vx * dt;
+
+                    // Check deflection via Wukong's Staff Spin!
+                    if (!p.isReflected && player.state === 'SPIN' && Math.abs(p.x - player.x) < 75 && Math.abs(p.y - (player.y - 55)) < 65) {
+                        p.isReflected = true;
+                        p.vx = -p.vx * 1.45;
+                        p.damage = 42;
+                        player.addFocus(45);
+                        audio.playDeflect();
+                        triggerShake(6);
+                        spawnShockwave(p.x, p.y, 75, '#fde047', 3);
+                        spawnParticles(p.x, p.y, 14, '#fbbf24', 80, 240, 0.35, 0);
+                    } else if (!p.isReflected && Math.abs(p.x - player.x) < 32 && Math.abs(p.y - (player.y - 50)) < 52) {
+                        player.takeDamage(p.damage, Math.sign(p.vx));
+                        projectiles.splice(i, 1);
+                        continue;
+                    } else if (p.isReflected && Math.abs(p.x - boss.x) < 55) {
+                        boss.takeDamage(p.damage, 16, Math.sign(p.vx), true);
+                        audio.playHit(true);
+                        projectiles.splice(i, 1);
+                        continue;
+                    }
+
+                    if (p.x < -100 || p.x > width + 100) {
+                        projectiles.splice(i, 1);
+                    }
+                }
+
+                updateHUD();
+            }
+
+            // Update Particles, Shockwaves & Damage Popups
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const pt = particles[i];
+                pt.x += pt.vx * dt;
+                pt.y += pt.vy * dt;
+                pt.vy += pt.gravity * dt;
+                pt.life -= dt;
+                pt.alpha = Math.max(0, pt.life / pt.maxLife);
+                if (pt.life <= 0) particles.splice(i, 1);
+            }
+
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.radius += (sw.maxRadius - sw.radius) * Math.min(1, dt * 12);
+                sw.alpha -= dt * 2.4;
+                if (sw.alpha <= 0) shockwaves.splice(i, 1);
+            }
+
+            for (let i = damagePopups.length - 1; i >= 0; i--) {
+                const dp = damagePopups[i];
+                dp.y += dp.vy * dt;
+                dp.life -= dt;
+                if (dp.life <= 0) damagePopups.splice(i, 1);
+            }
+
+            // Screen shake decay
+            if (screenShake.intensity > 0.1) {
+                screenShake.x = (Math.random() - 0.5) * screenShake.intensity * 2;
+                screenShake.y = (Math.random() - 0.5) * screenShake.intensity * 2;
+                screenShake.intensity *= 0.85;
+            } else {
+                screenShake.x = 0;
+                screenShake.y = 0;
+                screenShake.intensity = 0;
+            }
+
+            // RENDER FRAME
+            ctx.save();
+            ctx.translate(screenShake.x, screenShake.y);
+
+            drawEnvironment(timestamp * 0.001);
+
+            // Render Illusory Cloud Step Decoys
+            decoys.forEach(d => {
+                ctx.save();
+                ctx.globalAlpha = (d.life / d.maxLife) * 0.65;
+                ctx.fillStyle = '#fde047';
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.ellipse(d.x, d.y - 45, 16, 42, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Boss & Player
+            boss.draw(ctx);
+            player.draw(ctx);
+
+            // Render Dark-Fire / Reflected Golden Projectiles
+            projectiles.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.fillStyle = p.isReflected ? '#fde047' : '#dc2626';
+                ctx.shadowColor = p.isReflected ? '#f59e0b' : '#991b1b';
+                ctx.shadowBlur = 18;
+                ctx.beginPath();
+                ctx.arc(0, 0, p.radius, -Math.PI * 0.45, Math.PI * 0.45);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Shockwaves
+            shockwaves.forEach(sw => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, sw.alpha);
+                ctx.strokeStyle = sw.color;
+                ctx.lineWidth = sw.lineWidth;
+                ctx.beginPath();
+                ctx.ellipse(sw.x, sw.y, sw.radius, sw.radius * 0.35, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            // Render Particles
+            particles.forEach(pt => {
+                ctx.save();
+                ctx.globalAlpha = pt.alpha;
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Drifting Autumn Leaves & Embers
+            ambientLeaves.forEach(leaf => {
+                ctx.save();
+                ctx.translate(leaf.x, leaf.y);
+                ctx.rotate(leaf.rot);
+                ctx.fillStyle = leaf.isEmber ? 'rgba(251, 191, 36, 0.65)' : 'rgba(180, 83, 9, 0.45)';
+                ctx.beginPath();
+                ctx.ellipse(0, 0, leaf.size, leaf.size * 0.5, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Floating Damage & Heal Numbers
+            damagePopups.forEach(dp => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, dp.life / dp.maxLife);
+                ctx.font = dp.isCrit ? '900 24px "Cinzel", serif' : '700 17px "Cinzel", serif';
+                ctx.fillStyle = dp.text.startsWith('+') ? '#4ade80' : (dp.isCrit ? '#fde047' : '#f5f5f4');
+                ctx.shadowColor = '#000000';
+                ctx.shadowBlur = 6;
+                ctx.textAlign = 'center';
+                ctx.fillText(dp.text, dp.x, dp.y);
+                ctx.restore();
+            });
+
+            ctx.restore();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // =========================================================================
+        // 9. UI FLOW & EVENT LISTENERS
+        // =========================================================================
+        function startBattle() {
+            audio.init();
+            if (audio.enabled) audio.startAmbient();
+
+            player.reset();
+            boss.reset();
+            particles.length = 0;
+            shockwaves.length = 0;
+            damagePopups.length = 0;
+            decoys.length = 0;
+            projectiles.length = 0;
+            battleTime = 0;
+            stats = { perfectDodges: 0, heavySmashes: 0 };
+
+            document.getElementById('bossPhaseTag').textContent = 'Phase I';
+            document.getElementById('bossPhaseTag').className = 'text-[10px] tracking-[0.2em] uppercase text-amber-400/90 font-semibold';
+
+            document.getElementById('titleScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('flex');
+            document.getElementById('hudLayer').classList.remove('hidden');
+            document.getElementById('hudLayer').classList.add('flex');
+
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.getElementById('touchControls').classList.remove('hidden');
+            }
+
+            gameState = 'PLAYING';
+            updateHUD();
+        }
+
+        function endBattle(victory) {
+            gameState = victory ? 'VICTORY' : 'DEFEAT';
+            audio.playSlam();
+
+            const endScreen = document.getElementById('endScreen');
+            const cnTitle = document.getElementById('endCnTitle');
+            const enTitle = document.getElementById('endEnTitle');
+            const subtitle = document.getElementById('endSubtitle');
+
+            if (victory) {
+                cnTitle.textContent = '妖王伏诛';
+                cnTitle.className = 'font-cn text-5xl sm:text-7xl font-black tracking-widest mb-2 text-amber-400 gold-glow';
+                enTitle.textContent = 'Yaoguai Vanquished';
+                enTitle.className = 'text-3xl sm:text-5xl font-black tracking-[0.25em] uppercase mb-3 text-amber-200 gold-glow';
+                subtitle.textContent = 'The Craving Eyes relic resonates within your staff.';
+            } else {
+                cnTitle.textContent = '身陨';
+                cnTitle.className = 'font-cn text-5xl sm:text-7xl font-black tracking-widest mb-2 text-red-600 crimson-glow';
+                enTitle.textContent = 'Defeated';
+                enTitle.className = 'text-3xl sm:text-5xl font-black tracking-[0.3em] uppercase mb-3 text-red-500 crimson-glow';
+                subtitle.textContent = 'The Great Sage’s relic awaits a worthier vessel.';
+            }
+
+            const mins = String(Math.floor(battleTime / 60)).padStart(2, '0');
+            const secs = String(Math.floor(battleTime % 60)).padStart(2, '0');
+            document.getElementById('statTime').textContent = `${mins}:${secs}`;
+            document.getElementById('statDodges').textContent = stats.perfectDodges;
+            document.getElementById('statSmashes').textContent = stats.heavySmashes;
+
+            setTimeout(() => {
+                endScreen.classList.remove('hidden');
+                endScreen.classList.add('flex');
+            }, 650);
+        }
+
+        function toggleHelpModal() {
+            const modal = document.getElementById('helpModal');
+            if (modal.classList.contains('hidden')) {
+                modal.classList.remove('hidden');
+                modal.classList.add('flex');
+            } else {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }
+        }
+
+        // Difficulty selection buttons
+        const diffStoryBtn = document.getElementById('diffStoryBtn');
+        const diffDestinedBtn = document.getElementById('diffDestinedBtn');
+        diffStoryBtn.addEventListener('click', () => {
+            difficulty = 'STORY';
+            diffStoryBtn.classList.add('diff-active', 'text-amber-300', 'font-bold');
+            diffDestinedBtn.classList.remove('diff-active', 'text-amber-300', 'font-bold');
+        });
+        diffDestinedBtn.addEventListener('click', () => {
+            difficulty = 'DESTINED';
+            diffDestinedBtn.classList.add('diff-active', 'text-amber-300', 'font-bold');
+            diffStoryBtn.classList.remove('diff-active', 'text-amber-300', 'font-bold');
+        });
+
+        document.getElementById('startBtn').addEventListener('click', startBattle);
+        document.getElementById('restartBtn').addEventListener('click', startBattle);
+        document.getElementById('helpToggleBtn').addEventListener('click', toggleHelpModal);
+        document.getElementById('closeHelpBtn').addEventListener('click', toggleHelpModal);
+
+        document.getElementById('audioToggleBtn').addEventListener('click', () => {
+            const isOn = audio.toggle();
+            document.getElementById('audioIcon').textContent = isOn ? '🔊' : '🔇';
+            document.getElementById('audioLabel').textContent = isOn ? 'Sound On' : 'Muted';
+        });
+
+        // Start animation loop on window load
+        window.onload = () => {
+            resizeCanvas();
+            player.reset();
+            boss.reset();
+            requestAnimationFrame(gameLoop);
+        };
+    })();
+    </script>
+</body>
+</html>

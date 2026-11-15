@@ -1,0 +1,2687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hollow Knight: Sanctum of Ashes</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Cormorant+Garamond:ital,wght@0,500;0,700;1,500&family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #070912;
+            font-family: 'Cinzel', serif;
+            color: #eef2ff;
+        }
+        #gameCanvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+            cursor: crosshair;
+        }
+        .font-lore {
+            font-family: 'Cormorant Garamond', serif;
+        }
+        .font-ui {
+            font-family: 'Inter', sans-serif;
+        }
+        .soul-glow {
+            text-shadow: 0 0 14px rgba(186, 230, 253, 0.8), 0 0 28px rgba(56, 189, 248, 0.45);
+        }
+        .radiance-glow {
+            text-shadow: 0 0 16px rgba(253, 224, 71, 0.85), 0 0 32px rgba(245, 158, 11, 0.55);
+        }
+        .hk-panel {
+            background: linear-gradient(180deg, rgba(11, 15, 29, 0.94) 0%, rgba(6, 8, 17, 0.97) 100%);
+            border: 1px solid rgba(186, 230, 253, 0.35);
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), inset 0 0 24px rgba(125, 211, 252, 0.08);
+        }
+        .hk-btn {
+            background: linear-gradient(180deg, rgba(22, 29, 52, 0.85) 0%, rgba(10, 13, 25, 0.95) 100%);
+            border: 1px solid rgba(186, 230, 253, 0.4);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.75), inset 0 0 10px rgba(186, 230, 253, 0.1);
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .hk-btn:hover {
+            border-color: #e0f2fe;
+            background: linear-gradient(180deg, rgba(38, 50, 88, 0.9) 0%, rgba(16, 22, 42, 0.98) 100%);
+            box-shadow: 0 0 22px rgba(186, 230, 253, 0.45), inset 0 0 14px rgba(224, 242, 254, 0.2);
+            transform: translateY(-1px);
+            color: #ffffff;
+        }
+        .hk-btn:active {
+            transform: translateY(1px);
+        }
+        .hk-btn-active {
+            border-color: #7dd3fc !important;
+            background: linear-gradient(180deg, rgba(14, 116, 144, 0.55) 0%, rgba(12, 34, 58, 0.92) 100%) !important;
+            box-shadow: 0 0 18px rgba(56, 189, 248, 0.45) !important;
+        }
+        .vignette {
+            pointer-events: none;
+            background: radial-gradient(circle at center, transparent 54%, rgba(3, 4, 9, 0.9) 100%);
+        }
+        @keyframes floatSlow {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+        }
+        .animate-float {
+            animation: floatSlow 4s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="relative overflow-hidden">
+
+    <!-- Main Game Canvas -->
+    <canvas id="gameCanvas"></canvas>
+
+    <!-- Atmospheric Vignette -->
+    <div class="vignette fixed inset-0 z-10"></div>
+
+    <!-- Top-Right Utility Controls -->
+    <div class="fixed top-4 right-4 z-30 flex items-center gap-2">
+        <button id="benchBtnHud" class="hk-btn hidden px-3 py-2 rounded-lg text-xs tracking-widest uppercase text-sky-200 items-center gap-1.5">
+            <span>🪑</span>
+            <span>Charms [B]</span>
+        </button>
+        <button id="audioToggleBtn" class="hk-btn px-3 py-2 rounded-lg text-xs tracking-widest uppercase flex items-center gap-2 text-sky-200">
+            <span id="audioIcon">🔊</span>
+            <span class="hidden sm:inline" id="audioLabel">Audio [M]</span>
+        </button>
+        <button id="controlsToggleBtn" class="hk-btn px-3 py-2 rounded-lg text-xs tracking-widest uppercase text-sky-200">
+            Controls [H]
+        </button>
+    </div>
+
+    <!-- In-Game Hallownest HUD -->
+    <div id="hudLayer" class="fixed inset-0 z-20 pointer-events-none hidden flex-col justify-between p-4 sm:p-7">
+        <!-- Top Left: Soul Vessel Orb, Ancient Masks & Geo -->
+        <div class="flex items-start gap-4">
+            <!-- Circular Soul Orb Canvas -->
+            <div class="relative flex flex-col items-center">
+                <canvas id="soulOrbCanvas" width="84" height="84" class="w-20 h-20 drop-shadow-[0_0_12px_rgba(186,230,253,0.45)]"></canvas>
+                <span id="soulHintText" class="text-[9px] tracking-[0.2em] text-sky-200/75 uppercase -mt-1">SOUL</span>
+            </div>
+
+            <!-- Masks (HP) & Geo Counter -->
+            <div class="flex flex-col gap-2 pt-2">
+                <!-- 5 Ancient Masks Row -->
+                <div id="masksContainer" class="flex items-center gap-2"></div>
+
+                <!-- Geo & Shade Cloak Status Row -->
+                <div class="flex items-center gap-4 pl-0.5">
+                    <div class="flex items-center gap-1.5">
+                        <svg viewBox="0 0 20 20" class="w-4 h-4 text-sky-200 drop-shadow-[0_0_6px_rgba(186,230,253,0.6)]">
+                            <polygon points="10,1 18,7 15,19 5,19 2,7" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.5"/>
+                        </svg>
+                        <span id="geoCountText" class="text-sm font-bold tracking-wider text-sky-100">0</span>
+                    </div>
+
+                    <div id="shadeCloakBadge" class="flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-950/80 border border-sky-400/40 text-[10px] tracking-widest uppercase text-sky-300">
+                        <span class="w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_8px_#7dd3fc]"></span>
+                        <span>Shade Cloak Ready</span>
+                    </div>
+                </div>
+
+                <!-- Equipped Charms Mini Icons -->
+                <div id="hudCharmsRow" class="flex items-center gap-1.5 pl-0.5"></div>
+            </div>
+        </div>
+
+        <!-- Center Diegetic Banner (Boss Introduction / Area Title) -->
+        <div id="areaBanner" class="self-center text-center opacity-0 transition-opacity duration-500 pointer-events-none">
+            <div class="h-[1px] w-72 mx-auto bg-gradient-to-r from-transparent via-sky-200/80 to-transparent mb-2"></div>
+            <div id="bannerSub" class="font-lore italic text-base sm:text-lg tracking-[0.25em] text-sky-200/90">Protector of Hallownest</div>
+            <h2 id="bannerTitle" class="text-2xl sm:text-4xl font-black tracking-[0.22em] text-white soul-glow uppercase my-1">Sentinel of the Spire</h2>
+            <div class="h-[1px] w-72 mx-auto bg-gradient-to-r from-transparent via-sky-200/80 to-transparent mt-2"></div>
+        </div>
+
+        <!-- Bottom Center: Boss Health Bar (Visible during Boss Fight) -->
+        <div id="bossHudContainer" class="w-full max-w-2xl mx-auto mb-1 opacity-0 transition-opacity duration-300 flex flex-col gap-1.5">
+            <div class="flex justify-between items-baseline px-1">
+                <span id="bossHudName" class="text-xs sm:text-sm tracking-[0.25em] text-sky-100 font-bold uppercase">Sentinel of the Spire</span>
+                <span id="bossHudState" class="font-lore italic text-xs tracking-widest text-sky-300/90">Phase I</span>
+            </div>
+            <div class="w-full h-3 bg-slate-950/90 border border-sky-300/40 rounded-sm p-[1.5px] shadow-[0_0_20px_rgba(0,0,0,0.9)] overflow-hidden">
+                <div id="bossHpTrail" class="h-full bg-sky-200/75 transition-all duration-300" style="width: 100%;"></div>
+                <div id="bossHpBar" class="h-full bg-gradient-to-r from-slate-300 via-sky-200 to-white -mt-[9px] transition-all duration-100" style="width: 100%;"></div>
+            </div>
+            <div class="hidden md:flex justify-center gap-4 text-[10px] font-ui tracking-wider text-slate-400 mt-1">
+                <span>[A/D] Move</span>
+                <span>[W/Space] Jump & Double Jump</span>
+                <span>[Shift/C] Shade Dash</span>
+                <span>[J/L-Click] Nail (W=Up, S=Pogo)</span>
+                <span>[F/R-Click] Vengeful Spirit</span>
+                <span>[S+F Air] Descending Dark</span>
+                <span>[Hold Q/V] Focus Heal</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mobile Touch Controls Overlay -->
+    <div id="touchControls" class="fixed inset-x-0 bottom-16 z-30 px-4 flex justify-between items-end md:hidden pointer-events-none hidden">
+        <div class="flex gap-2 pointer-events-auto">
+            <button data-key="KeyA" class="touch-btn w-11 h-11 rounded-xl bg-slate-950/85 border border-sky-400/40 text-sky-100 font-bold">◀</button>
+            <button data-key="KeyD" class="touch-btn w-11 h-11 rounded-xl bg-slate-950/85 border border-sky-400/40 text-sky-100 font-bold">▶</button>
+            <button data-key="KeyS" class="touch-btn w-11 h-11 rounded-xl bg-slate-950/85 border border-sky-400/40 text-sky-100 font-bold">▼</button>
+            <button data-key="Space" class="touch-btn w-12 h-11 rounded-xl bg-slate-950/85 border border-sky-400/40 text-sky-100 text-[10px] font-bold">JUMP</button>
+        </div>
+        <div class="grid grid-cols-3 gap-2 pointer-events-auto">
+            <button data-key="KeyQ" class="touch-btn w-11 h-11 rounded-xl bg-sky-950/85 border border-sky-300 text-sky-100 text-[9px] font-bold">FOCUS</button>
+            <button data-key="KeyF" class="touch-btn w-11 h-11 rounded-xl bg-indigo-950/85 border border-sky-400 text-sky-200 text-[9px] font-bold">SPELL</button>
+            <button data-key="ShiftLeft" class="touch-btn w-11 h-11 rounded-xl bg-slate-900/90 border border-cyan-400 text-cyan-200 text-[9px] font-bold">DASH</button>
+            <button data-key="KeyJ" class="touch-btn col-span-3 h-11 rounded-xl bg-sky-900/85 border border-white/70 text-white text-xs font-bold tracking-widest">NAIL SLASH</button>
+        </div>
+    </div>
+
+    <!-- Title Screen Overlay -->
+    <div id="titleScreen" class="fixed inset-0 z-30 flex flex-col items-center justify-center p-5 bg-[#070912]/75 backdrop-blur-[2px] overflow-y-auto">
+        <div class="max-w-3xl w-full text-center flex flex-col items-center my-auto">
+            <div class="font-lore italic text-sky-200/80 text-base sm:text-xl tracking-[0.35em] mb-1">Hallownest Awaits</div>
+            <h1 class="text-4xl sm:text-6xl font-black tracking-[0.18em] text-white soul-glow uppercase leading-tight animate-float">
+                Hollow Knight<br><span class="text-2xl sm:text-3xl font-bold tracking-[0.28em] text-sky-200">Sanctum of Ashes</span>
+            </h1>
+
+            <!-- Ornate Divider -->
+            <div class="flex items-center justify-center gap-3 my-4 w-72 sm:w-96">
+                <div class="h-[1px] flex-1 bg-gradient-to-r from-transparent to-sky-300/70"></div>
+                <div class="w-2.5 h-2.5 rotate-45 border border-sky-200 bg-sky-300/30"></div>
+                <div class="h-[1px] flex-1 bg-gradient-to-l from-transparent to-sky-300/70"></div>
+            </div>
+
+            <!-- Encounter Mode Selection -->
+            <div class="w-full max-w-2xl mb-5">
+                <div class="text-[11px] tracking-[0.28em] text-sky-200/75 uppercase mb-2.5">Choose Your Pilgrimage</div>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                    <button data-mode="SANCTUM_RUN" class="mode-btn hk-btn hk-btn-active p-3.5 rounded-xl text-left flex flex-col justify-between">
+                        <span class="text-xs font-bold tracking-widest text-white uppercase">Full Pilgrimage</span>
+                        <span class="font-lore italic text-xs text-sky-200/80 mt-1">Cavern Bench → Sentinel → Blinding Light</span>
+                    </button>
+                    <button data-mode="BOSS_HORNET" class="mode-btn hk-btn p-3.5 rounded-xl text-left flex flex-col justify-between">
+                        <span class="text-xs font-bold tracking-widest text-sky-200 uppercase">Sentinel of the Spire</span>
+                        <span class="font-lore italic text-xs text-slate-300/80 mt-1">Agile Needle & Gossamer Thread Duel</span>
+                    </button>
+                    <button data-mode="BOSS_RADIANCE" class="mode-btn hk-btn p-3.5 rounded-xl text-left flex flex-col justify-between">
+                        <span class="text-xs font-bold tracking-widest text-amber-200 uppercase">Blinding Light</span>
+                        <span class="font-lore italic text-xs text-amber-100/75 mt-1">Ascendant Moth-Deity Boss Fight</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Charm Notch Loadout Bar -->
+            <div class="w-full max-w-2xl hk-panel rounded-xl p-3.5 mb-6">
+                <div class="flex justify-between items-center mb-2.5">
+                    <span class="text-[11px] tracking-[0.22em] text-sky-200 uppercase font-bold">Charm Notches</span>
+                    <div id="titleNotchPips" class="flex items-center gap-1.5"></div>
+                </div>
+                <div id="titleCharmsGrid" class="grid grid-cols-2 sm:grid-cols-5 gap-2"></div>
+                <p id="charmDescPreview" class="font-lore italic text-xs sm:text-sm text-sky-100/90 mt-2.5 min-h-[20px]">
+                    Select up to 3 Charms to attune your Vessel before descending.
+                </p>
+            </div>
+
+            <!-- Enter Hallownest Button -->
+            <button id="startBtn" class="hk-btn px-12 py-4 rounded-xl text-base sm:text-lg font-bold tracking-[0.3em] text-white soul-glow uppercase">
+                Descend Into Sanctum
+            </button>
+        </div>
+    </div>
+
+    <!-- Bench / Charm Attunement Modal (Accessible at Cavern Bench or via [B]) -->
+    <div id="benchModal" class="fixed inset-0 z-40 hidden items-center justify-center p-5 bg-[#04060d]/85 backdrop-blur-sm">
+        <div class="max-w-xl w-full hk-panel rounded-2xl p-6">
+            <div class="flex justify-between items-center border-b border-sky-300/25 pb-3 mb-4">
+                <div>
+                    <h2 class="text-lg font-bold tracking-[0.22em] text-white soul-glow uppercase">Ancestral Bench</h2>
+                    <p class="font-lore italic text-xs text-sky-200/80">Rest to restore Masks & Soul, and attune your Charms (Max 3 Notches)</p>
+                </div>
+                <button id="closeBenchBtn" class="hk-btn px-3 py-1.5 rounded-lg text-xs uppercase tracking-widest text-sky-200">Stand [Esc]</button>
+            </div>
+            <div class="flex justify-between items-center mb-3">
+                <span class="text-xs tracking-widest uppercase text-sky-300">Equipped Notches</span>
+                <div id="benchNotchPips" class="flex gap-1.5"></div>
+            </div>
+            <div id="benchCharmsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 mb-4"></div>
+            <div id="benchCharmDetail" class="p-3 rounded-lg bg-slate-950/90 border border-sky-400/20 font-lore italic text-sm text-sky-100">
+                Hover or tap a Charm to inspect its ancient power.
+            </div>
+        </div>
+    </div>
+
+    <!-- Controls Reference Modal -->
+    <div id="controlsModal" class="fixed inset-0 z-40 hidden items-center justify-center p-5 bg-[#04060d]/85 backdrop-blur-sm">
+        <div class="max-w-lg w-full hk-panel rounded-2xl p-6">
+            <div class="flex justify-between items-center border-b border-sky-300/25 pb-3 mb-4">
+                <h2 class="text-base font-bold tracking-[0.22em] text-white uppercase">Vessel Techniques</h2>
+                <button id="closeControlsBtn" class="text-sky-200 hover:text-white font-bold px-2">✕</button>
+            </div>
+            <ul class="space-y-2.5 text-xs font-ui text-slate-300 leading-relaxed">
+                <li><strong class="text-sky-200">Move & Jump (A/D, W/Space):</strong> Variable-height jump (release early for short hop) + <em>Monarch Wings</em> double jump in mid-air.</li>
+                <li><strong class="text-sky-200">Shade Cloak Dash (Shift / C / K):</strong> Burst horizontally. When the cloak is charged, dash phases cleanly through enemies and attacks.</li>
+                <li><strong class="text-sky-200">Nail Slash & Pogo (J / Left Click):</strong> Hold <span class="text-sky-200">W</span> to slash upward. Hold <span class="text-sky-200">S</span> in mid-air to <strong>Nail Pogo</strong> off bosses or spikes, resetting double-jump & dash!</li>
+                <li><strong class="text-sky-200">Focus / Heal (Hold Q / Hold V):</strong> Channel 33% SOUL while grounded to mend 1 Broken Mask.</li>
+                <li><strong class="text-sky-200">Vengeful Spirit (F / Right Click):</strong> Fire a piercing void-soul blast (costs 33% SOUL).</li>
+                <li><strong class="text-sky-200">Descending Dark (S + F in mid-air):</strong> Dive-slam with void invulnerability and shockwave damage (costs 33% SOUL).</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Victory / Defeat Overlay -->
+    <div id="endScreen" class="fixed inset-0 z-30 hidden flex-col items-center justify-center p-6 bg-[#05070f]/85 backdrop-blur-sm">
+        <div class="max-w-lg w-full text-center flex flex-col items-center">
+            <div id="endLoreSub" class="font-lore italic text-lg tracking-[0.25em] text-sky-200/80 mb-1">The Sanctum Falls Silent</div>
+            <h2 id="endMainTitle" class="text-3xl sm:text-5xl font-black tracking-[0.25em] text-white soul-glow uppercase mb-4">Ascended</h2>
+
+            <div class="flex gap-6 hk-panel rounded-xl px-7 py-3.5 mb-7 text-xs font-ui">
+                <div class="flex flex-col items-center">
+                    <span class="text-slate-400 uppercase text-[10px]">Time</span>
+                    <span id="statTime" class="text-sky-200 font-bold text-sm">00:00</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-slate-400 uppercase text-[10px]">Hits Taken</span>
+                    <span id="statHits" class="text-rose-300 font-bold text-sm">0</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-slate-400 uppercase text-[10px]">Nail Pogos</span>
+                    <span id="statPogos" class="text-amber-300 font-bold text-sm">0</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="text-slate-400 uppercase text-[10px]">Geo</span>
+                    <span id="statGeo" class="text-sky-200 font-bold text-sm">0</span>
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button id="retryBtn" class="hk-btn px-7 py-3.5 rounded-xl text-xs sm:text-sm font-bold tracking-[0.22em] text-white uppercase">
+                    Reawaken at Bench
+                </button>
+                <button id="titleReturnBtn" class="hk-btn px-6 py-3.5 rounded-xl text-xs sm:text-sm font-bold tracking-[0.2em] text-sky-200 uppercase">
+                    Title
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    /**
+     * HOLLOW KNIGHT: SANCTUM OF ASHES
+     * Complete 2D Action-Platformer, Bench/Charm System, Two Multi-Phase Bosses & Web Audio Engine
+     */
+    (() => {
+        'use strict';
+
+        // =========================================================================
+        // 1. PROCEDURAL WEB AUDIO SYNTHESIZER (SFX & MELANCHOLIC PIANO/PAD AMBIENCE)
+        // =========================================================================
+        class HallownestAudio {
+            constructor() {
+                this.ctx = null;
+                this.enabled = true;
+                this.musicTimer = null;
+                this.focusOsc = null;
+                this.focusGain = null;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioCtx();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            toggle() {
+                this.enabled = !this.enabled;
+                if (!this.enabled) {
+                    this.stopMusic();
+                    this.stopFocusLoop();
+                } else {
+                    this.init();
+                    this.startMusic();
+                }
+                return this.enabled;
+            }
+
+            startMusic() {
+                if (!this.enabled || !this.ctx || this.musicTimer) return;
+                // Melancholic City of Tears / Resting Grounds inspired minor arpeggio (D minor / F major7)
+                const notes = [293.66, 349.23, 440.00, 523.25, 440.00, 349.23, 329.63, 261.63];
+                let idx = 0;
+                this.musicTimer = setInterval(() => {
+                    if (!this.enabled || !this.ctx || this.ctx.state !== 'running') return;
+                    const now = this.ctx.currentTime;
+                    const freq = notes[idx % notes.length];
+                    idx++;
+
+                    // Soft glass-piano note
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(freq, now);
+
+                    gain.gain.setValueAtTime(0.001, now);
+                    gain.gain.linearRampToValueAtTime(0.045, now + 0.08);
+                    gain.gain.exponentialRampToValueAtTime(0.0005, now + 2.2);
+
+                    osc.connect(gain).connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 2.3);
+
+                    // Subtle deep cello pad every 4 notes
+                    if (idx % 4 === 1) {
+                        const pad = this.ctx.createOscillator();
+                        const pGain = this.ctx.createGain();
+                        pad.type = 'triangle';
+                        pad.frequency.setValueAtTime(freq * 0.25, now);
+                        pGain.gain.setValueAtTime(0.001, now);
+                        pGain.gain.linearRampToValueAtTime(0.035, now + 0.6);
+                        pGain.gain.exponentialRampToValueAtTime(0.0005, now + 3.6);
+                        pad.connect(pGain).connect(this.ctx.destination);
+                        pad.start(now);
+                        pad.stop(now + 3.7);
+                    }
+                }, 950);
+            }
+
+            stopMusic() {
+                if (this.musicTimer) {
+                    clearInterval(this.musicTimer);
+                    this.musicTimer = null;
+                }
+            }
+
+            playNailSwish(pitch = 1.0) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const len = Math.floor(this.ctx.sampleRate * 0.11);
+                const buf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+                const data = buf.getChannelData(0);
+                for (let i = 0; i < len; i++) {
+                    data[i] = (Math.random() * 2 - 1) * Math.sin((i / len) * Math.PI);
+                }
+                const src = this.ctx.createBufferSource();
+                src.buffer = buf;
+
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.setValueAtTime(900 * pitch, now);
+                filter.frequency.exponentialRampToValueAtTime(2400 * pitch, now + 0.1);
+                filter.Q.value = 3.0;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.11);
+
+                src.connect(filter).connect(gain).connect(this.ctx.destination);
+                src.start(now);
+            }
+
+            playNailHit(isPogo = false) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(isPogo ? 520 : 320, now);
+                osc.frequency.exponentialRampToValueAtTime(isPogo ? 880 : 95, now + 0.14);
+                gain.gain.setValueAtTime(0.26, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.16);
+            }
+
+            playDash(isShade = false) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = isShade ? 'sawtooth' : 'sine';
+                osc.frequency.setValueAtTime(isShade ? 260 : 420, now);
+                osc.frequency.exponentialRampToValueAtTime(75, now + 0.2);
+                gain.gain.setValueAtTime(0.18, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.21);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.22);
+            }
+
+            playSpell() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                // Resonant void-soul screech + sub boom
+                [440, 554.37, 880].forEach((f, i) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = i === 0 ? 'sawtooth' : 'sine';
+                    osc.frequency.setValueAtTime(f, now);
+                    osc.frequency.exponentialRampToValueAtTime(f * 0.55, now + 0.35);
+                    gain.gain.setValueAtTime(0.12, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.36);
+                    osc.connect(gain).connect(this.ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.38);
+                });
+            }
+
+            startFocusLoop() {
+                if (!this.enabled || !this.ctx || this.focusOsc) return;
+                const now = this.ctx.currentTime;
+                this.focusOsc = this.ctx.createOscillator();
+                this.focusGain = this.ctx.createGain();
+                this.focusOsc.type = 'sine';
+                this.focusOsc.frequency.setValueAtTime(280, now);
+                this.focusOsc.frequency.linearRampToValueAtTime(640, now + 0.85);
+                this.focusGain.gain.setValueAtTime(0.01, now);
+                this.focusGain.gain.linearRampToValueAtTime(0.12, now + 0.4);
+                this.focusOsc.connect(this.focusGain).connect(this.ctx.destination);
+                this.focusOsc.start(now);
+            }
+
+            stopFocusLoop() {
+                if (this.focusOsc) {
+                    try { this.focusOsc.stop(); } catch (e) {}
+                    this.focusOsc = null;
+                    this.focusGain = null;
+                }
+            }
+
+            playHealChime() {
+                if (!this.enabled || !this.ctx) return;
+                this.stopFocusLoop();
+                const now = this.ctx.currentTime;
+                [587.33, 880, 1174.66].forEach((f, idx) => {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(f, now + idx * 0.05);
+                    gain.gain.setValueAtTime(0.16, now + idx * 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.05 + 0.55);
+                    osc.connect(gain).connect(this.ctx.destination);
+                    osc.start(now + idx * 0.05);
+                    osc.stop(now + idx * 0.05 + 0.6);
+                });
+            }
+
+            playBossRoar(highPitch = false) {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = highPitch ? 'triangle' : 'sawtooth';
+                osc.frequency.setValueAtTime(highPitch ? 620 : 145, now);
+                osc.frequency.exponentialRampToValueAtTime(highPitch ? 920 : 58, now + 0.55);
+                gain.gain.setValueAtTime(0.22, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.6);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.62);
+            }
+
+            playHurt() {
+                if (!this.enabled || !this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.exponentialRampToValueAtTime(42, now + 0.28);
+                gain.gain.setValueAtTime(0.32, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+                osc.connect(gain).connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.32);
+            }
+        }
+
+        const audio = new HallownestAudio();
+
+        // =========================================================================
+        // 2. CHARM NOTCH SYSTEM (BUILD CUSTOMIZATION)
+        // =========================================================================
+        const CHARMS = [
+            {
+                id: 'quick_slash',
+                name: 'Quick Slash',
+                notchCost: 1,
+                color: '#7dd3fc',
+                icon: '⚔️',
+                desc: 'Born from imperfect, discarded nails. Greatly increases Nail swing speed.'
+            },
+            {
+                id: 'mark_of_pride',
+                name: 'Mark of Pride',
+                notchCost: 1,
+                color: '#e0f2fe',
+                icon: '🛡️',
+                desc: 'Freely given by the Mantis Tribe. Increases the reach of the bearer’s Nail by 32%.'
+            },
+            {
+                id: 'shaman_stone',
+                name: 'Shaman Stone',
+                notchCost: 1,
+                color: '#c084fc',
+                icon: '🔮',
+                desc: 'Increases the size and damage of Vengeful Spirit and Descending Dark by 40%.'
+            },
+            {
+                id: 'soul_catcher',
+                name: 'Soul Catcher',
+                notchCost: 1,
+                color: '#f8fafc',
+                icon: '💧',
+                desc: 'Increases the amount of SOUL gained when striking an enemy with the Nail.'
+            },
+            {
+                id: 'strength',
+                name: 'Unbreakable Strength',
+                notchCost: 1,
+                color: '#fb7185',
+                icon: '💎',
+                desc: 'Strengthens the bearer, increasing Nail damage by 35%.'
+            }
+        ];
+
+        const MAX_NOTCHES = 3;
+        let equippedCharms = new Set(['quick_slash', 'mark_of_pride']);
+
+        function hasCharm(id) {
+            return equippedCharms.has(id);
+        }
+
+        function toggleCharm(id) {
+            if (equippedCharms.has(id)) {
+                equippedCharms.delete(id);
+            } else if (equippedCharms.size < MAX_NOTCHES) {
+                equippedCharms.add(id);
+            }
+            renderCharmUI();
+        }
+
+        function renderCharmUI() {
+            // 1. Title Screen Notch Pips & Grid
+            const titlePips = document.getElementById('titleNotchPips');
+            const benchPips = document.getElementById('benchNotchPips');
+            [titlePips, benchPips].forEach(container => {
+                if (!container) return;
+                container.innerHTML = '';
+                for (let i = 0; i < MAX_NOTCHES; i++) {
+                    const filled = i < equippedCharms.size;
+                    const pip = document.createElement('div');
+                    pip.className = filled
+                        ? 'w-3.5 h-3.5 rounded-full bg-sky-200 border border-white shadow-[0_0_10px_#bae6fd]'
+                        : 'w-3.5 h-3.5 rounded-full bg-slate-900 border border-sky-400/40';
+                    container.appendChild(pip);
+                }
+            });
+
+            const titleGrid = document.getElementById('titleCharmsGrid');
+            titleGrid.innerHTML = '';
+            CHARMS.forEach(c => {
+                const active = equippedCharms.has(c.id);
+                const btn = document.createElement('button');
+                btn.className = `p-2.5 rounded-xl border text-center flex flex-col items-center gap-1 transition-all ${
+                    active
+                        ? 'bg-sky-900/50 border-sky-200 shadow-[0_0_14px_rgba(186,230,253,0.35)]'
+                        : 'bg-slate-950/80 border-slate-700/70 opacity-75 hover:opacity-100'
+                }`;
+                btn.innerHTML = `
+                    <span class="text-lg">${c.icon}</span>
+                    <span class="text-[10px] font-bold tracking-wider text-sky-100 leading-tight">${c.name}</span>
+                `;
+                btn.addEventListener('mouseenter', () => {
+                    document.getElementById('charmDescPreview').textContent = `${c.name}: ${c.desc}`;
+                });
+                btn.addEventListener('click', () => {
+                    toggleCharm(c.id);
+                    document.getElementById('charmDescPreview').textContent = `${c.name}: ${c.desc}`;
+                });
+                titleGrid.appendChild(btn);
+            });
+
+            // 2. Bench Modal Grid
+            const benchGrid = document.getElementById('benchCharmsGrid');
+            benchGrid.innerHTML = '';
+            CHARMS.forEach(c => {
+                const active = equippedCharms.has(c.id);
+                const btn = document.createElement('button');
+                btn.className = `p-3 rounded-xl border text-left flex items-center gap-3 transition-all ${
+                    active
+                        ? 'bg-sky-900/55 border-sky-200 shadow-[0_0_14px_rgba(186,230,253,0.35)]'
+                        : 'bg-slate-950/85 border-slate-700/70 hover:border-sky-400/50'
+                }`;
+                btn.innerHTML = `
+                    <span class="text-2xl">${c.icon}</span>
+                    <div class="flex flex-col">
+                        <span class="text-xs font-bold tracking-wider text-white">${c.name}</span>
+                        <span class="text-[10px] font-ui text-sky-300">${active ? 'Attuned' : 'Click to Equip'}</span>
+                    </div>
+                `;
+                btn.addEventListener('mouseenter', () => {
+                    document.getElementById('benchCharmDetail').textContent = c.desc;
+                });
+                btn.addEventListener('click', () => {
+                    toggleCharm(c.id);
+                    document.getElementById('benchCharmDetail').textContent = c.desc;
+                });
+                benchGrid.appendChild(btn);
+            });
+
+            // 3. HUD Mini Charms
+            const hudRow = document.getElementById('hudCharmsRow');
+            hudRow.innerHTML = '';
+            equippedCharms.forEach(id => {
+                const c = CHARMS.find(item => item.id === id);
+                if (!c) return;
+                const badge = document.createElement('div');
+                badge.className = 'w-6 h-6 rounded-full bg-slate-950/90 border border-sky-300/60 flex items-center justify-center text-xs shadow-[0_0_8px_rgba(186,230,253,0.3)]';
+                badge.title = c.name;
+                badge.textContent = c.icon;
+                hudRow.appendChild(badge);
+            });
+        }
+
+        // =========================================================================
+        // 3. CANVAS, CAMERA & WORLD SETUP
+        // =========================================================================
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const soulOrbCanvas = document.getElementById('soulOrbCanvas');
+        const soulCtx = soulOrbCanvas.getContext('2d');
+
+        let width = window.innerWidth;
+        let height = window.innerHeight;
+        let groundY = height * 0.82;
+
+        function resizeCanvas() {
+            width = window.innerWidth;
+            height = window.innerHeight;
+            canvas.width = width;
+            canvas.height = height;
+            groundY = height * 0.82;
+        }
+        window.addEventListener('resize', resizeCanvas);
+
+        // Game Mode & State
+        let selectedMode = 'SANCTUM_RUN'; // SANCTUM_RUN | BOSS_HORNET | BOSS_RADIANCE
+        let gameState = 'TITLE'; // TITLE | PLAYING | BENCH | VICTORY | DEFEAT
+        let zone = 'CAVERN'; // CAVERN | ARENA_HORNET | ARENA_RADIANCE
+        let worldWidth = 2400;
+        let camera = { x: 0, y: 0, shakeX: 0, shakeY: 0, shakeMag: 0 };
+
+        let hitstopTimer = 0;
+        let slowMoTimer = 0;
+        let slowMoScale = 1.0;
+        let runTime = 0;
+        let stats = { hitsTaken: 0, pogos: 0, geo: 0 };
+
+        // World Props (Bench, Platforms, Spikes, Geo Deposits, Swaying Grass)
+        let platforms = [];
+        let hazardSpikes = [];
+        let geoCrystals = [];
+        let benchProp = { x: 420, y: 0 };
+        let gatePortal = { x: 2180, y: 0, active: true };
+        let grassBlades = [];
+
+        function buildCavernZone() {
+            zone = 'CAVERN';
+            worldWidth = Math.max(2350, width * 1.8);
+            benchProp = { x: 380, y: groundY };
+            gatePortal = { x: worldWidth - 180, y: groundY, active: true };
+
+            platforms = [
+                { x: 640, y: groundY - 125, w: 190, h: 18 },
+                { x: 960, y: groundY - 210, w: 210, h: 18 },
+                { x: 1320, y: groundY - 140, w: 200, h: 18 },
+                { x: 1650, y: groundY - 220, w: 220, h: 18 }
+            ];
+
+            // Floor spikes under platforms to practice Nail Pogoing!
+            hazardSpikes = [
+                { x: 880, w: 340 },
+                { x: 1580, w: 300 }
+            ];
+
+            geoCrystals = [
+                { x: 720, y: groundY - 125, hp: 2, broken: false },
+                { x: 1050, y: groundY - 210, hp: 2, broken: false },
+                { x: 1740, y: groundY - 220, hp: 2, broken: false }
+            ];
+
+            generateGrass();
+            showBanner('Forgotten Cavern', 'Sanctum Approach');
+            document.getElementById('bossHudContainer').style.opacity = '0';
+            document.getElementById('benchBtnHud').classList.remove('hidden');
+            document.getElementById('benchBtnHud').classList.add('flex');
+        }
+
+        function buildArenaZone(bossType) {
+            zone = bossType === 'RADIANCE' ? 'ARENA_RADIANCE' : 'ARENA_HORNET';
+            worldWidth = Math.max(1280, width);
+            hazardSpikes = [];
+            geoCrystals = [];
+            benchProp = { x: -999, y: groundY };
+            gatePortal = { x: -999, y: groundY, active: false };
+
+            if (bossType === 'RADIANCE') {
+                // Aerial platforms for fighting the Blinding Light moth deity
+                platforms = [
+                    { x: worldWidth * 0.16, y: groundY - 145, w: 190, h: 16 },
+                    { x: worldWidth * 0.5 - 110, y: groundY - 235, w: 220, h: 16 },
+                    { x: worldWidth * 0.84 - 190, y: groundY - 145, w: 190, h: 16 }
+                ];
+            } else {
+                // Wide Gothic Duel Arena for Sentinel of the Spire
+                platforms = [
+                    { x: worldWidth * 0.14, y: groundY - 155, w: 170, h: 16 },
+                    { x: worldWidth * 0.86 - 170, y: groundY - 155, w: 170, h: 16 }
+                ];
+            }
+
+            generateGrass();
+            document.getElementById('benchBtnHud').classList.add('hidden');
+            document.getElementById('benchBtnHud').classList.remove('flex');
+        }
+
+        function generateGrass() {
+            grassBlades = [];
+            for (let x = 20; x < worldWidth - 20; x += 18 + Math.random() * 14) {
+                // Skip grass where spikes sit
+                const onSpike = hazardSpikes.some(s => x >= s.x - 10 && x <= s.x + s.w + 10);
+                if (onSpike) continue;
+                grassBlades.push({
+                    x,
+                    height: 16 + Math.random() * 24,
+                    angle: 0,
+                    vel: 0,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        function showBanner(title, sub) {
+            const banner = document.getElementById('areaBanner');
+            document.getElementById('bannerTitle').textContent = title;
+            document.getElementById('bannerSub').textContent = sub;
+            banner.style.opacity = '1';
+            clearTimeout(banner._timer);
+            banner._timer = setTimeout(() => {
+                banner.style.opacity = '0';
+            }, 2400);
+        }
+
+        function triggerShake(mag) {
+            camera.shakeMag = Math.max(camera.shakeMag, mag);
+        }
+
+        // =========================================================================
+        // 4. INPUT HANDLING
+        // =========================================================================
+        const keys = {};
+        let jumpHeld = false;
+
+        window.addEventListener('keydown', (e) => {
+            if (['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) {
+                e.preventDefault();
+            }
+            const wasDown = keys[e.code];
+            keys[e.code] = true;
+
+            if (e.code === 'KeyM') toggleAudio();
+            if (e.code === 'KeyH') toggleControlsModal();
+            if (e.code === 'Escape' && gameState === 'BENCH') closeBenchModal();
+
+            if (gameState !== 'PLAYING') return;
+
+            if (!wasDown) {
+                if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'KeyZ') {
+                    // Interact with Bench if standing next to it and pressing Up/W
+                    if ((e.code === 'KeyW' || e.code === 'ArrowUp') && zone === 'CAVERN' && Math.abs(knight.x - benchProp.x) < 65) {
+                        openBenchModal();
+                        return;
+                    }
+                    jumpHeld = true;
+                    knight.pressJump();
+                }
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight' || e.code === 'KeyC' || e.code === 'KeyK') {
+                    knight.dash();
+                }
+                if (e.code === 'KeyJ' || e.code === 'KeyX') {
+                    knight.slash();
+                }
+                if (e.code === 'KeyF') {
+                    knight.castSpell();
+                }
+                if (e.code === 'KeyB' && zone === 'CAVERN') {
+                    openBenchModal();
+                }
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.code] = false;
+            if (e.code === 'Space' || e.code === 'KeyW' || e.code === 'ArrowUp' || e.code === 'KeyZ') {
+                jumpHeld = false;
+                knight.releaseJump();
+            }
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (gameState !== 'PLAYING') return;
+            if (e.button === 0) knight.slash();
+            if (e.button === 2) knight.castSpell();
+        });
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
+        // Touch bindings
+        document.querySelectorAll('.touch-btn').forEach(btn => {
+            const code = btn.dataset.key;
+            btn.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                keys[code] = true;
+                if (gameState !== 'PLAYING') return;
+                if (code === 'Space') { jumpHeld = true; knight.pressJump(); }
+                if (code === 'ShiftLeft') knight.dash();
+                if (code === 'KeyJ') knight.slash();
+                if (code === 'KeyF') knight.castSpell();
+            }, { passive: false });
+            btn.addEventListener('touchend', (e) => {
+                e.preventDefault();
+                keys[code] = false;
+                if (code === 'Space') { jumpHeld = false; knight.releaseJump(); }
+            }, { passive: false });
+        });
+
+        // =========================================================================
+        // 5. PARTICLES, SLASH ARCS, SPELL PROJECTILES & GEO DROPS
+        // =========================================================================
+        const particles = [];
+        const shockwaves = [];
+        const soulProjectiles = [];
+        const enemyProjectiles = [];
+        const afterimages = [];
+        const geoDrops = [];
+        const lumaflies = [];
+
+        for (let i = 0; i < 48; i++) {
+            lumaflies.push({
+                x: Math.random() * 2400,
+                y: Math.random() * 800,
+                r: 1.5 + Math.random() * 2.8,
+                phase: Math.random() * Math.PI * 2,
+                speed: 12 + Math.random() * 24,
+                isGold: false
+            });
+        }
+
+        function spawnParticles(x, y, count, color, minSpd, maxSpd, life = 0.45, gravity = 280) {
+            for (let i = 0; i < count; i++) {
+                const a = Math.random() * Math.PI * 2;
+                const s = minSpd + Math.random() * (maxSpd - minSpd);
+                particles.push({
+                    x, y,
+                    vx: Math.cos(a) * s,
+                    vy: Math.sin(a) * s - 40,
+                    size: 2 + Math.random() * 3.5,
+                    color,
+                    life,
+                    maxLife: life,
+                    gravity
+                });
+            }
+        }
+
+        function spawnShockwave(x, y, maxR, color, lw = 3) {
+            shockwaves.push({ x, y, r: 10, maxR, color, lw, alpha: 1 });
+        }
+
+        // =========================================================================
+        // 6. THE KNIGHT (PLAYER VESSEL)
+        // =========================================================================
+        class Knight {
+            constructor() {
+                this.reset();
+            }
+
+            reset() {
+                this.x = 160;
+                this.y = groundY;
+                this.vx = 0;
+                this.vy = 0;
+                this.facing = 1;
+                this.grounded = true;
+
+                this.maxMasks = 5;
+                this.masks = 5;
+                this.soul = 66; // 0 to 100 (33 per heal/spell)
+                this.maxSoul = 100;
+
+                // Double jump (Monarch Wings) & Dash (Shade Cloak)
+                this.hasDoubleJump = true;
+                this.dashTimer = 0;
+                this.dashCooldown = 0;
+                this.shadeCooldown = 0;
+                this.isShadeDashing = false;
+
+                // Nail Slash state
+                this.slashTimer = 0;
+                this.slashCooldown = 0;
+                this.slashDir = 'SIDE'; // SIDE | UP | DOWN
+                this.slashHitSet = new Set();
+
+                // Focus Heal state
+                this.focusProgress = 0;
+                this.isFocusing = false;
+
+                // Descending Dark Dive state
+                this.isDiving = false;
+
+                // Invulnerability
+                this.invulnTimer = 0;
+                this.animTime = 0;
+
+                // Flowing Cloak Physics Nodes
+                this.cloakNodes = Array.from({ length: 5 }, (_, i) => ({ x: this.x, y: this.y - 24 + i * 4 }));
+            }
+
+            pressJump() {
+                if (this.isDiving) return;
+                this.cancelFocus();
+
+                if (this.grounded) {
+                    this.vy = -610;
+                    this.grounded = false;
+                    audio.playNailSwish(1.3);
+                    spawnParticles(this.x, this.y, 7, 'rgba(224, 242, 254, 0.6)', 30, 110, 0.3, 120);
+                } else if (this.hasDoubleJump) {
+                    this.hasDoubleJump = false;
+                    this.vy = -565;
+                    audio.playNailSwish(1.55);
+                    // Monarch Wings white feather burst
+                    spawnShockwave(this.x, this.y - 10, 68, 'rgba(255, 255, 255, 0.85)', 2.5);
+                    spawnParticles(this.x, this.y - 15, 14, '#ffffff', 60, 190, 0.4, 80);
+                }
+            }
+
+            releaseJump() {
+                if (this.vy < -220 && !this.isDiving) {
+                    this.vy *= 0.52;
+                }
+            }
+
+            dash() {
+                if (this.dashCooldown > 0 || this.isDiving) return;
+                this.cancelFocus();
+
+                if (keys['KeyA'] || keys['ArrowLeft']) this.facing = -1;
+                if (keys['KeyD'] || keys['ArrowRight']) this.facing = 1;
+
+                this.dashTimer = 0.19;
+                this.dashCooldown = 0.52;
+                this.vy = 0;
+                this.vx = this.facing * 790;
+
+                // Shade Cloak invulnerability if off cooldown
+                if (this.shadeCooldown <= 0) {
+                    this.isShadeDashing = true;
+                    this.shadeCooldown = 1.65;
+                    this.invulnTimer = 0.25;
+                    audio.playDash(true);
+                    spawnParticles(this.x, this.y - 25, 16, '#0f172a', 50, 180, 0.4, 0);
+                    spawnParticles(this.x, this.y - 25, 8, '#38bdf8', 40, 150, 0.35, 0);
+                } else {
+                    this.isShadeDashing = false;
+                    audio.playDash(false);
+                    spawnParticles(this.x, this.y - 25, 10, '#e0f2fe', 40, 140, 0.3, 0);
+                }
+            }
+
+            slash() {
+                if (this.slashCooldown > 0 || this.isDiving) return;
+                this.cancelFocus();
+
+                const quick = hasCharm('quick_slash');
+                this.slashTimer = quick ? 0.15 : 0.19;
+                this.slashCooldown = quick ? 0.21 : 0.31;
+                this.slashHitSet.clear();
+
+                if (keys['KeyW'] || keys['ArrowUp']) {
+                    this.slashDir = 'UP';
+                } else if ((keys['KeyS'] || keys['ArrowDown']) && !this.grounded) {
+                    this.slashDir = 'DOWN';
+                } else {
+                    this.slashDir = 'SIDE';
+                }
+
+                audio.playNailSwish(quick ? 1.2 : 1.0);
+            }
+
+            castSpell() {
+                if (this.soul < 33 || this.isDiving) return;
+                this.cancelFocus();
+                this.soul -= 33;
+                audio.playSpell();
+
+                const shaman = hasCharm('shaman_stone');
+
+                // Descending Dark if holding Down in mid-air!
+                if ((keys['KeyS'] || keys['ArrowDown']) && !this.grounded) {
+                    this.isDiving = true;
+                    this.invulnTimer = 0.65;
+                    this.vx = 0;
+                    this.vy = 980;
+                    spawnParticles(this.x, this.y - 25, 18, '#020617', 60, 220, 0.4, 0);
+                    return;
+                }
+
+                // Vengeful Spirit / Shade Soul horizontal projectile
+                this.vx = -this.facing * 140; // Crisp spell recoil
+                triggerShake(6);
+                soulProjectiles.push({
+                    x: this.x + this.facing * 32,
+                    y: this.y - 28,
+                    vx: this.facing * 820,
+                    radius: shaman ? 34 : 24,
+                    damage: shaman ? 56 : 40,
+                    life: 1.1,
+                    hitBoss: false
+                });
+                spawnParticles(this.x + this.facing * 24, this.y - 28, 16, '#ffffff', 60, 240, 0.35, 0);
+            }
+
+            cancelFocus() {
+                this.isFocusing = false;
+                this.focusProgress = 0;
+                audio.stopFocusLoop();
+            }
+
+            takeDamage(amount, sourceX) {
+                if (this.invulnTimer > 0 || gameState !== 'PLAYING') return;
+                this.cancelFocus();
+
+                this.masks = Math.max(0, this.masks - amount);
+                this.invulnTimer = 1.15;
+                stats.hitsTaken++;
+
+                const knockDir = this.x >= sourceX ? 1 : -1;
+                this.vx = knockDir * 360;
+                this.vy = -320;
+                this.grounded = false;
+
+                hitstopTimer = 0.065;
+                triggerShake(14);
+                audio.playHurt();
+                spawnShockwave(this.x, this.y - 25, 110, '#ffffff', 4);
+                spawnParticles(this.x, this.y - 25, 24, '#020617', 80, 320, 0.55, 250);
+                spawnParticles(this.x, this.y - 25, 14, '#ffffff', 90, 280, 0.45, 200);
+
+                if (this.masks <= 0) {
+                    endRun(false);
+                }
+            }
+
+            gainSoul(amount) {
+                const bonus = hasCharm('soul_catcher') ? 5 : 0;
+                this.soul = Math.min(this.maxSoul, this.soul + amount + bonus);
+            }
+
+            update(dt) {
+                this.animTime += dt;
+                if (this.invulnTimer > 0) this.invulnTimer -= dt;
+                if (this.dashCooldown > 0) this.dashCooldown -= dt;
+                if (this.shadeCooldown > 0) this.shadeCooldown -= dt;
+                if (this.slashCooldown > 0) this.slashCooldown -= dt;
+                if (this.slashTimer > 0) {
+                    this.slashTimer -= dt;
+                    this.checkNailCollisions();
+                }
+
+                // Focus / Heal (Hold Q or V while grounded & stationary)
+                const holdingFocus = (keys['KeyQ'] || keys['KeyV']) && this.grounded && this.soul >= 33 && this.masks < this.maxMasks && this.dashTimer <= 0;
+                if (holdingFocus && Math.abs(this.vx) < 25) {
+                    this.isFocusing = true;
+                    this.focusProgress += dt;
+                    audio.startFocusLoop();
+                    if (Math.random() < 0.45) {
+                        const angle = Math.random() * Math.PI * 2;
+                        particles.push({
+                            x: this.x + Math.cos(angle) * 45,
+                            y: this.y - 25 + Math.sin(angle) * 45,
+                            vx: -Math.cos(angle) * 90,
+                            vy: -Math.sin(angle) * 90,
+                            size: 2.5,
+                            color: '#ffffff',
+                            life: 0.35,
+                            maxLife: 0.35,
+                            gravity: 0
+                        });
+                    }
+                    if (this.focusProgress >= 0.85) {
+                        this.soul -= 33;
+                        this.masks = Math.min(this.maxMasks, this.masks + 1);
+                        this.focusProgress = 0;
+                        audio.playHealChime();
+                        spawnShockwave(this.x, this.y - 25, 85, '#ffffff', 3);
+                        spawnParticles(this.x, this.y - 25, 22, '#e0f2fe', 50, 200, 0.5, -60);
+                    }
+                } else if (this.isFocusing) {
+                    this.cancelFocus();
+                }
+
+                // Movement & Dash Integration
+                if (this.dashTimer > 0) {
+                    this.dashTimer -= dt;
+                    // Spawn Shade / White afterimage trail
+                    afterimages.push({
+                        x: this.x,
+                        y: this.y,
+                        facing: this.facing,
+                        isShade: this.isShadeDashing,
+                        life: 0.22,
+                        maxLife: 0.22
+                    });
+                } else if (!this.isDiving && !this.isFocusing) {
+                    let move = 0;
+                    if (keys['KeyA'] || keys['ArrowLeft']) move -= 1;
+                    if (keys['KeyD'] || keys['ArrowRight']) move += 1;
+
+                    if (move !== 0) {
+                        this.vx = move * 380;
+                        if (this.slashTimer <= 0) this.facing = move;
+                    } else {
+                        this.vx *= 0.72;
+                    }
+                }
+
+                const prevY = this.y;
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+
+                // Gravity (disabled during dash)
+                if (this.dashTimer <= 0) {
+                    this.vy += 1680 * dt;
+                }
+
+                // One-way Platform Landing Check (unless holding S + Jump)
+                this.grounded = false;
+                if (this.vy >= 0 && !this.isDiving) {
+                    for (const plat of platforms) {
+                        if (this.x >= plat.x - 12 && this.x <= plat.x + plat.w + 12 && prevY <= plat.y + 6 && this.y >= plat.y) {
+                            this.y = plat.y;
+                            this.vy = 0;
+                            this.grounded = true;
+                            this.hasDoubleJump = true;
+                            break;
+                        }
+                    }
+                }
+
+                // Main Floor Landing Check
+                if (this.y >= groundY) {
+                    this.y = groundY;
+                    this.vy = 0;
+                    this.grounded = true;
+                    this.hasDoubleJump = true;
+
+                    // Descending Dark Impact Shockwave!
+                    if (this.isDiving) {
+                        this.isDiving = false;
+                        const shaman = hasCharm('shaman_stone');
+                        const diveRadius = shaman ? 185 : 140;
+                        const diveDmg = shaman ? 65 : 46;
+                        audio.playBossRoar(false);
+                        triggerShake(14);
+                        spawnShockwave(this.x, groundY, diveRadius, '#e0f2fe', 5);
+                        spawnParticles(this.x, groundY - 10, 30, '#020617', 100, 380, 0.55, 300);
+                        spawnParticles(this.x, groundY - 10, 18, '#ffffff', 120, 340, 0.45, 250);
+
+                        if (activeBoss && activeBoss.hp > 0 && Math.abs(activeBoss.x - this.x) < diveRadius) {
+                            activeBoss.takeDamage(diveDmg, this.facing, true);
+                        }
+                    }
+                }
+
+                // Arena / World Bounds
+                this.x = Math.max(36, Math.min(worldWidth - 36, this.x));
+
+                // Hazard Spikes Collision in Cavern
+                for (const spk of hazardSpikes) {
+                    if (this.x > spk.x + 8 && this.x < spk.x + spk.w - 8 && this.y >= groundY - 12) {
+                        this.takeDamage(1, spk.x + spk.w * 0.5);
+                        this.y = groundY - 60;
+                        this.vy = -420;
+                    }
+                }
+
+                // Cavern Portal Transition to First Boss
+                if (zone === 'CAVERN' && gatePortal.active && Math.abs(this.x - gatePortal.x) < 48) {
+                    enterBossArena('HORNET');
+                }
+
+                // Rustle foreground grass blades
+                for (const g of grassBlades) {
+                    if (Math.abs(g.x - this.x) < 24 && Math.abs(this.y - groundY) < 35) {
+                        g.vel += (this.vx * 0.012);
+                    }
+                    g.vel += (-g.angle * 18 - g.vel * 4.5) * dt;
+                    g.angle += g.vel * dt;
+                }
+
+                // Update Cloak Cloth Nodes
+                this.cloakNodes[0].x = this.x;
+                this.cloakNodes[0].y = this.y - 26;
+                for (let i = 1; i < this.cloakNodes.length; i++) {
+                    const prev = this.cloakNodes[i - 1];
+                    const curr = this.cloakNodes[i];
+                    const targetX = prev.x - this.facing * 3.5 - this.vx * 0.015;
+                    const targetY = prev.y + 5.5;
+                    curr.x += (targetX - curr.x) * Math.min(1, dt * 22);
+                    curr.y += (targetY - curr.y) * Math.min(1, dt * 22);
+                }
+            }
+
+            getNailHitbox() {
+                const reachMult = hasCharm('mark_of_pride') ? 1.32 : 1.0;
+                const w = 96 * reachMult;
+                const h = 76 * reachMult;
+
+                if (this.slashDir === 'UP') {
+                    return { x: this.x - h * 0.5, y: this.y - 36 - w, w: h, h: w };
+                }
+                if (this.slashDir === 'DOWN') {
+                    return { x: this.x - h * 0.5, y: this.y - 12, w: h, h: w };
+                }
+                // SIDE
+                return {
+                    x: this.facing === 1 ? this.x + 8 : this.x - 8 - w,
+                    y: this.y - 54,
+                    w,
+                    h: 54
+                };
+            }
+
+            checkNailCollisions() {
+                const hb = this.getNailHitbox();
+                const baseDmg = hasCharm('strength') ? 22 : 16;
+
+                // 1. Check Boss Hit
+                if (activeBoss && activeBoss.hp > 0 && !this.slashHitSet.has('boss')) {
+                    const bBox = activeBoss.getHurtbox();
+                    if (rectsOverlap(hb, bBox)) {
+                        this.slashHitSet.add('boss');
+                        activeBoss.takeDamage(baseDmg, this.facing, false);
+                        this.gainSoul(11);
+                        hitstopTimer = 0.042;
+                        triggerShake(5);
+
+                        if (this.slashDir === 'DOWN') {
+                            // Iconic Hollow Knight Nail Pogo Bounce!
+                            this.vy = -560;
+                            this.hasDoubleJump = true;
+                            this.dashCooldown = 0;
+                            stats.pogos++;
+                            audio.playNailHit(true);
+                            spawnShockwave(this.x, this.y + 16, 65, '#ffffff', 3);
+                        } else {
+                            this.vx = -this.facing * 135; // Nail knockback
+                            audio.playNailHit(false);
+                        }
+                        spawnParticles(
+                            (hb.x + hb.w * 0.5 + bBox.x + bBox.w * 0.5) * 0.5,
+                            (hb.y + hb.h * 0.5 + bBox.y + bBox.h * 0.5) * 0.5,
+                            12, '#ffffff', 90, 280, 0.28, 0
+                        );
+                    }
+                }
+
+                // 2. Check Cavern Spikes Pogo!
+                if (this.slashDir === 'DOWN' && !this.slashHitSet.has('spikes')) {
+                    for (const spk of hazardSpikes) {
+                        const spkBox = { x: spk.x, y: groundY - 22, w: spk.w, h: 24 };
+                        if (rectsOverlap(hb, spkBox)) {
+                            this.slashHitSet.add('spikes');
+                            this.vy = -575;
+                            this.hasDoubleJump = true;
+                            this.dashCooldown = 0;
+                            stats.pogos++;
+                            audio.playNailHit(true);
+                            spawnShockwave(this.x, groundY - 14, 60, '#7dd3fc', 2.5);
+                            spawnParticles(this.x, groundY - 14, 10, '#e0f2fe', 60, 180, 0.3, 100);
+                            break;
+                        }
+                    }
+                }
+
+                // 3. Check Geo Crystals in Cavern
+                geoCrystals.forEach((gc, idx) => {
+                    if (gc.broken || this.slashHitSet.has(`geo_${idx}`)) return;
+                    const gBox = { x: gc.x - 20, y: gc.y - 38, w: 40, h: 38 };
+                    if (rectsOverlap(hb, gBox)) {
+                        this.slashHitSet.add(`geo_${idx}`);
+                        gc.hp--;
+                        this.gainSoul(8);
+                        audio.playNailHit(false);
+                        spawnParticles(gc.x, gc.y - 20, 10, '#7dd3fc', 60, 200, 0.35, 250);
+                        if (gc.hp <= 0) {
+                            gc.broken = true;
+                            for (let g = 0; g < 6; g++) {
+                                geoDrops.push({
+                                    x: gc.x,
+                                    y: gc.y - 18,
+                                    vx: (Math.random() - 0.5) * 260,
+                                    vy: -220 - Math.random() * 180
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+
+            draw(ctx) {
+                ctx.save();
+
+                // Invulnerability blink
+                if (this.invulnTimer > 0 && Math.floor(this.invulnTimer * 24) % 2 === 0 && this.dashTimer <= 0) {
+                    ctx.globalAlpha = 0.5;
+                }
+
+                // Soft bioluminescent aura around the Knight
+                const aura = ctx.createRadialGradient(this.x, this.y - 26, 4, this.x, this.y - 26, 75);
+                aura.addColorStop(0, 'rgba(224, 242, 254, 0.16)');
+                aura.addColorStop(1, 'rgba(224, 242, 254, 0)');
+                ctx.fillStyle = aura;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y - 26, 75, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tattered Slate-Navy Cloak (Drawn with dynamic cloth nodes)
+                ctx.fillStyle = this.shadeCooldown <= 0 ? '#1e293b' : '#0f172a';
+                ctx.strokeStyle = this.shadeCooldown <= 0 ? 'rgba(125, 211, 252, 0.55)' : 'rgba(148, 163, 184, 0.3)';
+                ctx.lineWidth = 1.5;
+
+                ctx.beginPath();
+                ctx.moveTo(this.x - 10, this.y - 26);
+                ctx.lineTo(this.x + 10, this.y - 26);
+                const botNode = this.cloakNodes[this.cloakNodes.length - 1];
+                ctx.lineTo(botNode.x + 14, botNode.y + 8);
+                ctx.lineTo(botNode.x + 4, botNode.y + 3);
+                ctx.lineTo(botNode.x - 4, botNode.y + 9);
+                ctx.lineTo(botNode.x - 14, botNode.y + 5);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Void-black slender legs
+                ctx.strokeStyle = '#020617';
+                ctx.lineWidth = 3.5;
+                const walk = this.grounded && Math.abs(this.vx) > 20 ? Math.sin(this.animTime * 18) * 5 : 0;
+                ctx.beginPath();
+                ctx.moveTo(this.x - 4, this.y - 10);
+                ctx.lineTo(this.x - 4 - walk, this.y);
+                ctx.moveTo(this.x + 4, this.y - 10);
+                ctx.lineTo(this.x + 4 + walk, this.y);
+                ctx.stroke();
+
+                // Iconic Stark-White Horned Vessel Mask
+                ctx.save();
+                ctx.translate(this.x, this.y - 36);
+
+                ctx.fillStyle = '#f8fafc';
+                ctx.shadowColor = 'rgba(224, 242, 254, 0.45)';
+                ctx.shadowBlur = 10;
+
+                // Mask Dome
+                ctx.beginPath();
+                ctx.roundRect(-12, -13, 24, 23, 10);
+                ctx.fill();
+
+                // Twin Curved Horns
+                ctx.beginPath();
+                ctx.moveTo(-10, -10);
+                ctx.quadraticCurveTo(-15, -24, -7, -27);
+                ctx.quadraticCurveTo(-5, -18, -5, -12);
+                ctx.moveTo(10, -10);
+                ctx.quadraticCurveTo(15, -24, 7, -27);
+                ctx.quadraticCurveTo(5, -18, 5, -12);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Hollow Void-Black Eyes (Shifted toward facing direction)
+                ctx.fillStyle = '#020617';
+                const eyeShift = this.facing * 3.5;
+                ctx.beginPath();
+                ctx.ellipse(-4.5 + eyeShift, -1, 3.2, 4.4, 0, 0, Math.PI * 2);
+                ctx.ellipse(4.5 + eyeShift, -1, 3.2, 4.4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+
+                // Pure Nail Blade & Crescent Slash Arc
+                if (this.slashTimer > 0) {
+                    const reachMult = hasCharm('mark_of_pride') ? 1.32 : 1.0;
+                    ctx.save();
+                    ctx.translate(this.x, this.y - 28);
+                    if (this.slashDir === 'UP') ctx.rotate(-Math.PI * 0.5);
+                    else if (this.slashDir === 'DOWN') ctx.rotate(Math.PI * 0.5);
+                    else if (this.facing === -1) ctx.scale(-1, 1);
+
+                    // Hand-drawn white crescent slash wave
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.shadowColor = '#7dd3fc';
+                    ctx.shadowBlur = 16;
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    ctx.arc(16 * reachMult, 0, 68 * reachMult, -0.85, 0.85);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = 'rgba(186, 230, 253, 0.55)';
+                    ctx.lineWidth = 14;
+                    ctx.beginPath();
+                    ctx.arc(10 * reachMult, 0, 56 * reachMult, -0.7, 0.7);
+                    ctx.stroke();
+                    ctx.restore();
+                } else {
+                    // Sheathed / Ready Nail at side
+                    ctx.strokeStyle = '#cbd5e1';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - this.facing * 4, this.y - 24);
+                    ctx.lineTo(this.x + this.facing * 24, this.y - 18);
+                    ctx.stroke();
+                }
+
+                // Focus Channeling Ring
+                if (this.isFocusing) {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.lineWidth = 2.5;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 26, 26 + Math.sin(this.animTime * 20) * 3, 0, Math.PI * 2 * (this.focusProgress / 0.85));
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // =========================================================================
+        // 7. BOSS 1: SENTINEL OF THE SPIRE (HORNET-INSPIRED AGILE NEEDLE DUELIST)
+        // =========================================================================
+        class SentinelBoss {
+            constructor() {
+                this.name = 'Sentinel of the Spire';
+                this.sub = 'Protector of the Ash Sanctum';
+                this.maxHp = 440;
+                this.hp = 440;
+                this.trailHp = 440;
+                this.x = worldWidth * 0.75;
+                this.y = groundY;
+                this.vx = 0;
+                this.vy = 0;
+                this.facing = -1;
+                this.phase = 1;
+                this.staggerCount = 0;
+                this.staggerTimer = 0;
+
+                this.state = 'IDLE'; // IDLE, DASH_LUNGE, AERIAL_DIVE, NEEDLE_THROW, SILK_STORM, STAGGER
+                this.stateTimer = 0.9;
+                this.needleOut = false;
+                this.needleX = 0;
+                this.needleY = 0;
+                this.animTime = 0;
+            }
+
+            getHurtbox() {
+                return { x: this.x - 24, y: this.y - 84, w: 48, h: 84 };
+            }
+
+            takeDamage(amount, hitDir, isHeavy) {
+                if (this.hp <= 0) return;
+                this.hp = Math.max(0, this.hp - amount);
+
+                if (this.staggerTimer > 0) {
+                    this.staggerTimer = 0;
+                    this.state = 'IDLE';
+                    this.stateTimer = 0.35;
+                }
+
+                // Stagger thresholds at 66% and 33% HP
+                if (this.staggerCount === 0 && this.hp <= this.maxHp * 0.66 && this.hp > 0) {
+                    this.staggerCount = 1;
+                    this.enterStagger();
+                } else if (this.staggerCount === 1 && this.hp <= this.maxHp * 0.33 && this.hp > 0) {
+                    this.staggerCount = 2;
+                    this.phase = 2;
+                    this.enterStagger();
+                    document.getElementById('bossHudState').textContent = 'Phase II — Gossamer Fury';
+                }
+
+                if (this.hp <= 0) {
+                    onBossDefeated('HORNET');
+                }
+            }
+
+            enterStagger() {
+                this.state = 'STAGGER';
+                this.staggerTimer = 2.6;
+                this.vx = 0;
+                this.needleOut = false;
+                audio.playBossRoar(true);
+                triggerShake(10);
+                spawnShockwave(this.x, this.y - 40, 150, '#ffffff', 4);
+            }
+
+            update(dt) {
+                this.animTime += dt;
+                this.trailHp += (this.hp - this.trailHp) * Math.min(1, dt * 8);
+
+                if (this.staggerTimer > 0) {
+                    this.staggerTimer -= dt;
+                    if (this.staggerTimer <= 0) {
+                        this.state = 'IDLE';
+                        this.stateTimer = 0.4;
+                    }
+                    return;
+                }
+
+                const spd = this.phase === 2 ? 1.25 : 1.0;
+                this.stateTimer -= dt;
+
+                switch (this.state) {
+                    case 'IDLE':
+                        this.facing = knight.x >= this.x ? 1 : -1;
+                        this.vx *= 0.82;
+                        if (this.stateTimer <= 0) {
+                            this.pickNextMove();
+                        }
+                        break;
+
+                    case 'TELEGRAPH_LUNGE':
+                        this.facing = knight.x >= this.x ? 1 : -1;
+                        this.vx = 0;
+                        if (this.stateTimer <= 0) {
+                            this.state = 'DASH_LUNGE';
+                            this.stateTimer = 0.34;
+                            this.vx = this.facing * 760 * spd;
+                            audio.playDash(false);
+                        }
+                        break;
+
+                    case 'DASH_LUNGE':
+                        this.checkBodyHit();
+                        if (this.stateTimer <= 0) {
+                            this.state = 'IDLE';
+                            this.stateTimer = 0.55 / spd;
+                        }
+                        break;
+
+                    case 'AERIAL_JUMP':
+                        if (this.stateTimer <= 0) {
+                            this.state = 'AERIAL_DIVE';
+                            this.stateTimer = 0.45;
+                            const dx = knight.x - this.x;
+                            const dy = knight.y - this.y;
+                            const len = Math.hypot(dx, dy) || 1;
+                            this.vx = (dx / len) * 740 * spd;
+                            this.vy = (dy / len) * 740 * spd;
+                            audio.playBossRoar(true);
+                        }
+                        break;
+
+                    case 'AERIAL_DIVE':
+                        this.checkBodyHit();
+                        if (this.y >= groundY || this.stateTimer <= 0) {
+                            this.y = groundY;
+                            this.vy = 0;
+                            this.vx *= 0.4;
+                            this.state = 'IDLE';
+                            this.stateTimer = 0.65 / spd;
+                            spawnShockwave(this.x, groundY, 95, '#fda4af', 3);
+                        }
+                        break;
+
+                    case 'NEEDLE_THROW':
+                        if (this.stateTimer > 0.35) {
+                            // Needle flying outward
+                            this.needleOut = true;
+                            this.needleX += this.facing * 860 * dt;
+                        } else {
+                            // Needle retracting back to Sentinel
+                            this.needleX += (this.x - this.needleX) * Math.min(1, dt * 14);
+                        }
+                        if (this.needleOut && Math.abs(this.needleX - knight.x) < 28 && Math.abs(this.needleY - (knight.y - 26)) < 28) {
+                            knight.takeDamage(1, this.x);
+                        }
+                        if (this.stateTimer <= 0) {
+                            this.needleOut = false;
+                            this.state = 'IDLE';
+                            this.stateTimer = 0.5 / spd;
+                        }
+                        break;
+
+                    case 'SILK_STORM':
+                        this.vx = 0;
+                        this.vy = 0;
+                        // Damage if Knight gets inside the whirling gossamer sphere
+                        if (Math.hypot(knight.x - this.x, (knight.y - 26) - (this.y - 45)) < 118) {
+                            knight.takeDamage(1, this.x);
+                        }
+                        if (this.stateTimer <= 0) {
+                            this.state = 'IDLE';
+                            this.stateTimer = 0.6 / spd;
+                        }
+                        break;
+                }
+
+                this.x += this.vx * dt;
+                this.y += this.vy * dt;
+                if (!['AERIAL_DIVE', 'SILK_STORM'].includes(this.state) && this.y < groundY) {
+                    this.vy += 1500 * dt;
+                }
+                if (this.y >= groundY) {
+                    this.y = groundY;
+                    this.vy = 0;
+                }
+                this.x = Math.max(75, Math.min(worldWidth - 75, this.x));
+            }
+
+            pickNextMove() {
+                const spd = this.phase === 2 ? 1.25 : 1.0;
+                const dist = Math.abs(knight.x - this.x);
+                const r = Math.random();
+
+                if (dist < 170 && r < 0.42) {
+                    // Leap into air and trigger whirling Silk Storm!
+                    this.y = groundY - 125;
+                    this.state = 'SILK_STORM';
+                    this.stateTimer = 0.95;
+                    audio.playBossRoar(true);
+                } else if (dist > 280 && r < 0.5) {
+                    this.facing = knight.x >= this.x ? 1 : -1;
+                    this.needleX = this.x + this.facing * 25;
+                    this.needleY = groundY - 34;
+                    this.state = 'NEEDLE_THROW';
+                    this.stateTimer = 0.78;
+                    audio.playNailSwish(1.4);
+                } else if (r < 0.72) {
+                    this.state = 'TELEGRAPH_LUNGE';
+                    this.stateTimer = 0.42 / spd;
+                } else {
+                    this.vy = -640;
+                    this.vx = (knight.x >= this.x ? -1 : 1) * 160;
+                    this.state = 'AERIAL_JUMP';
+                    this.stateTimer = 0.36;
+                }
+            }
+
+            checkBodyHit() {
+                if (Math.abs(knight.x - this.x) < 34 && Math.abs((knight.y - 26) - (this.y - 42)) < 44) {
+                    knight.takeDamage(1, this.x);
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Stagger slump
+                if (this.staggerTimer > 0) {
+                    ctx.translate(0, 18);
+                }
+
+                // Flowing Crimson-Rose Cloak
+                ctx.fillStyle = '#9f1239';
+                ctx.strokeStyle = '#fda4af';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(0, -56);
+                ctx.lineTo(24, -8);
+                ctx.lineTo(8, -14);
+                ctx.lineTo(0, -6);
+                ctx.lineTo(-8, -14);
+                ctx.lineTo(-24, -8);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+
+                // Tall Crescent-Horned White Mask
+                ctx.fillStyle = '#fff1f2';
+                ctx.beginPath();
+                ctx.ellipse(0, -64, 12, 16, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Swept Horns
+                ctx.beginPath();
+                ctx.moveTo(-9, -72);
+                ctx.quadraticCurveTo(-18, -96, -5, -104);
+                ctx.quadraticCurveTo(-6, -86, -4, -76);
+                ctx.moveTo(9, -72);
+                ctx.quadraticCurveTo(18, -96, 5, -104);
+                ctx.quadraticCurveTo(6, -86, 4, -76);
+                ctx.fill();
+
+                // Dark Eyes
+                ctx.fillStyle = '#090d16';
+                ctx.beginPath();
+                ctx.ellipse(-4 + this.facing * 2.5, -63, 2.5, 4.2, -0.15, 0, Math.PI * 2);
+                ctx.ellipse(4 + this.facing * 2.5, -63, 2.5, 4.2, 0.15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Gossamer Silk Storm Sphere
+                if (this.state === 'SILK_STORM') {
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.85)';
+                    ctx.shadowColor = '#fda4af';
+                    ctx.shadowBlur = 18;
+                    ctx.lineWidth = 2.5;
+                    for (let i = 0; i < 6; i++) {
+                        ctx.beginPath();
+                        ctx.ellipse(0, -45, 115, 45, this.animTime * 12 + i * 0.52, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                    ctx.shadowBlur = 0;
+                }
+
+                // Needle Weapon (in hand when not thrown)
+                if (!this.needleOut) {
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(-this.facing * 22, -42);
+                    ctx.lineTo(this.facing * 48, -36);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+
+                // Thrown Needle + Gossamer Silk Thread
+                if (this.needleOut) {
+                    ctx.save();
+                    ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.x, this.y - 36);
+                    ctx.lineTo(this.needleX, this.needleY);
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 3.5;
+                    ctx.beginPath();
+                    ctx.moveTo(this.needleX - this.facing * 25, this.needleY);
+                    ctx.lineTo(this.needleX + this.facing * 25, this.needleY);
+                    ctx.stroke();
+                    ctx.restore();
+                }
+            }
+        }
+
+        // =========================================================================
+        // 8. BOSS 2: VESSEL OF THE BLINDING LIGHT (RADIANCE-INSPIRED MOTH DEITY)
+        // =========================================================================
+        class BlindingLightBoss {
+            constructor() {
+                this.name = 'Vessel of the Blinding Light';
+                this.sub = 'Forgotten Dawn of Hallownest';
+                this.maxHp = 580;
+                this.hp = 580;
+                this.trailHp = 580;
+                this.x = worldWidth * 0.5;
+                this.y = groundY - 220;
+                this.targetX = this.x;
+                this.targetY = this.y;
+                this.phase = 1;
+                this.state = 'HOVER'; // HOVER, RADIAL_SPEARS, LIGHT_BEAM, ORB_BARRAGE
+                this.stateTimer = 1.2;
+                this.beamAngle = 0;
+                this.animTime = 0;
+            }
+
+            getHurtbox() {
+                return { x: this.x - 42, y: this.y - 68, w: 84, h: 120 };
+            }
+
+            takeDamage(amount, hitDir, isHeavy) {
+                if (this.hp <= 0) return;
+                this.hp = Math.max(0, this.hp - amount);
+
+                if (this.phase === 1 && this.hp <= this.maxHp * 0.5 && this.hp > 0) {
+                    this.phase = 2;
+                    document.getElementById('bossHudState').textContent = 'Phase II — Ascendant Dawn';
+                    audio.playBossRoar(true);
+                    triggerShake(16);
+                    spawnShockwave(this.x, this.y, 260, '#fde047', 6);
+                }
+
+                if (this.hp <= 0) {
+                    onBossDefeated('RADIANCE');
+                }
+            }
+
+            update(dt) {
+                this.animTime += dt;
+                this.trailHp += (this.hp - this.trailHp) * Math.min(1, dt * 8);
+
+                // Smooth divine hover toward target position
+                this.x += (this.targetX - this.x) * Math.min(1, dt * 2.5);
+                this.y += (this.targetY - this.y) * Math.min(1, dt * 2.5);
+
+                const spd = this.phase === 2 ? 1.3 : 1.0;
+                this.stateTimer -= dt;
+
+                if (this.state === 'HOVER') {
+                    if (this.stateTimer <= 0) {
+                        // Teleport / Glide to new vantage point & launch attack
+                        this.targetX = worldWidth * (0.22 + Math.random() * 0.56);
+                        this.targetY = groundY - (185 + Math.random() * 110);
+
+                        const r = Math.random();
+                        if (r < 0.38) {
+                            this.state = 'RADIAL_SPEARS';
+                            this.stateTimer = 1.05 / spd;
+                            audio.playBossRoar(true);
+                            // Spawn 7 golden light-spears radiating outward
+                            const count = this.phase === 2 ? 9 : 7;
+                            for (let i = 0; i < count; i++) {
+                                const a = (Math.PI * 0.12) + (i / (count - 1)) * (Math.PI * 0.76);
+                                enemyProjectiles.push({
+                                    x: this.x,
+                                    y: this.y,
+                                    vx: Math.cos(a) * 430 * spd,
+                                    vy: Math.sin(a) * 430 * spd,
+                                    r: 11,
+                                    isGold: true,
+                                    life: 2.5
+                                });
+                            }
+                        } else if (r < 0.72) {
+                            this.state = 'LIGHT_BEAM';
+                            this.stateTimer = 1.35;
+                            this.beamAngle = Math.PI * 0.22;
+                            audio.playSpell();
+                        } else {
+                            this.state = 'ORB_BARRAGE';
+                            this.stateTimer = 1.15 / spd;
+                            audio.playBossRoar(true);
+                            for (let i = 0; i < 4; i++) {
+                                const dx = knight.x - this.x + (i - 1.5) * 90;
+                                const dy = (knight.y - 26) - this.y;
+                                const d = Math.hypot(dx, dy) || 1;
+                                enemyProjectiles.push({
+                                    x: this.x,
+                                    y: this.y - 10,
+                                    vx: (dx / d) * 390 * spd,
+                                    vy: (dy / d) * 390 * spd,
+                                    r: 14,
+                                    isGold: true,
+                                    life: 2.8
+                                });
+                            }
+                        }
+                    }
+                } else if (this.state === 'LIGHT_BEAM') {
+                    // Sweeping solar laser beam across the arena
+                    this.beamAngle += dt * 0.85 * spd;
+                    if (this.stateTimer < 0.95) {
+                        // Line-point distance check against Knight
+                        const bx = Math.cos(this.beamAngle);
+                        const by = Math.sin(this.beamAngle);
+                        const px = knight.x - this.x;
+                        const py = (knight.y - 26) - this.y;
+                        const proj = px * bx + py * by;
+                        if (proj > 0) {
+                            const perp = Math.abs(px * by - py * bx);
+                            if (perp < 22) {
+                                knight.takeDamage(1, this.x);
+                            }
+                        }
+                    }
+                    if (this.stateTimer <= 0) {
+                        this.state = 'HOVER';
+                        this.stateTimer = 0.85 / spd;
+                    }
+                } else {
+                    if (this.stateTimer <= 0) {
+                        this.state = 'HOVER';
+                        this.stateTimer = 0.85 / spd;
+                    }
+                }
+            }
+
+            draw(ctx) {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+
+                // Radiant Solar Halo
+                const halo = ctx.createRadialGradient(0, 0, 15, 0, 0, 165);
+                halo.addColorStop(0, 'rgba(254, 240, 138, 0.55)');
+                halo.addColorStop(0.5, 'rgba(245, 158, 11, 0.18)');
+                halo.addColorStop(1, 'rgba(245, 158, 11, 0)');
+                ctx.fillStyle = halo;
+                ctx.beginPath();
+                ctx.arc(0, 0, 165, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Sweeping Solar Light Beam
+                if (this.state === 'LIGHT_BEAM') {
+                    ctx.save();
+                    ctx.rotate(this.beamAngle);
+                    const isActive = this.stateTimer < 0.95;
+                    ctx.fillStyle = isActive ? 'rgba(254, 249, 195, 0.9)' : 'rgba(253, 224, 71, 0.25)';
+                    ctx.fillRect(0, isActive ? -16 : -3, 1200, isActive ? 32 : 6);
+                    ctx.restore();
+                }
+
+                // Majestic Moth Wings (Flapping gently)
+                const flap = Math.sin(this.animTime * 6) * 0.14;
+                [-1, 1].forEach(side => {
+                    ctx.save();
+                    ctx.scale(side, 1);
+                    ctx.rotate(flap);
+                    ctx.fillStyle = '#fefce8';
+                    ctx.strokeStyle = '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(14, -20);
+                    ctx.quadraticCurveTo(95, -75, 118, -15);
+                    ctx.quadraticCurveTo(85, 25, 16, 12);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                    ctx.restore();
+                });
+
+                // Crowned Deity Mask & Three-Pronged Halo Horns
+                ctx.fillStyle = '#ffffff';
+                ctx.beginPath();
+                ctx.ellipse(0, -18, 22, 32, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Three Crown Spires
+                [-18, 0, 18].forEach((ox, i) => {
+                    ctx.beginPath();
+                    ctx.moveTo(ox - 6, -42);
+                    ctx.lineTo(ox, i === 1 ? -96 : -78);
+                    ctx.lineTo(ox + 6, -42);
+                    ctx.closePath();
+                    ctx.fill();
+                });
+
+                // Glowing Golden-Orange Eyes
+                ctx.fillStyle = '#f59e0b';
+                ctx.shadowColor = '#fbbf24';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.ellipse(-8, -18, 4.5, 7, -0.2, 0, Math.PI * 2);
+                ctx.ellipse(8, -18, 4.5, 7, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // =========================================================================
+        // 9. ENVIRONMENT, SOUL VESSEL & HUD RENDERING
+        // =========================================================================
+        function drawEnvironment(time) {
+            // Deep Hallownest Obsidian-Indigo Gradient
+            const bg = ctx.createLinearGradient(0, 0, 0, groundY);
+            if (zone === 'ARENA_RADIANCE') {
+                bg.addColorStop(0, '#1c150c');
+                bg.addColorStop(0.55, '#17141d');
+                bg.addColorStop(1, '#0b0d17');
+            } else {
+                bg.addColorStop(0, '#05070e');
+                bg.addColorStop(0.6, '#0b1021');
+                bg.addColorStop(1, '#11182c');
+            }
+            ctx.fillStyle = bg;
+            ctx.fillRect(0, 0, width, height);
+
+            // Parallax Gothic Pillars & Arches
+            ctx.save();
+            const pShift = camera.x * 0.35;
+            ctx.fillStyle = zone === 'ARENA_RADIANCE' ? 'rgba(253, 224, 71, 0.04)' : 'rgba(15, 23, 42, 0.65)';
+            for (let px = -200; px < worldWidth + 400; px += 340) {
+                const screenX = px - pShift;
+                ctx.fillRect(screenX, 0, 56, groundY);
+                // Gothic Pointed Arch between pillars
+                ctx.strokeStyle = zone === 'ARENA_RADIANCE' ? 'rgba(253, 224, 71, 0.14)' : 'rgba(125, 211, 252, 0.08)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(screenX + 56, 180);
+                ctx.quadraticCurveTo(screenX + 198, 40, screenX + 340, 180);
+                ctx.stroke();
+            }
+            ctx.restore();
+
+            // World-space camera transform
+            ctx.save();
+            ctx.translate(-camera.x, 0);
+
+            // Cavern Bench Prop
+            if (zone === 'CAVERN') {
+                const bx = benchProp.x;
+                const by = benchProp.y;
+                // Ornate Wrought-Iron Bench
+                ctx.strokeStyle = '#94a3b8';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(bx - 32, by);
+                ctx.lineTo(bx - 32, by - 26);
+                ctx.lineTo(bx + 32, by - 26);
+                ctx.lineTo(bx + 32, by);
+                ctx.moveTo(bx - 36, by - 14);
+                ctx.lineTo(bx + 36, by - 14);
+                ctx.stroke();
+
+                // Prompt if Knight is nearby
+                if (Math.abs(knight.x - bx) < 65) {
+                    ctx.font = '600 12px "Cinzel", serif';
+                    ctx.fillStyle = '#e0f2fe';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('REST & CHARMS [W / B]', bx, by - 46);
+                }
+
+                // Glowing Gate Portal at end of Cavern
+                const gx = gatePortal.x;
+                const gy = gatePortal.y;
+                const pGlow = ctx.createRadialGradient(gx, gy - 55, 8, gx, gy - 55, 85);
+                pGlow.addColorStop(0, 'rgba(186, 230, 253, 0.55)');
+                pGlow.addColorStop(1, 'rgba(56, 189, 248, 0)');
+                ctx.fillStyle = pGlow;
+                ctx.beginPath();
+                ctx.arc(gx, gy - 55, 85, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(gx, gy - 50, 34, Math.PI, 0);
+                ctx.lineTo(gx + 34, gy);
+                ctx.moveTo(gx - 34, gy - 50);
+                ctx.lineTo(gx - 34, gy);
+                ctx.stroke();
+            }
+
+            // Floating Stone Platforms
+            platforms.forEach(plat => {
+                ctx.fillStyle = '#0f172a';
+                ctx.strokeStyle = zone === 'ARENA_RADIANCE' ? 'rgba(253, 224, 71, 0.45)' : 'rgba(186, 230, 253, 0.35)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.roundRect(plat.x, plat.y, plat.w, plat.h, 6);
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // Hazard Spikes (Pogo-able!)
+            hazardSpikes.forEach(spk => {
+                ctx.fillStyle = '#cbd5e1';
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 1;
+                for (let sx = spk.x; sx < spk.x + spk.w; sx += 18) {
+                    ctx.beginPath();
+                    ctx.moveTo(sx, groundY);
+                    ctx.lineTo(sx + 9, groundY - 22);
+                    ctx.lineTo(sx + 18, groundY);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                }
+            });
+
+            // Geo Crystals
+            geoCrystals.forEach(gc => {
+                if (gc.broken) return;
+                ctx.fillStyle = '#38bdf8';
+                ctx.strokeStyle = '#e0f2fe';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(gc.x - 14, gc.y);
+                ctx.lineTo(gc.x - 6, gc.y - 34);
+                ctx.lineTo(gc.x + 8, gc.y - 28);
+                ctx.lineTo(gc.x + 15, gc.y);
+                ctx.closePath();
+                ctx.fill();
+                ctx.stroke();
+            });
+
+            // Main Obsidian Floor
+            const floorGrad = ctx.createLinearGradient(0, groundY, 0, height);
+            floorGrad.addColorStop(0, '#0f172a');
+            floorGrad.addColorStop(0.25, '#070a14');
+            floorGrad.addColorStop(1, '#020308');
+            ctx.fillStyle = floorGrad;
+            ctx.fillRect(0, groundY, worldWidth, height - groundY);
+
+            ctx.strokeStyle = zone === 'ARENA_RADIANCE' ? 'rgba(253, 224, 71, 0.45)' : 'rgba(186, 230, 253, 0.35)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, groundY);
+            ctx.lineTo(worldWidth, groundY);
+            ctx.stroke();
+
+            // Swaying Foreground Grass Blades
+            ctx.strokeStyle = '#04060c';
+            ctx.lineWidth = 2.5;
+            grassBlades.forEach(g => {
+                const sway = g.angle + Math.sin(time * 2 + g.phase) * 0.08;
+                ctx.beginPath();
+                ctx.moveTo(g.x, groundY);
+                ctx.quadraticCurveTo(g.x + sway * 14, groundY - g.height * 0.5, g.x + sway * 24, groundY - g.height);
+                ctx.stroke();
+            });
+
+            ctx.restore();
+        }
+
+        function drawSoulOrb(time) {
+            const w = soulOrbCanvas.width;
+            const h = soulOrbCanvas.height;
+            const cx = w * 0.5;
+            const cy = h * 0.5;
+            const r = 32;
+
+            soulCtx.clearRect(0, 0, w, h);
+
+            // Outer Ornate Vessel Ring
+            soulCtx.strokeStyle = knight.soul >= 33 ? '#e0f2fe' : 'rgba(148, 163, 184, 0.45)';
+            soulCtx.lineWidth = 3;
+            soulCtx.beginPath();
+            soulCtx.arc(cx, cy, r + 3, 0, Math.PI * 2);
+            soulCtx.stroke();
+
+            // Clip inner orb for animated SOUL liquid slosh
+            soulCtx.save();
+            soulCtx.beginPath();
+            soulCtx.arc(cx, cy, r, 0, Math.PI * 2);
+            soulCtx.clip();
+
+            soulCtx.fillStyle = '#050811';
+            soulCtx.fillRect(0, 0, w, h);
+
+            const fillRatio = knight.soul / knight.maxSoul;
+            const waterY = cy + r - fillRatio * (r * 2);
+
+            soulCtx.fillStyle = knight.soul >= 33 ? '#f8fafc' : '#94a3b8';
+            soulCtx.beginPath();
+            soulCtx.moveTo(0, h);
+            for (let x = 0; x <= w; x += 4) {
+                const wave = Math.sin(x * 0.14 + time * 6) * 2.5;
+                soulCtx.lineTo(x, waterY + wave);
+            }
+            soulCtx.lineTo(w, h);
+            soulCtx.closePath();
+            soulCtx.fill();
+
+            // Glowing Vessel Eyes inside Soul Orb when >= 33 Soul!
+            if (knight.soul >= 33) {
+                soulCtx.fillStyle = '#070912';
+                soulCtx.beginPath();
+                soulCtx.ellipse(cx - 8, cy - 2, 3.5, 5.5, 0, 0, Math.PI * 2);
+                soulCtx.ellipse(cx + 8, cy - 2, 3.5, 5.5, 0, 0, Math.PI * 2);
+                soulCtx.fill();
+            }
+
+            soulCtx.restore();
+        }
+
+        function updateHUD(time) {
+            drawSoulOrb(time);
+
+            // Update 5 Ancient Masks
+            const masksBox = document.getElementById('masksContainer');
+            if (masksBox.children.length !== knight.maxMasks) {
+                masksBox.innerHTML = '';
+                for (let i = 0; i < knight.maxMasks; i++) {
+                    const m = document.createElement('div');
+                    m.className = 'w-6 h-7 transition-all duration-200';
+                    masksBox.appendChild(m);
+                }
+            }
+            for (let i = 0; i < knight.maxMasks; i++) {
+                const full = i < knight.masks;
+                masksBox.children[i].innerHTML = full
+                    ? `<svg viewBox="0 0 24 28" class="w-full h-full drop-shadow-[0_0_8px_rgba(224,242,254,0.65)]"><path d="M12 2 C6 2 3 7 3 13 C3 20 7 25 12 26 C17 25 21 20 21 13 C21 7 18 2 12 2 Z" fill="#f8fafc"/><ellipse cx="8.5" cy="14" rx="2.2" ry="3.2" fill="#070912"/><ellipse cx="15.5" cy="14" rx="2.2" ry="3.2" fill="#070912"/></svg>`
+                    : `<svg viewBox="0 0 24 28" class="w-full h-full opacity-40"><path d="M12 2 C6 2 3 7 3 13 C3 20 7 25 12 26 C17 25 21 20 21 13 C21 7 18 2 12 2 Z" fill="none" stroke="#94a3b8" stroke-width="1.8"/></svg>`;
+            }
+
+            // Geo & Shade Cloak Badge
+            document.getElementById('geoCountText').textContent = stats.geo;
+            const shadeBadge = document.getElementById('shadeCloakBadge');
+            if (knight.shadeCooldown <= 0) {
+                shadeBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-sky-300 shadow-[0_0_8px_#7dd3fc]"></span><span>Shade Cloak Ready</span>`;
+                shadeBadge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-950/80 border border-sky-400/50 text-[10px] tracking-widest uppercase text-sky-200';
+            } else {
+                shadeBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-600"></span><span>Recharging</span>`;
+                shadeBadge.className = 'flex items-center gap-1.5 px-2 py-0.5 rounded bg-slate-950/80 border border-slate-700 text-[10px] tracking-widest uppercase text-slate-400';
+            }
+
+            // Boss Health Bar
+            if (activeBoss) {
+                document.getElementById('bossHpBar').style.width = `${(activeBoss.hp / activeBoss.maxHp) * 100}%`;
+                document.getElementById('bossHpTrail').style.width = `${(activeBoss.trailHp / activeBoss.maxHp) * 100}%`;
+            }
+        }
+
+        // =========================================================================
+        // 10. COLLISION HELPERS & GAME FLOW
+        // =========================================================================
+        function rectsOverlap(a, b) {
+            return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+        }
+
+        let knight = new Knight();
+        let activeBoss = null;
+        let lastTs = 0;
+
+        function enterBossArena(type) {
+            buildArenaZone(type);
+            knight.x = worldWidth * 0.2;
+            knight.y = groundY;
+            knight.vx = 0;
+            knight.vy = 0;
+
+            if (type === 'RADIANCE') {
+                activeBoss = new BlindingLightBoss();
+            } else {
+                activeBoss = new SentinelBoss();
+            }
+
+            document.getElementById('bossHudName').textContent = activeBoss.name;
+            document.getElementById('bossHudState').textContent = 'Phase I';
+            document.getElementById('bossHudContainer').style.opacity = '1';
+            showBanner(activeBoss.name, activeBoss.sub);
+            audio.playBossRoar(true);
+        }
+
+        function onBossDefeated(type) {
+            audio.playBossRoar(false);
+            triggerShake(18);
+            slowMoTimer = 0.65;
+            slowMoScale = 0.3;
+            spawnShockwave(activeBoss.x, activeBoss.y - 40, 320, '#ffffff', 6);
+            spawnParticles(activeBoss.x, activeBoss.y - 40, 55, '#ffffff', 90, 420, 0.9, 60);
+
+            if (selectedMode === 'SANCTUM_RUN' && type === 'HORNET') {
+                // Transition seamlessly into the Final Ascendant Boss after a brief breath!
+                activeBoss = null;
+                document.getElementById('bossHudContainer').style.opacity = '0';
+                setTimeout(() => {
+                    if (gameState === 'PLAYING') {
+                        knight.masks = knight.maxMasks;
+                        knight.soul = 100;
+                        enterBossArena('RADIANCE');
+                    }
+                }, 1900);
+            } else {
+                activeBoss = null;
+                setTimeout(() => endRun(true), 1200);
+            }
+        }
+
+        function startRun() {
+            audio.init();
+            if (audio.enabled) audio.startMusic();
+
+            knight.reset();
+            activeBoss = null;
+            particles.length = 0;
+            shockwaves.length = 0;
+            soulProjectiles.length = 0;
+            enemyProjectiles.length = 0;
+            afterimages.length = 0;
+            geoDrops.length = 0;
+            runTime = 0;
+            stats = { hitsTaken: 0, pogos: 0, geo: 0 };
+
+            document.getElementById('titleScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('flex');
+            document.getElementById('hudLayer').classList.remove('hidden');
+            document.getElementById('hudLayer').classList.add('flex');
+
+            if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+                document.getElementById('touchControls').classList.remove('hidden');
+            }
+
+            if (selectedMode === 'SANCTUM_RUN') {
+                buildCavernZone();
+                knight.x = 180;
+            } else if (selectedMode === 'BOSS_HORNET') {
+                enterBossArena('HORNET');
+            } else {
+                enterBossArena('RADIANCE');
+            }
+
+            gameState = 'PLAYING';
+            renderCharmUI();
+        }
+
+        function endRun(victory) {
+            gameState = victory ? 'VICTORY' : 'DEFEAT';
+            audio.stopFocusLoop();
+
+            const endScreen = document.getElementById('endScreen');
+            const titleEl = document.getElementById('endMainTitle');
+            const subEl = document.getElementById('endLoreSub');
+
+            if (victory) {
+                titleEl.textContent = 'Sanctum Cleansed';
+                titleEl.className = 'text-3xl sm:text-5xl font-black tracking-[0.22em] text-white soul-glow uppercase mb-4';
+                subEl.textContent = 'The Light fades into quiet Void.';
+            } else {
+                titleEl.textContent = 'Shade Shattered';
+                titleEl.className = 'text-3xl sm:text-5xl font-black tracking-[0.22em] text-slate-300 uppercase mb-4';
+                subEl.textContent = 'Your shell breaks upon the ancient stone.';
+            }
+
+            const mins = String(Math.floor(runTime / 60)).padStart(2, '0');
+            const secs = String(Math.floor(runTime % 60)).padStart(2, '0');
+            document.getElementById('statTime').textContent = `${mins}:${secs}`;
+            document.getElementById('statHits').textContent = stats.hitsTaken;
+            document.getElementById('statPogos').textContent = stats.pogos;
+            document.getElementById('statGeo').textContent = stats.geo;
+
+            endScreen.classList.remove('hidden');
+            endScreen.classList.add('flex');
+        }
+
+        // =========================================================================
+        // 11. MAIN GAME LOOP
+        // =========================================================================
+        function gameLoop(ts) {
+            if (!lastTs) lastTs = ts;
+            let rawDt = Math.min(0.05, (ts - lastTs) / 1000);
+            lastTs = ts;
+
+            if (hitstopTimer > 0) {
+                hitstopTimer -= rawDt;
+                requestAnimationFrame(gameLoop);
+                return;
+            }
+
+            if (slowMoTimer > 0) {
+                slowMoTimer -= rawDt;
+                if (slowMoTimer <= 0) slowMoScale = 1.0;
+            }
+            const dt = rawDt * slowMoScale;
+
+            // Update Ambient Lumaflies
+            lumaflies.forEach(lf => {
+                lf.phase += rawDt * 2.5;
+                lf.x += Math.cos(lf.phase * 0.7) * lf.speed * rawDt;
+                lf.y += Math.sin(lf.phase) * lf.speed * rawDt;
+            });
+
+            if (gameState === 'PLAYING') {
+                runTime += rawDt;
+                knight.update(dt);
+                if (activeBoss) activeBoss.update(dt);
+
+                // Smooth Camera Follow
+                const targetCamX = Math.max(0, Math.min(worldWidth - width, knight.x - width * 0.42));
+                camera.x += (targetCamX - camera.x) * Math.min(1, dt * 8);
+
+                // Update Vengeful Spirit Projectiles
+                for (let i = soulProjectiles.length - 1; i >= 0; i--) {
+                    const sp = soulProjectiles[i];
+                    sp.x += sp.vx * dt;
+                    sp.life -= dt;
+                    if (activeBoss && activeBoss.hp > 0 && !sp.hitBoss) {
+                        const bBox = activeBoss.getHurtbox();
+                        if (sp.x + sp.radius > bBox.x && sp.x - sp.radius < bBox.x + bBox.w && sp.y + sp.radius > bBox.y && sp.y - sp.radius < bBox.y + bBox.h) {
+                            sp.hitBoss = true;
+                            activeBoss.takeDamage(sp.damage, Math.sign(sp.vx), true);
+                            hitstopTimer = 0.05;
+                            triggerShake(9);
+                            spawnShockwave(sp.x, sp.y, 90, '#ffffff', 3);
+                            spawnParticles(sp.x, sp.y, 18, '#ffffff', 80, 260, 0.35, 0);
+                        }
+                    }
+                    if (sp.life <= 0) soulProjectiles.splice(i, 1);
+                }
+
+                // Update Enemy Projectiles
+                for (let i = enemyProjectiles.length - 1; i >= 0; i--) {
+                    const ep = enemyProjectiles[i];
+                    ep.x += ep.vx * dt;
+                    ep.y += ep.vy * dt;
+                    ep.life -= dt;
+                    if (Math.hypot(ep.x - knight.x, ep.y - (knight.y - 26)) < ep.r + 14) {
+                        knight.takeDamage(1, ep.x);
+                        enemyProjectiles.splice(i, 1);
+                        continue;
+                    }
+                    if (ep.life <= 0 || ep.y > groundY + 10) enemyProjectiles.splice(i, 1);
+                }
+
+                // Update Geo Drops & Magnetic Pickup
+                for (let i = geoDrops.length - 1; i >= 0; i--) {
+                    const g = geoDrops[i];
+                    g.x += g.vx * dt;
+                    g.y += g.vy * dt;
+                    g.vy += 900 * dt;
+                    if (g.y >= groundY - 4) {
+                        g.y = groundY - 4;
+                        g.vy = 0;
+                        g.vx *= 0.8;
+                    }
+                    if (Math.hypot(g.x - knight.x, g.y - (knight.y - 20)) < 48) {
+                        stats.geo += 5;
+                        audio.playNailSwish(1.9);
+                        geoDrops.splice(i, 1);
+                    }
+                }
+
+                updateHUD(ts * 0.001);
+            }
+
+            // Update Particles, Shockwaves & Dash Afterimages
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const pt = particles[i];
+                pt.x += pt.vx * dt;
+                pt.y += pt.vy * dt;
+                pt.vy += pt.gravity * dt;
+                pt.life -= dt;
+                if (pt.life <= 0) particles.splice(i, 1);
+            }
+            for (let i = shockwaves.length - 1; i >= 0; i--) {
+                const sw = shockwaves[i];
+                sw.r += (sw.maxR - sw.r) * Math.min(1, dt * 14);
+                sw.alpha -= dt * 2.6;
+                if (sw.alpha <= 0) shockwaves.splice(i, 1);
+            }
+            for (let i = afterimages.length - 1; i >= 0; i--) {
+                afterimages[i].life -= dt;
+                if (afterimages[i].life <= 0) afterimages.splice(i, 1);
+            }
+
+            // Camera Shake Decay
+            if (camera.shakeMag > 0.1) {
+                camera.shakeX = (Math.random() - 0.5) * camera.shakeMag * 2;
+                camera.shakeY = (Math.random() - 0.5) * camera.shakeMag * 2;
+                camera.shakeMag *= 0.84;
+            } else {
+                camera.shakeX = 0;
+                camera.shakeY = 0;
+                camera.shakeMag = 0;
+            }
+
+            // RENDER SCENE
+            ctx.save();
+            ctx.translate(camera.shakeX, camera.shakeY);
+
+            drawEnvironment(ts * 0.001);
+
+            ctx.save();
+            ctx.translate(-camera.x, 0);
+
+            // Render Lumaflies
+            lumaflies.forEach(lf => {
+                ctx.fillStyle = zone === 'ARENA_RADIANCE' ? 'rgba(253, 224, 71, 0.55)' : 'rgba(186, 230, 253, 0.45)';
+                ctx.beginPath();
+                ctx.arc(lf.x, lf.y, lf.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Render Geo Drops
+            geoDrops.forEach(g => {
+                ctx.fillStyle = '#e0f2fe';
+                ctx.beginPath();
+                ctx.arc(g.x, g.y, 4.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Render Dash Afterimages
+            afterimages.forEach(ai => {
+                ctx.save();
+                ctx.globalAlpha = (ai.life / ai.maxLife) * 0.5;
+                ctx.fillStyle = ai.isShade ? '#020617' : '#e0f2fe';
+                ctx.beginPath();
+                ctx.ellipse(ai.x, ai.y - 26, 12, 24, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            if (activeBoss) activeBoss.draw(ctx);
+            knight.draw(ctx);
+
+            // Render Vengeful Spirit Blasts
+            soulProjectiles.forEach(sp => {
+                ctx.save();
+                ctx.translate(sp.x, sp.y);
+                if (sp.vx < 0) ctx.scale(-1, 1);
+                ctx.fillStyle = '#ffffff';
+                ctx.shadowColor = '#7dd3fc';
+                ctx.shadowBlur = 20;
+                ctx.beginPath();
+                ctx.arc(0, 0, sp.radius, -Math.PI * 0.5, Math.PI * 0.5);
+                ctx.lineTo(-sp.radius * 1.8, 0);
+                ctx.closePath();
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Enemy Projectiles
+            enemyProjectiles.forEach(ep => {
+                ctx.save();
+                ctx.fillStyle = '#fef08a';
+                ctx.shadowColor = '#f59e0b';
+                ctx.shadowBlur = 16;
+                ctx.beginPath();
+                ctx.arc(ep.x, ep.y, ep.r, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // Render Shockwaves & Particles
+            shockwaves.forEach(sw => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, sw.alpha);
+                ctx.strokeStyle = sw.color;
+                ctx.lineWidth = sw.lw;
+                ctx.beginPath();
+                ctx.arc(sw.x, sw.y, sw.r, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.restore();
+            });
+
+            particles.forEach(pt => {
+                ctx.save();
+                ctx.globalAlpha = Math.max(0, pt.life / pt.maxLife);
+                ctx.fillStyle = pt.color;
+                ctx.beginPath();
+                ctx.arc(pt.x, pt.y, pt.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            ctx.restore();
+            ctx.restore();
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        // =========================================================================
+        // 12. UI EVENT LISTENERS
+        // =========================================================================
+        function openBenchModal() {
+            gameState = 'BENCH';
+            knight.masks = knight.maxMasks;
+            knight.soul = 100;
+            audio.playHealChime();
+            renderCharmUI();
+            const m = document.getElementById('benchModal');
+            m.classList.remove('hidden');
+            m.classList.add('flex');
+        }
+
+        function closeBenchModal() {
+            const m = document.getElementById('benchModal');
+            m.classList.add('hidden');
+            m.classList.remove('flex');
+            gameState = 'PLAYING';
+            renderCharmUI();
+        }
+
+        function toggleControlsModal() {
+            const m = document.getElementById('controlsModal');
+            if (m.classList.contains('hidden')) {
+                m.classList.remove('hidden');
+                m.classList.add('flex');
+            } else {
+                m.classList.add('hidden');
+                m.classList.remove('flex');
+            }
+        }
+
+        function toggleAudio() {
+            const on = audio.toggle();
+            document.getElementById('audioIcon').textContent = on ? '🔊' : '🔇';
+            document.getElementById('audioLabel').textContent = on ? 'Audio [M]' : 'Muted [M]';
+        }
+
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('hk-btn-active'));
+                btn.classList.add('hk-btn-active');
+                selectedMode = btn.dataset.mode;
+            });
+        });
+
+        document.getElementById('startBtn').addEventListener('click', startRun);
+        document.getElementById('retryBtn').addEventListener('click', startRun);
+        document.getElementById('titleReturnBtn').addEventListener('click', () => {
+            gameState = 'TITLE';
+            document.getElementById('endScreen').classList.add('hidden');
+            document.getElementById('endScreen').classList.remove('flex');
+            document.getElementById('hudLayer').classList.add('hidden');
+            document.getElementById('titleScreen').classList.remove('hidden');
+        });
+
+        document.getElementById('benchBtnHud').addEventListener('click', openBenchModal);
+        document.getElementById('closeBenchBtn').addEventListener('click', closeBenchModal);
+        document.getElementById('audioToggleBtn').addEventListener('click', toggleAudio);
+        document.getElementById('controlsToggleBtn').addEventListener('click', toggleControlsModal);
+        document.getElementById('closeControlsBtn').addEventListener('click', toggleControlsModal);
+
+        window.onload = () => {
+            resizeCanvas();
+            buildCavernZone();
+            renderCharmUI();
+            requestAnimationFrame(gameLoop);
+        };
+    })();
+    </script>
+</body>
+</html>

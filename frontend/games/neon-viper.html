@@ -1,0 +1,2231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>NEON VIPER</title>
+  <style>
+    /* ==========================================================================
+       DESIGN TOKENS & RESET
+       ========================================================================== */
+    :root {
+      --bg-outer: #060a14;
+      --bg-board: #0b1120;
+      --bg-panel: rgba(15, 23, 42, 0.82);
+      --border-subtle: rgba(148, 163, 184, 0.14);
+      --border-glow: rgba(16, 185, 129, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-emerald: #10b981;
+      --accent-cyan: #06b6d4;
+      --accent-gold: #fbbf24;
+      --accent-purple: #a855f7;
+      --accent-ice: #38bdf8;
+      --accent-danger: #f43f5e;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      background-color: var(--bg-outer);
+      background-image:
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.08) 0%, transparent 55%),
+        radial-gradient(circle at 85% 90%, rgba(6, 182, 212, 0.07) 0%, transparent 50%);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+    }
+
+    /* ==========================================================================
+       APP SHELL LAYOUT (Single 100vh Viewport, Zero Scrollbars)
+       ========================================================================== */
+    .app-shell {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      height: 100%;
+      padding: 10px 14px;
+      gap: 8px;
+    }
+
+    /* ==========================================================================
+       TOP HUD & MODE PILLS
+       ========================================================================== */
+    .hud-header {
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      flex-shrink: 0;
+      z-index: 10;
+    }
+
+    .hud-top-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      background: var(--bg-panel);
+      border: 1px solid var(--border-subtle);
+      border-radius: 14px;
+      padding: 8px 12px;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 0.95rem;
+      letter-spacing: 0.08em;
+      background: linear-gradient(135deg, #34d399 0%, #22d3ee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      white-space: nowrap;
+    }
+
+    .brand-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #10b981;
+      box-shadow: 0 0 10px #10b981;
+      flex-shrink: 0;
+    }
+
+    .stats-cluster {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .stat-box {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      line-height: 1.15;
+    }
+
+    .stat-label {
+      font-size: 0.62rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--text-muted);
+    }
+
+    .stat-value {
+      font-family: var(--font-mono);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .stat-value.best {
+      color: var(--accent-gold);
+    }
+
+    .combo-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      font-weight: 800;
+      background: rgba(16, 185, 129, 0.14);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #34d399;
+      transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+      min-width: 44px;
+    }
+
+    .combo-pill.hot {
+      background: rgba(251, 191, 36, 0.18);
+      border-color: rgba(251, 191, 36, 0.55);
+      color: #fde047;
+      transform: scale(1.06);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
+    }
+
+    .hud-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .icon-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--border-subtle);
+      background: rgba(30, 41, 59, 0.65);
+      color: var(--text-primary);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .icon-btn:hover {
+      background: rgba(51, 65, 85, 0.85);
+      border-color: rgba(148, 163, 184, 0.35);
+    }
+
+    .icon-btn:active {
+      transform: scale(0.93);
+    }
+
+    .icon-btn.muted {
+      color: var(--text-muted);
+    }
+
+    /* Mode Selector + Active Status Sub-bar */
+    .hud-sub-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .mode-tabs {
+      display: inline-flex;
+      background: rgba(15, 23, 42, 0.78);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+
+    .mode-tab {
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 0.74rem;
+      font-weight: 600;
+      padding: 5px 11px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.18s ease;
+      white-space: nowrap;
+    }
+
+    .mode-tab:hover {
+      color: var(--text-primary);
+    }
+
+    .mode-tab.active {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(6, 182, 212, 0.25));
+      color: #6ee7b7;
+      box-shadow: inset 0 0 0 1px rgba(52, 211, 153, 0.45);
+    }
+
+    /* Power-up & Combo Timer Status Pill */
+    .status-indicators {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 26px;
+    }
+
+    .powerup-badge {
+      display: none;
+      align-items: center;
+      gap: 7px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      border: 1px solid transparent;
+    }
+
+    .powerup-badge.visible {
+      display: inline-flex;
+    }
+
+    .powerup-badge.ghost {
+      background: rgba(168, 85, 247, 0.18);
+      border-color: rgba(168, 85, 247, 0.5);
+      color: #e9d5ff;
+      box-shadow: 0 0 14px rgba(168, 85, 247, 0.25);
+    }
+
+    .powerup-badge.chill {
+      background: rgba(56, 189, 248, 0.18);
+      border-color: rgba(56, 189, 248, 0.5);
+      color: #bae6fd;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.25);
+    }
+
+    .powerup-bar-track {
+      width: 46px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .powerup-bar-fill {
+      height: 100%;
+      width: 100%;
+      border-radius: 999px;
+      background: currentColor;
+      transition: width 0.05s linear;
+    }
+
+    /* ==========================================================================
+       CENTER GAME STAGE & CANVAS CONTAINER
+       ========================================================================== */
+    .stage-wrapper {
+      position: relative;
+      flex: 1 1 auto;
+      width: 100%;
+      max-width: 680px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+
+    .canvas-frame {
+      position: relative;
+      border-radius: 18px;
+      padding: 3px;
+      background: linear-gradient(145deg, rgba(16, 185, 129, 0.35), rgba(6, 182, 212, 0.15), rgba(148, 163, 184, 0.12));
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.65),
+        0 0 30px rgba(16, 185, 129, 0.08);
+      transition: background 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .canvas-frame.portal-mode {
+      background: linear-gradient(145deg, rgba(6, 182, 212, 0.5), rgba(168, 85, 247, 0.4), rgba(6, 182, 212, 0.5));
+      box-shadow:
+        0 20px 50px rgba(0, 0, 0, 0.65),
+        0 0 34px rgba(6, 182, 212, 0.16);
+    }
+
+    .canvas-frame.blitz-mode {
+      background: linear-gradient(145deg, rgba(251, 191, 36, 0.45), rgba(244, 63, 94, 0.35), rgba(16, 185, 129, 0.35));
+    }
+
+    canvas#gameCanvas {
+      display: block;
+      background-color: var(--bg-board);
+      border-radius: 15px;
+      cursor: pointer;
+    }
+
+    /* Combo Blitz top progress bar inside canvas frame */
+    .blitz-meter-wrap {
+      position: absolute;
+      top: 10px;
+      left: 14px;
+      right: 14px;
+      height: 4px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.75);
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .blitz-meter-wrap.active {
+      opacity: 1;
+    }
+
+    .blitz-meter-fill {
+      height: 100%;
+      width: 0%;
+      border-radius: 999px;
+      background: linear-gradient(90deg, #10b981, #fbbf24, #f43f5e);
+    }
+
+    /* ==========================================================================
+       MODALS (START / PAUSE / GAME OVER)
+       ========================================================================== */
+    .overlay-backdrop {
+      position: absolute;
+      inset: 3px;
+      border-radius: 15px;
+      background: rgba(8, 13, 26, 0.84);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+    }
+
+    .overlay-backdrop.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .modal-card {
+      width: 100%;
+      max-width: 360px;
+      background: rgba(15, 23, 42, 0.94);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      border-radius: 20px;
+      padding: 22px 20px;
+      text-align: center;
+      box-shadow: 0 24px 48px rgba(0, 0, 0, 0.6);
+      transform: translateY(8px) scale(0.98);
+      transition: transform 0.22s ease;
+    }
+
+    .overlay-backdrop.visible .modal-card {
+      transform: translateY(0) scale(1);
+    }
+
+    .modal-badge {
+      display: inline-block;
+      font-size: 0.68rem;
+      font-weight: 800;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.15);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      margin-bottom: 10px;
+    }
+
+    .modal-badge.danger {
+      background: rgba(244, 63, 94, 0.15);
+      color: #fb7185;
+      border-color: rgba(244, 63, 94, 0.35);
+    }
+
+    .modal-title {
+      font-size: 1.65rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      margin-bottom: 6px;
+      background: linear-gradient(135deg, #ffffff 15%, #6ee7b7 60%, #22d3ee 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .modal-subtitle {
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+      margin-bottom: 14px;
+    }
+
+    .modal-mode-selector {
+      display: flex;
+      justify-content: center;
+      background: rgba(6, 10, 20, 0.7);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 3px;
+      margin-bottom: 12px;
+    }
+
+    .modal-mode-btn {
+      flex: 1;
+      border: none;
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 0.74rem;
+      font-weight: 700;
+      padding: 6px 8px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.16s ease;
+    }
+
+    .modal-mode-btn.active {
+      background: linear-gradient(135deg, #10b981, #06b6d4);
+      color: #041311;
+      box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+    }
+
+    .mode-desc-box {
+      font-size: 0.76rem;
+      color: #cbd5e1;
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.12);
+      border-radius: 12px;
+      padding: 8px 12px;
+      margin-bottom: 14px;
+      line-height: 1.4;
+    }
+
+    .legend-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+      margin-bottom: 16px;
+      text-align: left;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      font-size: 0.72rem;
+      color: var(--text-secondary);
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(148, 163, 184, 0.1);
+      border-radius: 9px;
+      padding: 5px 8px;
+    }
+
+    .legend-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .summary-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .summary-cell {
+      background: rgba(30, 41, 59, 0.55);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      border-radius: 12px;
+      padding: 9px 6px;
+    }
+
+    .summary-cell .lbl {
+      font-size: 0.64rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      color: var(--text-muted);
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .summary-cell .val {
+      font-family: var(--font-mono);
+      font-size: 1.1rem;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .summary-cell .val.highlight {
+      color: var(--accent-gold);
+    }
+
+    .primary-btn {
+      width: 100%;
+      border: none;
+      border-radius: 13px;
+      padding: 12px 18px;
+      font-family: var(--font-sans);
+      font-size: 0.92rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: #031510;
+      background: linear-gradient(135deg, #34d399 0%, #06b6d4 100%);
+      box-shadow: 0 8px 22px rgba(16, 185, 129, 0.35);
+      cursor: pointer;
+      transition: transform 0.14s ease, box-shadow 0.14s ease, filter 0.14s ease;
+    }
+
+    .primary-btn:hover {
+      filter: brightness(1.06);
+      transform: translateY(-1px);
+      box-shadow: 0 12px 26px rgba(16, 185, 129, 0.45);
+    }
+
+    .primary-btn:active {
+      transform: translateY(1px) scale(0.98);
+    }
+
+    .controls-hint {
+      margin-top: 11px;
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+
+    kbd {
+      display: inline-block;
+      padding: 1px 5px;
+      font-family: var(--font-mono);
+      font-size: 0.66rem;
+      color: #cbd5e1;
+      background: rgba(30, 41, 59, 0.9);
+      border: 1px solid rgba(148, 163, 184, 0.25);
+      border-radius: 5px;
+    }
+
+    /* ==========================================================================
+       TOUCH / ON-SCREEN D-PAD CONTROLS
+       ========================================================================== */
+    .touch-controls {
+      display: none;
+      flex-shrink: 0;
+      width: 100%;
+      max-width: 240px;
+      padding-bottom: 2px;
+    }
+
+    .dpad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 48px);
+      gap: 6px;
+    }
+
+    .dpad-btn {
+      border: 1px solid rgba(148, 163, 184, 0.2);
+      background: rgba(15, 23, 42, 0.86);
+      color: #e2e8f0;
+      border-radius: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: background 0.1s ease, transform 0.08s ease;
+    }
+
+    .dpad-btn:active, .dpad-btn.pressed {
+      background: rgba(16, 185, 129, 0.28);
+      border-color: rgba(52, 211, 153, 0.6);
+      color: #6ee7b7;
+      transform: scale(0.94);
+    }
+
+    .dpad-up { grid-column: 2; grid-row: 1; }
+    .dpad-left { grid-column: 1; grid-row: 2; }
+    .dpad-down { grid-column: 2; grid-row: 2; }
+    .dpad-right { grid-column: 3; grid-row: 2; }
+
+    /* Show D-pad automatically on touch devices or compact screens */
+    @media (pointer: coarse), (max-width: 768px) {
+      .touch-controls {
+        display: block;
+      }
+      .app-shell {
+        padding: 8px 10px;
+        gap: 6px;
+      }
+      .brand-title span {
+        display: none;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .hud-top-row {
+        padding: 6px 9px;
+      }
+      .stat-value {
+        font-size: 0.94rem;
+      }
+      .mode-tab {
+        padding: 4px 8px;
+        font-size: 0.69rem;
+      }
+      .dpad-grid {
+        grid-template-rows: repeat(2, 44px);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- TOP HUD -->
+    <header class="hud-header">
+      <div class="hud-top-row">
+        <div class="brand-title">
+          <i class="brand-dot"></i>
+          <span>NEON VIPER</span>
+        </div>
+
+        <div class="stats-cluster">
+          <div id="comboPill" class="combo-pill" title="Score Multiplier">1x</div>
+
+          <div class="stat-box">
+            <span class="stat-label">Score</span>
+            <span id="scoreVal" class="stat-value">0</span>
+          </div>
+
+          <div class="stat-box">
+            <span class="stat-label">Best</span>
+            <span id="bestVal" class="stat-value best">0</span>
+          </div>
+        </div>
+
+        <div class="hud-actions">
+          <button id="pauseBtn" class="icon-btn" title="Pause / Resume (Space)" aria-label="Pause or Resume">
+            <svg id="pauseIcon" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+              <rect x="6" y="4" width="4" height="16" rx="1.5"></rect>
+              <rect x="14" y="4" width="4" height="16" rx="1.5"></rect>
+            </svg>
+          </button>
+          <button id="muteBtn" class="icon-btn" title="Toggle Audio" aria-label="Toggle Audio">
+            <svg id="soundOnIcon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+            <svg id="soundOffIcon" style="display:none" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <line x1="23" y1="9" x2="17" y2="15"></line>
+              <line x1="17" y1="9" x2="23" y2="15"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="hud-sub-row">
+        <div class="mode-tabs" role="tablist" aria-label="Game Modes">
+          <button class="mode-tab active" data-mode="classic">Classic</button>
+          <button class="mode-tab" data-mode="portal">Portal</button>
+          <button class="mode-tab" data-mode="blitz">Combo Blitz</button>
+        </div>
+
+        <div class="status-indicators">
+          <div id="powerupBadge" class="powerup-badge">
+            <span id="powerupName">GHOST</span>
+            <div class="powerup-bar-track">
+              <div id="powerupBarFill" class="powerup-bar-fill"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- GAME BOARD STAGE -->
+    <main id="stageWrapper" class="stage-wrapper">
+      <div id="canvasFrame" class="canvas-frame">
+        <div id="blitzMeterWrap" class="blitz-meter-wrap">
+          <div id="blitzMeterFill" class="blitz-meter-fill"></div>
+        </div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- START / PAUSE / GAME OVER OVERLAY -->
+        <div id="overlayBackdrop" class="overlay-backdrop visible">
+          <div class="modal-card">
+            <div id="modalBadge" class="modal-badge">ARCADE EDITION</div>
+            <h1 id="modalTitle" class="modal-title">NEON VIPER</h1>
+            <p id="modalSubtitle" class="modal-subtitle">Glide, chain pickups, and master the grid.</p>
+
+            <!-- Mode Selector inside Modal -->
+            <div class="modal-mode-selector">
+              <button class="modal-mode-btn active" data-mode="classic">Classic</button>
+              <button class="modal-mode-btn" data-mode="portal">Portal</button>
+              <button class="modal-mode-btn" data-mode="blitz">Combo Blitz</button>
+            </div>
+
+            <div id="modeDescBox" class="mode-desc-box">
+              Solid perimeter walls with progressive speed ramp. Pure precision.
+            </div>
+
+            <!-- Start Legend -->
+            <div id="legendGrid" class="legend-grid">
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#10b981; box-shadow:0 0 8px #10b981;"></span>
+                <span>Orb (+10 pts)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#fbbf24; box-shadow:0 0 8px #fbbf24;"></span>
+                <span>Star (+50 pts)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#a855f7; box-shadow:0 0 8px #a855f7;"></span>
+                <span>Ghost (6s Phase)</span>
+              </div>
+              <div class="legend-item">
+                <span class="legend-dot" style="background:#38bdf8; box-shadow:0 0 8px #38bdf8;"></span>
+                <span>Chill (6s Slow)</span>
+              </div>
+            </div>
+
+            <!-- Game Over Summary Stats (hidden on initial start) -->
+            <div id="summaryStats" class="summary-stats" style="display:none;">
+              <div class="summary-cell">
+                <div class="lbl">Score</div>
+                <div id="finalScoreVal" class="val">0</div>
+              </div>
+              <div class="summary-cell">
+                <div class="lbl">Best</div>
+                <div id="finalBestVal" class="val highlight">0</div>
+              </div>
+              <div class="summary-cell">
+                <div class="lbl">Length</div>
+                <div id="finalLengthVal" class="val">4</div>
+              </div>
+            </div>
+
+            <button id="primaryActionBtn" class="primary-btn">START GAME</button>
+
+            <div class="controls-hint">
+              <kbd>WASD</kbd> / <kbd>Arrows</kbd> or Swipe &bull; <kbd>Space</kbd> Pause &bull; <kbd>R</kbd> Restart
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ON-SCREEN TOUCH D-PAD -->
+    <footer class="touch-controls" aria-label="Directional Controls">
+      <div class="dpad-grid">
+        <button class="dpad-btn dpad-up" data-dir="up" aria-label="Up">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>
+        </button>
+        <button class="dpad-btn dpad-left" data-dir="left" aria-label="Left">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+        </button>
+        <button class="dpad-btn dpad-down" data-dir="down" aria-label="Down">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        </button>
+        <button class="dpad-btn dpad-right" data-dir="right" aria-label="Right">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+        </button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      /* ========================================================================
+         1. WEB AUDIO API RETRO SOUND SYNTHESIZER (Zero External Files)
+         ======================================================================== */
+      class SoundEngine {
+        constructor() {
+          this.ctx = null;
+          this.muted = localStorage.getItem('neon_viper_muted') === '1';
+        }
+
+        ensureContext() {
+          if (this.muted) return null;
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) {
+              this.ctx = new AudioCtx();
+            }
+          }
+          if (this.ctx && this.ctx.state === 'suspended') {
+            this.ctx.resume().catch(() => {});
+          }
+          return this.ctx;
+        }
+
+        toggleMute() {
+          this.muted = !this.muted;
+          localStorage.setItem('neon_viper_muted', this.muted ? '1' : '0');
+          if (!this.muted) {
+            this.ensureContext();
+            this.playUiClick();
+          }
+          return this.muted;
+        }
+
+        playUiClick() {
+          const ctx = this.ensureContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const osc = ctx.createOscillator();
+          const gain = ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(620, now);
+          osc.frequency.exponentialRampToValueAtTime(840, now + 0.045);
+          gain.gain.setValueAtTime(0.08, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+          osc.connect(gain);
+          gain.connect(ctx.destination);
+          osc.start(now);
+          osc.stop(now + 0.055);
+        }
+
+        playEat(combo = 1) {
+          const ctx = this.ensureContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const pitchBoost = Math.min(combo - 1, 5) * 45;
+
+          const notes = [523.25 + pitchBoost, 783.99 + pitchBoost]; // C5 -> G5
+          notes.forEach((freq, idx) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'triangle';
+            const t = now + idx * 0.045;
+            osc.frequency.setValueAtTime(freq, t);
+            osc.frequency.exponentialRampToValueAtTime(freq * 1.06, t + 0.08);
+            gain.gain.setValueAtTime(0.13, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.11);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.12);
+          });
+        }
+
+        playBonus() {
+          const ctx = this.ensureContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const arp = [659.25, 830.61, 987.77, 1318.51]; // E5 G#5 B5 E6
+          arp.forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            const t = now + i * 0.042;
+            osc.frequency.setValueAtTime(freq, t);
+            gain.gain.setValueAtTime(0.14, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.15);
+          });
+        }
+
+        playPowerup() {
+          const ctx = this.ensureContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+          const freqs = [440, 587.33, 880]; // A4 D5 A5
+          freqs.forEach((f, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sawtooth';
+            const t = now + i * 0.05;
+            osc.frequency.setValueAtTime(f, t);
+            osc.frequency.exponentialRampToValueAtTime(f * 1.15, t + 0.12);
+            gain.gain.setValueAtTime(0.075, t);
+            gain.gain.exponentialRampToValueAtTime(0.001, t + 0.14);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(t);
+            osc.stop(t + 0.15);
+          });
+        }
+
+        playCrash() {
+          const ctx = this.ensureContext();
+          if (!ctx) return;
+          const now = ctx.currentTime;
+
+          // Low synth buzz + sub drop
+          const osc1 = ctx.createOscillator();
+          const osc2 = ctx.createOscillator();
+          const gain = ctx.createGain();
+
+          osc1.type = 'sawtooth';
+          osc2.type = 'square';
+
+          osc1.frequency.setValueAtTime(155, now);
+          osc1.frequency.exponentialRampToValueAtTime(38, now + 0.38);
+
+          osc2.frequency.setValueAtTime(110, now);
+          osc2.frequency.exponentialRampToValueAtTime(32, now + 0.38);
+
+          gain.gain.setValueAtTime(0.18, now);
+          gain.gain.exponentialRampToValueAtTime(0.001, now + 0.42);
+
+          osc1.connect(gain);
+          osc2.connect(gain);
+          gain.connect(ctx.destination);
+
+          osc1.start(now);
+          osc2.start(now);
+          osc1.stop(now + 0.44);
+          osc2.stop(now + 0.44);
+        }
+      }
+
+      /* ========================================================================
+         2. CONSTANTS & MODE DEFINITIONS
+         ======================================================================== */
+      const GRID_COLS = 22;
+      const GRID_ROWS = 22;
+
+      const MODES = {
+        classic: {
+          id: 'classic',
+          label: 'Classic',
+          description: 'Solid perimeter walls with progressive speed ramp. Pure precision.',
+          baseTickMs: 132,
+          minTickMs: 66,
+          wrapWalls: false
+        },
+        portal: {
+          id: 'portal',
+          label: 'Portal',
+          description: 'Wrap seamlessly through outer walls—watch out for spawned neon blocks!',
+          baseTickMs: 132,
+          minTickMs: 72,
+          wrapWalls: true
+        },
+        blitz: {
+          id: 'blitz',
+          label: 'Combo Blitz',
+          description: 'Fast-paced rush! Chain eats before the timer drains for up to 5x points.',
+          baseTickMs: 112,
+          minTickMs: 62,
+          wrapWalls: false
+        }
+      };
+
+      const DIRS = {
+        up:    { x: 0,  y: -1 },
+        down:  { x: 0,  y: 1 },
+        left:  { x: -1, y: 0 },
+        right: { x: 1,  y: 0 }
+      };
+
+      /* ========================================================================
+         3. DOM ELEMENT REFERENCES
+         ======================================================================== */
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      const stageWrapper = document.getElementById('stageWrapper');
+      const canvasFrame = document.getElementById('canvasFrame');
+
+      const scoreValEl = document.getElementById('scoreVal');
+      const bestValEl = document.getElementById('bestVal');
+      const comboPillEl = document.getElementById('comboPill');
+      const pauseBtn = document.getElementById('pauseBtn');
+      const pauseIcon = document.getElementById('pauseIcon');
+      const muteBtn = document.getElementById('muteBtn');
+      const soundOnIcon = document.getElementById('soundOnIcon');
+      const soundOffIcon = document.getElementById('soundOffIcon');
+
+      const powerupBadge = document.getElementById('powerupBadge');
+      const powerupName = document.getElementById('powerupName');
+      const powerupBarFill = document.getElementById('powerupBarFill');
+
+      const blitzMeterWrap = document.getElementById('blitzMeterWrap');
+      const blitzMeterFill = document.getElementById('blitzMeterFill');
+
+      const overlayBackdrop = document.getElementById('overlayBackdrop');
+      const modalBadge = document.getElementById('modalBadge');
+      const modalTitle = document.getElementById('modalTitle');
+      const modalSubtitle = document.getElementById('modalSubtitle');
+      const modeDescBox = document.getElementById('modeDescBox');
+      const legendGrid = document.getElementById('legendGrid');
+      const summaryStats = document.getElementById('summaryStats');
+      const finalScoreVal = document.getElementById('finalScoreVal');
+      const finalBestVal = document.getElementById('finalBestVal');
+      const finalLengthVal = document.getElementById('finalLengthVal');
+      const primaryActionBtn = document.getElementById('primaryActionBtn');
+
+      const hudModeTabs = document.querySelectorAll('.mode-tab');
+      const modalModeBtns = document.querySelectorAll('.modal-mode-btn');
+      const dpadBtns = document.querySelectorAll('.dpad-btn');
+
+      /* ========================================================================
+         4. GAME STATE
+         ======================================================================== */
+      const sound = new SoundEngine();
+
+      const state = {
+        status: 'start', // 'start' | 'playing' | 'paused' | 'crashing' | 'gameover'
+        mode: 'classic',
+        score: 0,
+        bestScores: {
+          classic: parseInt(localStorage.getItem('neon_viper_best_classic') || '0', 10),
+          portal:  parseInt(localStorage.getItem('neon_viper_best_portal')  || '0', 10),
+          blitz:   parseInt(localStorage.getItem('neon_viper_best_blitz')   || '0', 10)
+        },
+        snake: [],
+        prevSnake: [],
+        dir: { x: 1, y: 0 },
+        inputQueue: [], // Buffer up to 2 valid turns per tick
+        growPending: 0,
+        foodsEaten: 0,
+
+        // Pickups & Obstacles
+        food: null,      // { x, y, pulse }
+        star: null,      // { x, y, spawnTime, duration }
+        powerup: null,   // { x, y, type: 'ghost'|'chill', spawnTime, duration }
+        obstacles: [],   // Array of { x, y, spawnAnim }
+
+        // Active Power-up Effect
+        activePowerup: null, // { type: 'ghost'|'chill', remainingMs, durationMs }
+        ghostGraceMs: 0,
+
+        // Combo Blitz State
+        combo: 1,
+        comboTimerMs: 0,
+        comboMaxMs: 4200,
+
+        // Timing & Visual Juice
+        tickAccumulator: 0,
+        lastFrameTime: 0,
+        crashTimerMs: 0,
+        shakeIntensity: 0,
+        flashAlpha: 0,
+        particles: [],
+        popups: [],
+
+        // Canvas Metrics
+        cellSize: 24,
+        boardPx: 528,
+        dpr: 1
+      };
+
+      /* ========================================================================
+         5. RESPONSIVE CANVAS SIZING (Crisp High-DPI Grid Fit)
+         ======================================================================== */
+      function resizeCanvas() {
+        const rect = stageWrapper.getBoundingClientRect();
+        // Leave comfortable breathing room around the frame border
+        const availW = Math.max(220, rect.width - 8);
+        const availH = Math.max(220, rect.height - 8);
+        const rawSize = Math.min(availW, availH);
+
+        const cellSize = Math.max(10, Math.floor(rawSize / GRID_COLS));
+        const boardPx = cellSize * GRID_COLS;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+        state.cellSize = cellSize;
+        state.boardPx = boardPx;
+        state.dpr = dpr;
+
+        canvas.style.width = `${boardPx}px`;
+        canvas.style.height = `${boardPx}px`;
+        canvas.width = Math.round(boardPx * dpr);
+        canvas.height = Math.round(boardPx * dpr);
+
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      }
+
+      window.addEventListener('resize', resizeCanvas);
+
+      /* ========================================================================
+         6. MODE & UI HELPERS
+         ======================================================================== */
+      function syncMuteIcon() {
+        soundOnIcon.style.display = sound.muted ? 'none' : 'block';
+        soundOffIcon.style.display = sound.muted ? 'block' : 'none';
+        muteBtn.classList.toggle('muted', sound.muted);
+      }
+
+      function setMode(newMode) {
+        if (!MODES[newMode]) return;
+        state.mode = newMode;
+        sound.playUiClick();
+
+        hudModeTabs.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mode === newMode);
+        });
+        modalModeBtns.forEach(btn => {
+          btn.classList.toggle('active', btn.dataset.mode === newMode);
+        });
+
+        canvasFrame.classList.toggle('portal-mode', newMode === 'portal');
+        canvasFrame.classList.toggle('blitz-mode', newMode === 'blitz');
+        modeDescBox.textContent = MODES[newMode].description;
+
+        updateHud();
+
+        // If user switches modes mid-game or on game-over, reset cleanly
+        if (state.status === 'playing' || state.status === 'paused') {
+          startNewGame();
+        } else if (state.status === 'gameover') {
+          showStartOverlay();
+        }
+      }
+
+      function updateHud() {
+        scoreValEl.textContent = state.score;
+        const best = state.bestScores[state.mode] || 0;
+        bestValEl.textContent = best;
+
+        if (state.mode === 'blitz') {
+          comboPillEl.style.display = 'inline-flex';
+          comboPillEl.textContent = `${state.combo}x`;
+          comboPillEl.classList.toggle('hot', state.combo >= 3);
+        } else {
+          comboPillEl.style.display = 'none';
+        }
+
+        // Active power-up indicator
+        if (state.activePowerup && state.activePowerup.remainingMs > 0) {
+          const { type, remainingMs, durationMs } = state.activePowerup;
+          powerupBadge.className = `powerup-badge visible ${type}`;
+          powerupName.textContent = type === 'ghost' ? 'GHOST' : 'CHILL';
+          const pct = Math.max(0, Math.min(100, (remainingMs / durationMs) * 100));
+          powerupBarFill.style.width = `${pct}%`;
+        } else {
+          powerupBadge.className = 'powerup-badge';
+        }
+
+        // Blitz meter
+        if (state.mode === 'blitz' && state.status === 'playing' && state.combo > 1) {
+          blitzMeterWrap.classList.add('active');
+          const pct = Math.max(0, Math.min(100, (state.comboTimerMs / state.comboMaxMs) * 100));
+          blitzMeterFill.style.width = `${pct}%`;
+        } else {
+          blitzMeterWrap.classList.remove('active');
+        }
+      }
+
+      function showStartOverlay() {
+        state.status = 'start';
+        modalBadge.className = 'modal-badge';
+        modalBadge.textContent = 'ARCADE EDITION';
+        modalTitle.textContent = 'NEON VIPER';
+        modalSubtitle.textContent = 'Glide, chain pickups, and master the grid.';
+        legendGrid.style.display = 'grid';
+        summaryStats.style.display = 'none';
+        primaryActionBtn.textContent = 'START GAME';
+        overlayBackdrop.classList.add('visible');
+        updateHud();
+      }
+
+      function showPauseOverlay() {
+        state.status = 'paused';
+        modalBadge.className = 'modal-badge';
+        modalBadge.textContent = 'GAME PAUSED';
+        modalTitle.textContent = 'PAUSED';
+        modalSubtitle.textContent = 'Take a breather. Ready when you are.';
+        legendGrid.style.display = 'none';
+        summaryStats.style.display = 'none';
+        primaryActionBtn.textContent = 'RESUME';
+        overlayBackdrop.classList.add('visible');
+        updateHud();
+      }
+
+      function showGameOverOverlay() {
+        state.status = 'gameover';
+        const best = state.bestScores[state.mode] || 0;
+        modalBadge.className = 'modal-badge danger';
+        modalBadge.textContent = state.score > 0 && state.score >= best ? 'NEW HIGH SCORE!' : 'SIGNAL LOST';
+        modalTitle.textContent = 'GAME OVER';
+        modalSubtitle.textContent = `${MODES[state.mode].label} Mode Run Complete`;
+        legendGrid.style.display = 'none';
+        summaryStats.style.display = 'grid';
+        finalScoreVal.textContent = state.score;
+        finalBestVal.textContent = best;
+        finalLengthVal.textContent = state.snake.length;
+        primaryActionBtn.textContent = 'PLAY AGAIN';
+        overlayBackdrop.classList.add('visible');
+        updateHud();
+      }
+
+      /* ========================================================================
+         7. GRID SPAWNING & COLLISION HELPERS
+         ======================================================================== */
+      function isCellOccupied(x, y, includeHeadSafety = false) {
+        for (let i = 0; i < state.snake.length; i++) {
+          if (state.snake[i].x === x && state.snake[i].y === y) return true;
+        }
+        for (let i = 0; i < state.obstacles.length; i++) {
+          if (state.obstacles[i].x === x && state.obstacles[i].y === y) return true;
+        }
+        if (state.food && state.food.x === x && state.food.y === y) return true;
+        if (state.star && state.star.x === x && state.star.y === y) return true;
+        if (state.powerup && state.powerup.x === x && state.powerup.y === y) return true;
+
+        if (includeHeadSafety && state.snake.length > 0) {
+          const head = state.snake[0];
+          const dist = Math.abs(head.x - x) + Math.abs(head.y - y);
+          if (dist <= 4) return true;
+        }
+        return false;
+      }
+
+      function getRandomFreeCell(includeHeadSafety = false) {
+        const free = [];
+        for (let y = 0; y < GRID_ROWS; y++) {
+          for (let x = 0; x < GRID_COLS; x++) {
+            if (!isCellOccupied(x, y, includeHeadSafety)) {
+              free.push({ x, y });
+            }
+          }
+        }
+        if (free.length === 0) return null;
+        return free[Math.floor(Math.random() * free.length)];
+      }
+
+      function spawnFood() {
+        const cell = getRandomFreeCell(false);
+        if (cell) {
+          state.food = { x: cell.x, y: cell.y, bornAt: performance.now() };
+        }
+      }
+
+      function maybeSpawnSpecialPickups() {
+        const now = performance.now();
+        // Timed Golden Star every 5 foods eaten
+        if (!state.star && state.foodsEaten > 0 && state.foodsEaten % 5 === 0) {
+          const cell = getRandomFreeCell(false);
+          if (cell) {
+            state.star = {
+              x: cell.x,
+              y: cell.y,
+              spawnTime: now,
+              duration: 8000
+            };
+          }
+        }
+
+        // Occasional Power-up Orb (Ghost or Chill)
+        if (!state.powerup && !state.activePowerup && state.foodsEaten > 0 && state.foodsEaten % 4 === 2) {
+          const cell = getRandomFreeCell(false);
+          if (cell) {
+            const type = Math.random() < 0.5 ? 'ghost' : 'chill';
+            state.powerup = {
+              x: cell.x,
+              y: cell.y,
+              type,
+              spawnTime: now,
+              duration: 9000
+            };
+          }
+        }
+
+        // Portal mode spawns obstacle blocks periodically
+        if (state.mode === 'portal' && state.foodsEaten > 0 && state.foodsEaten % 4 === 0 && state.obstacles.length < 18) {
+          const cell = getRandomFreeCell(true);
+          if (cell) {
+            state.obstacles.push({
+              x: cell.x,
+              y: cell.y,
+              spawnAnim: 0
+            });
+          }
+        }
+      }
+
+      /* ========================================================================
+         8. VISUAL EFFECTS: PARTICLES & FLOATING SCORE POPUPS
+         ======================================================================== */
+      function spawnBurst(gridX, gridY, color, count = 22) {
+        const cx = (gridX + 0.5) * state.cellSize;
+        const cy = (gridY + 0.5) * state.cellSize;
+        for (let i = 0; i < count; i++) {
+          const angle = (Math.PI * 2 * i) / count + (Math.random() - 0.5) * 0.4;
+          const speed = (1.4 + Math.random() * 3.4) * (state.cellSize / 22);
+          state.particles.push({
+            x: cx,
+            y: cy,
+            vx: Math.cos(angle) * speed,
+            vy: Math.sin(angle) * speed,
+            radius: 2 + Math.random() * 2.5,
+            color,
+            alpha: 1,
+            decay: 0.022 + Math.random() * 0.018
+          });
+        }
+      }
+
+      function spawnPopup(gridX, gridY, text, color = '#f8fafc') {
+        state.popups.push({
+          x: (gridX + 0.5) * state.cellSize,
+          y: (gridY + 0.3) * state.cellSize,
+          text,
+          color,
+          alpha: 1,
+          vy: -0.75
+        });
+      }
+
+      /* ========================================================================
+         9. CORE GAME LIFECYCLE & TICK LOGIC
+         ======================================================================== */
+      function startNewGame() {
+        sound.ensureContext();
+        sound.playUiClick();
+
+        const startX = Math.floor(GRID_COLS / 2) - 1;
+        const startY = Math.floor(GRID_ROWS / 2);
+
+        state.snake = [
+          { x: startX,     y: startY },
+          { x: startX - 1, y: startY },
+          { x: startX - 2, y: startY },
+          { x: startX - 3, y: startY }
+        ];
+        state.prevSnake = state.snake.map(s => ({ ...s }));
+        state.dir = { x: 1, y: 0 };
+        state.inputQueue = [];
+        state.growPending = 0;
+
+        state.score = 0;
+        state.foodsEaten = 0;
+        state.food = null;
+        state.star = null;
+        state.powerup = null;
+        state.obstacles = [];
+        state.activePowerup = null;
+        state.ghostGraceMs = 0;
+
+        state.combo = 1;
+        state.comboTimerMs = 0;
+
+        state.tickAccumulator = 0;
+        state.crashTimerMs = 0;
+        state.shakeIntensity = 0;
+        state.flashAlpha = 0;
+        state.particles = [];
+        state.popups = [];
+
+        spawnFood();
+        state.status = 'playing';
+        overlayBackdrop.classList.remove('visible');
+        updateHud();
+      }
+
+      function getCurrentTickInterval() {
+        const cfg = MODES[state.mode];
+        // Smooth progressive speed ramp based on foods eaten
+        const speedProgress = Math.min(1, state.foodsEaten / 45);
+        let interval = cfg.baseTickMs - speedProgress * (cfg.baseTickMs - cfg.minTickMs);
+
+        // Chill power-up slows movement down comfortably
+        if (state.activePowerup && state.activePowerup.type === 'chill') {
+          interval *= 1.55;
+        }
+        return interval;
+      }
+
+      function addScore(basePoints, gridX, gridY, color) {
+        const mult = state.mode === 'blitz' ? state.combo : 1;
+        const gained = basePoints * mult;
+        state.score += gained;
+
+        if (state.score > state.bestScores[state.mode]) {
+          state.bestScores[state.mode] = state.score;
+          localStorage.setItem(`neon_viper_best_${state.mode}`, String(state.score));
+        }
+
+        const label = mult > 1 ? `+${gained} (${mult}x)` : `+${gained}`;
+        spawnPopup(gridX, gridY, label, color);
+      }
+
+      function triggerCrash() {
+        state.status = 'crashing';
+        state.crashTimerMs = 460;
+        state.shakeIntensity = 9;
+        state.flashAlpha = 0.42;
+        sound.playCrash();
+        const head = state.snake[0];
+        spawnBurst(head.x, head.y, '#f43f5e', 34);
+      }
+
+      function stepSimulation() {
+        // Snapshot previous positions for smooth sub-tick visual interpolation
+        state.prevSnake = state.snake.map(seg => ({ x: seg.x, y: seg.y }));
+
+        // Consume next queued turn if available
+        if (state.inputQueue.length > 0) {
+          state.dir = state.inputQueue.shift();
+        }
+
+        const head = state.snake[0];
+        let nextX = head.x + state.dir.x;
+        let nextY = head.y + state.dir.y;
+
+        // Wall handling (Wrap in Portal mode, Solid in Classic & Blitz)
+        if (MODES[state.mode].wrapWalls) {
+          nextX = (nextX + GRID_COLS) % GRID_COLS;
+          nextY = (nextY + GRID_ROWS) % GRID_ROWS;
+        } else {
+          if (nextX < 0 || nextX >= GRID_COLS || nextY < 0 || nextY >= GRID_ROWS) {
+            triggerCrash();
+            return;
+          }
+        }
+
+        // Obstacle collision check
+        for (let i = 0; i < state.obstacles.length; i++) {
+          if (state.obstacles[i].x === nextX && state.obstacles[i].y === nextY) {
+            triggerCrash();
+            return;
+          }
+        }
+
+        // Self collision check (bypassed while Ghost power-up or brief ghost grace is active)
+        const isGhostActive =
+          (state.activePowerup && state.activePowerup.type === 'ghost') ||
+          state.ghostGraceMs > 0;
+
+        if (!isGhostActive) {
+          // Exclude the very last tail segment if it is about to vacate on this tick
+          const checkLimit = state.growPending > 0 ? state.snake.length : state.snake.length - 1;
+          for (let i = 0; i < checkLimit; i++) {
+            if (state.snake[i].x === nextX && state.snake[i].y === nextY) {
+              triggerCrash();
+              return;
+            }
+          }
+        }
+
+        // Advance snake head
+        state.snake.unshift({ x: nextX, y: nextY });
+        if (state.growPending > 0) {
+          state.growPending--;
+          // Duplicate tail in prevSnake so interpolated growth looks seamless
+          const lastPrev = state.prevSnake[state.prevSnake.length - 1];
+          state.prevSnake.push({ x: lastPrev.x, y: lastPrev.y });
+        } else {
+          state.snake.pop();
+        }
+
+        // Check Standard Food Orb pickup
+        if (state.food && nextX === state.food.x && nextY === state.food.y) {
+          state.foodsEaten++;
+          state.growPending += 1;
+
+          if (state.mode === 'blitz') {
+            if (state.comboTimerMs > 0) {
+              state.combo = Math.min(5, state.combo + 1);
+            } else {
+              state.combo = 1;
+            }
+            state.comboMaxMs = Math.max(2600, 4400 - (state.combo - 1) * 320);
+            state.comboTimerMs = state.comboMaxMs;
+          }
+
+          sound.playEat(state.combo);
+          addScore(10, nextX, nextY, '#34d399');
+          spawnBurst(nextX, nextY, '#10b981', 20);
+          state.food = null;
+          spawnFood();
+          maybeSpawnSpecialPickups();
+        }
+
+        // Check Golden Star pickup
+        if (state.star && nextX === state.star.x && nextY === state.star.y) {
+          state.growPending += 2;
+          if (state.mode === 'blitz') {
+            state.combo = Math.min(5, state.combo + 1);
+            state.comboTimerMs = state.comboMaxMs;
+          }
+          sound.playBonus();
+          addScore(50, nextX, nextY, '#fde047');
+          spawnBurst(nextX, nextY, '#fbbf24', 30);
+          state.star = null;
+        }
+
+        // Check Power-Up Orb pickup
+        if (state.powerup && nextX === state.powerup.x && nextY === state.powerup.y) {
+          const pType = state.powerup.type;
+          state.activePowerup = {
+            type: pType,
+            remainingMs: 6000,
+            durationMs: 6000
+          };
+          sound.playPowerup();
+          const pColor = pType === 'ghost' ? '#c084fc' : '#38bdf8';
+          const pLabel = pType === 'ghost' ? 'GHOST PHASE!' : 'CRYO CHILL!';
+          spawnPopup(nextX, nextY, pLabel, pColor);
+          spawnBurst(nextX, nextY, pColor, 26);
+          state.powerup = null;
+        }
+
+        updateHud();
+      }
+
+      /* ========================================================================
+         10. INPUT QUEUE & CONTROLS (Keyboard, Swipe, Touch D-Pad)
+         ======================================================================== */
+      function queueDirection(dirKey) {
+        const nextDir = DIRS[dirKey];
+        if (!nextDir) return;
+
+        // If on start screen and user presses a direction key, start immediately!
+        if (state.status === 'start') {
+          startNewGame();
+        }
+        if (state.status !== 'playing') return;
+
+        // Compare against the last queued turn (or current direction if queue empty)
+        const refDir =
+          state.inputQueue.length > 0
+            ? state.inputQueue[state.inputQueue.length - 1]
+            : state.dir;
+
+        // Ignore duplicate or 180-degree reversal turns
+        if (nextDir.x === refDir.x && nextDir.y === refDir.y) return;
+        if (nextDir.x === -refDir.x && nextDir.y === -refDir.y) return;
+
+        if (state.inputQueue.length < 2) {
+          state.inputQueue.push(nextDir);
+        }
+      }
+
+      function togglePause() {
+        if (state.status === 'playing') {
+          sound.playUiClick();
+          showPauseOverlay();
+        } else if (state.status === 'paused') {
+          sound.playUiClick();
+          state.status = 'playing';
+          state.lastFrameTime = performance.now();
+          overlayBackdrop.classList.remove('visible');
+          updateHud();
+        }
+      }
+
+      window.addEventListener('keydown', (e) => {
+        const code = e.code;
+
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(code)) {
+          e.preventDefault();
+        }
+
+        if (code === 'ArrowUp' || code === 'KeyW') {
+          queueDirection('up');
+        } else if (code === 'ArrowDown' || code === 'KeyS') {
+          queueDirection('down');
+        } else if (code === 'ArrowLeft' || code === 'KeyA') {
+          queueDirection('left');
+        } else if (code === 'ArrowRight' || code === 'KeyD') {
+          queueDirection('right');
+        } else if (code === 'Space' || code === 'KeyP') {
+          if (state.status === 'playing' || state.status === 'paused') {
+            togglePause();
+          } else if (state.status === 'start' || state.status === 'gameover') {
+            startNewGame();
+          }
+        } else if (code === 'Enter') {
+          if (state.status === 'start' || state.status === 'gameover') {
+            startNewGame();
+          } else if (state.status === 'paused') {
+            togglePause();
+          }
+        } else if (code === 'KeyR') {
+          if (state.status !== 'start') {
+            startNewGame();
+          }
+        }
+      });
+
+      // Touch Swipe Gestures on Stage
+      let touchStartX = 0;
+      let touchStartY = 0;
+      let touchActive = false;
+
+      stageWrapper.addEventListener('touchstart', (e) => {
+        if (e.target.closest('button')) return;
+        if (e.touches.length > 0) {
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+          touchActive = true;
+        }
+      }, { passive: true });
+
+      stageWrapper.addEventListener('touchmove', (e) => {
+        if (!touchActive || e.touches.length === 0) return;
+        const dx = e.touches[0].clientX - touchStartX;
+        const dy = e.touches[0].clientY - touchStartY;
+        const threshold = 22;
+
+        if (Math.abs(dx) > threshold || Math.abs(dy) > threshold) {
+          if (Math.abs(dx) > Math.abs(dy)) {
+            queueDirection(dx > 0 ? 'right' : 'left');
+          } else {
+            queueDirection(dy > 0 ? 'down' : 'up');
+          }
+          // Reset anchor so continuous swipes can chain turns smoothly
+          touchStartX = e.touches[0].clientX;
+          touchStartY = e.touches[0].clientY;
+        }
+      }, { passive: true });
+
+      stageWrapper.addEventListener('touchend', () => {
+        touchActive = false;
+      }, { passive: true });
+
+      // On-screen D-Pad Buttons (instant pointerdown responsiveness)
+      dpadBtns.forEach(btn => {
+        const triggerDir = (e) => {
+          e.preventDefault();
+          btn.classList.add('pressed');
+          queueDirection(btn.dataset.dir);
+          setTimeout(() => btn.classList.remove('pressed'), 110);
+        };
+        btn.addEventListener('pointerdown', triggerDir);
+      });
+
+      // HUD & Modal Button Bindings
+      hudModeTabs.forEach(btn => {
+        btn.addEventListener('click', () => setMode(btn.dataset.mode));
+      });
+
+      modalModeBtns.forEach(btn => {
+        btn.addEventListener('click', () => setMode(btn.dataset.mode));
+      });
+
+      primaryActionBtn.addEventListener('click', () => {
+        if (state.status === 'paused') {
+          togglePause();
+        } else {
+          startNewGame();
+        }
+      });
+
+      pauseBtn.addEventListener('click', () => {
+        if (state.status === 'playing' || state.status === 'paused') {
+          togglePause();
+        }
+      });
+
+      muteBtn.addEventListener('click', () => {
+        sound.toggleMute();
+        syncMuteIcon();
+      });
+
+      /* ========================================================================
+         11. RENDERING ENGINE (Smooth Sub-Tick Interpolation & Rich Glows)
+         ======================================================================== */
+      function lerp(a, b, t) {
+        return a + (b - a) * t;
+      }
+
+      function drawGridBackground() {
+        const size = state.boardPx;
+        const cs = state.cellSize;
+
+        ctx.fillStyle = '#0b1120';
+        ctx.fillRect(0, 0, size, size);
+
+        // Subtle midnight grid lines
+        ctx.strokeStyle = 'rgba(148, 163, 184, 0.065)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let c = 1; c < GRID_COLS; c++) {
+          const x = Math.round(c * cs) + 0.5;
+          ctx.moveTo(x, 0);
+          ctx.lineTo(x, size);
+        }
+        for (let r = 1; r < GRID_ROWS; r++) {
+          const y = Math.round(r * cs) + 0.5;
+          ctx.moveTo(0, y);
+          ctx.lineTo(size, y);
+        }
+        ctx.stroke();
+
+        // Portal mode perimeter hint markers
+        if (state.mode === 'portal') {
+          ctx.strokeStyle = 'rgba(34, 211, 238, 0.28)';
+          ctx.lineWidth = 2;
+          ctx.setLineDash([cs * 0.45, cs * 0.35]);
+          ctx.strokeRect(1, 1, size - 2, size - 2);
+          ctx.setLineDash([]);
+        }
+      }
+
+      function drawObstacles() {
+        const cs = state.cellSize;
+        state.obstacles.forEach(obs => {
+          obs.spawnAnim = Math.min(1, obs.spawnAnim + 0.08);
+          const scale = obs.spawnAnim;
+          const pad = cs * 0.14;
+          const boxSize = (cs - pad * 2) * scale;
+          const cx = (obs.x + 0.5) * cs;
+          const cy = (obs.y + 0.5) * cs;
+
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.fillStyle = '#1e293b';
+          ctx.strokeStyle = '#38bdf8';
+          ctx.lineWidth = 1.6;
+          ctx.shadowColor = 'rgba(56, 189, 248, 0.35)';
+          ctx.shadowBlur = 8;
+
+          roundRectPath(ctx, -boxSize / 2, -boxSize / 2, boxSize, boxSize, cs * 0.22);
+          ctx.fill();
+          ctx.stroke();
+
+          // Inner neon X cross
+          ctx.strokeStyle = 'rgba(56, 189, 248, 0.35)';
+          ctx.lineWidth = 1.2;
+          const inner = boxSize * 0.24;
+          ctx.beginPath();
+          ctx.moveTo(-inner, -inner);
+          ctx.lineTo(inner, inner);
+          ctx.moveTo(inner, -inner);
+          ctx.lineTo(-inner, inner);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+
+      function roundRectPath(c, x, y, w, h, r) {
+        c.beginPath();
+        c.moveTo(x + r, y);
+        c.arcTo(x + w, y, x + w, y + h, r);
+        c.arcTo(x + w, y + h, x, y + h, r);
+        c.arcTo(x, y + h, x, y, r);
+        c.arcTo(x, y, x + w, y, r);
+        c.closePath();
+      }
+
+      function drawPickups(now) {
+        const cs = state.cellSize;
+
+        // 1. Standard Glowing Orb
+        if (state.food) {
+          const cx = (state.food.x + 0.5) * cs;
+          const cy = (state.food.y + 0.5) * cs;
+          const pulse = 1 + Math.sin(now * 0.007) * 0.12;
+          const radius = cs * 0.31 * pulse;
+
+          ctx.save();
+          // Outer soft halo
+          const grad = ctx.createRadialGradient(cx, cy, radius * 0.15, cx, cy, cs * 0.65);
+          grad.addColorStop(0, 'rgba(52, 211, 153, 0.55)');
+          grad.addColorStop(1, 'rgba(16, 185, 129, 0)');
+          ctx.fillStyle = grad;
+          ctx.beginPath();
+          ctx.arc(cx, cy, cs * 0.65, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Core orb
+          ctx.fillStyle = '#34d399';
+          ctx.shadowColor = '#10b981';
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Specular highlight
+          ctx.fillStyle = '#ecfdf5';
+          ctx.beginPath();
+          ctx.arc(cx - radius * 0.28, cy - radius * 0.28, radius * 0.28, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 2. Timed Golden Star with Circular Countdown Ring
+        if (state.star) {
+          const elapsed = now - state.star.spawnTime;
+          const remainingRatio = Math.max(0, 1 - elapsed / state.star.duration);
+          const cx = (state.star.x + 0.5) * cs;
+          const cy = (state.star.y + 0.5) * cs;
+
+          ctx.save();
+          // Shrinking countdown timer ring
+          ctx.strokeStyle = 'rgba(251, 191, 36, 0.22)';
+          ctx.lineWidth = 2.2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, cs * 0.46, 0, Math.PI * 2);
+          ctx.stroke();
+
+          ctx.strokeStyle = '#fbbf24';
+          ctx.lineWidth = 2.4;
+          ctx.beginPath();
+          ctx.arc(cx, cy, cs * 0.46, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * remainingRatio);
+          ctx.stroke();
+
+          // Rotating 5-point Star
+          ctx.translate(cx, cy);
+          ctx.rotate(now * 0.0025);
+          ctx.fillStyle = '#fbbf24';
+          ctx.shadowColor = '#f59e0b';
+          ctx.shadowBlur = 14;
+
+          const outerR = cs * 0.34;
+          const innerR = cs * 0.16;
+          ctx.beginPath();
+          for (let i = 0; i < 10; i++) {
+            const r = i % 2 === 0 ? outerR : innerR;
+            const a = (i * Math.PI) / 5 - Math.PI / 2;
+            if (i === 0) ctx.moveTo(Math.cos(a) * r, Math.sin(a) * r);
+            else ctx.lineTo(Math.cos(a) * r, Math.sin(a) * r);
+          }
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // 3. Power-Up Orb (Ghost or Chill)
+        if (state.powerup) {
+          const elapsed = now - state.powerup.spawnTime;
+          const remainingRatio = Math.max(0, 1 - elapsed / state.powerup.duration);
+          const cx = (state.powerup.x + 0.5) * cs;
+          const cy = (state.powerup.y + 0.5) * cs;
+          const isGhost = state.powerup.type === 'ghost';
+          const mainColor = isGhost ? '#a855f7' : '#38bdf8';
+          const lightColor = isGhost ? '#f3e8ff' : '#e0f2fe';
+
+          ctx.save();
+          // Timer ring
+          ctx.strokeStyle = mainColor;
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(cx, cy, cs * 0.45, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * remainingRatio);
+          ctx.stroke();
+
+          // Glowing orb
+          const pulse = 1 + Math.sin(now * 0.009) * 0.1;
+          ctx.fillStyle = mainColor;
+          ctx.shadowColor = mainColor;
+          ctx.shadowBlur = 14;
+          ctx.beginPath();
+          ctx.arc(cx, cy, cs * 0.29 * pulse, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Crisp inner icon glyph
+          ctx.fillStyle = lightColor;
+          ctx.font = `bold ${Math.round(cs * 0.34)}px sans-serif`;
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(isGhost ? 'G' : '❄', cx, cy + 0.5);
+          ctx.restore();
+        }
+      }
+
+      function getInterpolatedPoints(alpha) {
+        const pts = [];
+        const len = state.snake.length;
+        for (let i = 0; i < len; i++) {
+          const curr = state.snake[i];
+          const prev = state.prevSnake[i] || curr;
+          const dx = curr.x - prev.x;
+          const dy = curr.y - prev.y;
+
+          // Detect portal wrap jump (> 1 cell delta)
+          if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+            pts.push({ x: curr.x, y: curr.y, wrapped: true });
+          } else {
+            pts.push({
+              x: lerp(prev.x, curr.x, alpha),
+              y: lerp(prev.y, curr.y, alpha),
+              wrapped: false
+            });
+          }
+        }
+        return pts;
+      }
+
+      function drawSnake(alpha, now) {
+        if (state.snake.length === 0) return;
+
+        const cs = state.cellSize;
+        const pts = getInterpolatedPoints(alpha);
+        const isGhost = state.activePowerup && state.activePowerup.type === 'ghost';
+        const isChill = state.activePowerup && state.activePowerup.type === 'chill';
+
+        ctx.save();
+        if (isGhost) {
+          ctx.globalAlpha = 0.58 + Math.sin(now * 0.015) * 0.1;
+        }
+
+        // Draw connected rounded body segments from tail to head
+        const total = pts.length;
+        for (let i = total - 1; i >= 0; i--) {
+          const p = pts[i];
+          const t = total > 1 ? i / (total - 1) : 0; // 0 at head, 1 at tail
+
+          // Tapering thickness from head to tail
+          const radius = cs * lerp(0.41, 0.26, Math.pow(t, 0.85));
+          const cx = (p.x + 0.5) * cs;
+          const cy = (p.y + 0.5) * cs;
+
+          // Vibrant Emerald -> Cyan gradient along body (or Violet in Ghost / Ice in Chill)
+          let segColor;
+          if (isGhost) {
+            segColor = i % 2 === 0 ? '#a855f7' : '#c084fc';
+          } else if (isChill) {
+            segColor = `hsl(${lerp(195, 212, t)}, 92%, ${lerp(62, 52, t)}%)`;
+          } else {
+            // Emerald (#10b981 ~ hsl(160, 84%, 45%)) -> Cyan (#06b6d4 ~ hsl(188, 94%, 46%))
+            const hue = lerp(156, 188, t);
+            const light = lerp(50, 42, t);
+            segColor = `hsl(${hue}, 88%, ${light}%)`;
+          }
+
+          // Draw smooth capsule connector to next segment toward head if adjacent (not wrapped)
+          if (i > 0 && !pts[i - 1].wrapped && !p.wrapped) {
+            const nextP = pts[i - 1];
+            const ncx = (nextP.x + 0.5) * cs;
+            const ncy = (nextP.y + 0.5) * cs;
+
+            ctx.strokeStyle = segColor;
+            ctx.lineWidth = radius * 2;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(ncx, ncy);
+            ctx.stroke();
+          }
+
+          // Segment circle
+          ctx.fillStyle = segColor;
+          if (i === 0) {
+            ctx.shadowColor = isGhost ? '#a855f7' : isChill ? '#38bdf8' : '#10b981';
+            ctx.shadowBlur = 14;
+          } else {
+            ctx.shadowBlur = 0;
+          }
+
+          ctx.beginPath();
+          ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+
+        // Draw Distinct Viper Head Details (Tongue + Directional Eyes tracking nearest food)
+        const headPt = pts[0];
+        const hx = (headPt.x + 0.5) * cs;
+        const hy = (headPt.y + 0.5) * cs;
+        const headAngle = Math.atan2(state.dir.y, state.dir.x);
+
+        ctx.save();
+        ctx.translate(hx, hy);
+        ctx.rotate(headAngle);
+        ctx.shadowBlur = 0;
+
+        // Subtle flicking forked tongue animation
+        const tongueCycle = Math.sin(now * 0.014);
+        if (tongueCycle > 0.25) {
+          const ext = ((tongueCycle - 0.25) / 0.75) * cs * 0.36;
+          const baseStart = cs * 0.36;
+          ctx.strokeStyle = '#fb7185';
+          ctx.lineWidth = Math.max(1.4, cs * 0.065);
+          ctx.lineCap = 'round';
+          ctx.beginPath();
+          ctx.moveTo(baseStart, 0);
+          ctx.lineTo(baseStart + ext, 0);
+          // Forked tips
+          ctx.lineTo(baseStart + ext + cs * 0.1, -cs * 0.08);
+          ctx.moveTo(baseStart + ext, 0);
+          ctx.lineTo(baseStart + ext + cs * 0.1, cs * 0.08);
+          ctx.stroke();
+        }
+
+        // Determine target for eyes to look toward (nearest active pickup)
+        let targetX = headPt.x + state.dir.x * 3;
+        let targetY = headPt.y + state.dir.y * 3;
+        if (state.star) {
+          targetX = state.star.x;
+          targetY = state.star.y;
+        } else if (state.food) {
+          targetX = state.food.x;
+          targetY = state.food.y;
+        }
+
+        // Compute pupil offset in head-local space
+        const worldLookAngle = Math.atan2(targetY - headPt.y, targetX - headPt.x);
+        const localLookAngle = worldLookAngle - headAngle;
+        const pupilShift = cs * 0.042;
+        const px = Math.cos(localLookAngle) * pupilShift;
+        const py = Math.sin(localLookAngle) * pupilShift;
+
+        const eyeForward = cs * 0.14;
+        const eyeSide = cs * 0.19;
+        const eyeRadius = cs * 0.115;
+        const pupilRadius = cs * 0.058;
+
+        [-1, 1].forEach(side => {
+          const ex = eyeForward;
+          const ey = side * eyeSide;
+
+          // White sclera
+          ctx.fillStyle = '#f8fafc';
+          ctx.beginPath();
+          ctx.arc(ex, ey, eyeRadius, 0, Math.PI * 2);
+          ctx.fill();
+
+          // Dark pupil looking toward food
+          ctx.fillStyle = '#090d16';
+          ctx.beginPath();
+          ctx.arc(ex + px, ey + py, pupilRadius, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        ctx.restore();
+        ctx.restore();
+      }
+
+      function drawParticlesAndPopups() {
+        // Particles
+        for (let i = state.particles.length - 1; i >= 0; i--) {
+          const p = state.particles[i];
+          p.x += p.vx;
+          p.y += p.vy;
+          p.vx *= 0.94;
+          p.vy *= 0.94;
+          p.alpha -= p.decay;
+
+          if (p.alpha <= 0) {
+            state.particles.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = p.alpha;
+          ctx.fillStyle = p.color;
+          ctx.shadowColor = p.color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+
+        // Floating Score Popups
+        for (let i = state.popups.length - 1; i >= 0; i--) {
+          const pop = state.popups[i];
+          pop.y += pop.vy;
+          pop.alpha -= 0.018;
+
+          if (pop.alpha <= 0) {
+            state.popups.splice(i, 1);
+            continue;
+          }
+
+          ctx.save();
+          ctx.globalAlpha = pop.alpha;
+          ctx.font = `800 ${Math.max(12, Math.round(state.cellSize * 0.56))}px var(--font-mono), monospace`;
+          ctx.textAlign = 'center';
+          ctx.fillStyle = pop.color;
+          ctx.shadowColor = 'rgba(0,0,0,0.85)';
+          ctx.shadowBlur = 6;
+          ctx.fillText(pop.text, pop.x, pop.y);
+          ctx.restore();
+        }
+      }
+
+      /* ========================================================================
+         12. MAIN ANIMATION LOOP
+         ======================================================================== */
+      function updateTimers(dt, now) {
+        // Expire timed Golden Star
+        if (state.star && now - state.star.spawnTime >= state.star.duration) {
+          state.star = null;
+        }
+
+        // Expire uncollected Power-up Orb
+        if (state.powerup && now - state.powerup.spawnTime >= state.powerup.duration) {
+          state.powerup = null;
+        }
+
+        // Active Power-up countdown
+        if (state.activePowerup) {
+          state.activePowerup.remainingMs -= dt;
+          if (state.activePowerup.remainingMs <= 0) {
+            const endedType = state.activePowerup.type;
+            state.activePowerup = null;
+            // Grant 450ms grace if Ghost expires while overlapping body
+            if (endedType === 'ghost') {
+              state.ghostGraceMs = 450;
+            }
+          }
+          updateHud();
+        }
+
+        if (state.ghostGraceMs > 0) {
+          state.ghostGraceMs = Math.max(0, state.ghostGraceMs - dt);
+        }
+
+        // Combo Blitz timer drain
+        if (state.mode === 'blitz' && state.combo > 1) {
+          state.comboTimerMs -= dt;
+          if (state.comboTimerMs <= 0) {
+            state.combo = 1;
+            state.comboTimerMs = 0;
+          }
+          updateHud();
+        }
+      }
+
+      function gameLoop(now) {
+        if (!state.lastFrameTime) state.lastFrameTime = now;
+        const dt = Math.min(now - state.lastFrameTime, 100); // Clamp dt for tab-switch safety
+        state.lastFrameTime = now;
+
+        const tickInterval = getCurrentTickInterval();
+
+        if (state.status === 'playing') {
+          updateTimers(dt, now);
+          state.tickAccumulator += dt;
+
+          while (state.tickAccumulator >= tickInterval && state.status === 'playing') {
+            state.tickAccumulator -= tickInterval;
+            stepSimulation();
+          }
+        } else if (state.status === 'crashing') {
+          state.crashTimerMs -= dt;
+          state.shakeIntensity *= 0.88;
+          state.flashAlpha = Math.max(0, state.flashAlpha - dt * 0.0012);
+          if (state.crashTimerMs <= 0) {
+            showGameOverOverlay();
+          }
+        }
+
+        // Render Frame
+        ctx.save();
+        if (state.shakeIntensity > 0.2) {
+          const sx = (Math.random() - 0.5) * state.shakeIntensity * 2;
+          const sy = (Math.random() - 0.5) * state.shakeIntensity * 2;
+          ctx.translate(sx, sy);
+        }
+
+        drawGridBackground();
+        drawObstacles();
+        drawPickups(now);
+
+        const alpha =
+          state.status === 'playing'
+            ? Math.min(1, state.tickAccumulator / tickInterval)
+            : 1;
+        drawSnake(alpha, now);
+        drawParticlesAndPopups();
+
+        // Impact flash vignette
+        if (state.flashAlpha > 0.01) {
+          ctx.fillStyle = `rgba(244, 63, 94, ${state.flashAlpha})`;
+          ctx.fillRect(0, 0, state.boardPx, state.boardPx);
+        }
+
+        ctx.restore();
+        requestAnimationFrame(gameLoop);
+      }
+
+      /* ========================================================================
+         13. INITIALIZATION ON WINDOW LOAD
+         ======================================================================== */
+      window.addEventListener('load', () => {
+        syncMuteIcon();
+        resizeCanvas();
+        showStartOverlay();
+        requestAnimationFrame(gameLoop);
+      });
+    })();
+  </script>
+</body>
+</html>

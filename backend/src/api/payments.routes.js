@@ -27,7 +27,7 @@ router.post('/:id/pay', async (req, res, next) => {
     const order = orders[0];
     if (order.status !== 'pending_payment') { await conn.rollback(); return res.status(409).json({ error: 'order_not_payable' }); }
 
-    // 2. Game so -> vao thu vien, game dia -> tru ton kho + tao yeu cau giao hang
+    // 2. Xu ly tung mon: game so -> vao thu vien, game dia -> tru ton kho + tao yeu cau giao hang
     const [items] = await conn.execute(
       'SELECT id,product_id,product_type,quantity FROM order_items WHERE order_id=?',
       [id]
@@ -78,6 +78,27 @@ router.post('/:id/pay', async (req, res, next) => {
   } finally {
     if (conn) conn.release();
   }
+});
+
+// Nguoi dung gui yeu cau hoan tien cho don cua minh; admin se duyet trong trang quan tri
+router.post('/:id/refund', async (req, res, next) => {
+  try {
+    const id = z.coerce.number().int().positive().parse(req.params.id);
+    const { reason } = z.object({ reason: z.string().trim().min(1).max(500) }).parse(req.body);
+    const [[order]] = await db.execute(
+      "SELECT o.id,o.status,o.total,p.id AS payment_id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id=? AND o.user_id=? ORDER BY p.id DESC LIMIT 1",
+      [id, req.user.sub]
+    );
+    if (!order) return res.status(404).json({ error: 'order_not_found' });
+    if (!['paid', 'processing', 'shipped', 'fulfilled'].includes(order.status)) return res.status(409).json({ error: 'order_not_refundable' });
+    const [[open]] = await db.execute("SELECT id FROM refunds WHERE order_id=? AND status IN ('requested','approved','processed')", [id]);
+    if (open) return res.status(409).json({ error: 'refund_already_requested' });
+    const [r] = await db.execute(
+      "INSERT INTO refunds(payment_id,order_id,amount,reason,status) VALUES(?,?,?,?,'requested')",
+      [order.payment_id, id, order.total, reason]
+    );
+    res.status(201).json({ refund: { id: r.insertId, status: 'requested' } });
+  } catch (e) { next(e); }
 });
 
 export default router;

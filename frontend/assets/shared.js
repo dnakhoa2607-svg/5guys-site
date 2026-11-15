@@ -210,6 +210,9 @@
         wrong_password: 'Mật khẩu hiện tại không đúng.',
         address_not_found: 'Không tìm thấy địa chỉ.',
         too_many_addresses: 'Tối đa 10 địa chỉ giao hàng.',
+        reset_cooldown: 'Vui lòng đợi 1 phút trước khi yêu cầu mã mới.',
+        invalid_or_expired_code: 'Mã xác nhận không đúng hoặc đã hết hạn.',
+        too_many_attempts: 'Nhập sai mã quá 5 lần. Vui lòng yêu cầu mã mới.',
         invalid_phone: 'Số điện thoại phải gồm 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09.',
         'Failed to fetch': 'Không kết nối được API. Hãy kiểm tra backend đang chạy (npm run dev).'
       })[code] || ('Có lỗi xảy ra: ' + (code || 'không rõ'));

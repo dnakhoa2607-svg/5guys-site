@@ -1,0 +1,945 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="vi"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>5GUYS Vault - Cửa Hàng Game Bản Quyền &amp; Tặng Quà | Khách</title>
+<!-- Google Fonts: 100% Inter Unified Typography -->
+<link href="https://fonts.googleapis.com" rel="preconnect">
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<!-- Font Awesome Icons -->
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<!-- Tailwind CSS CDN -->
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<style>
+        body {
+            background-color: #12091c;
+            color: #f3e8ff;
+            font-family: 'Inter', sans-serif;
+            overflow-x: hidden;
+            transition: filter 0.25s ease;
+        }
+
+        /* Custom Purple Vault Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #12091c; }
+        ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 9999px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
+
+        /* Game Card Hover & Glow */
+        .vault-card {
+            background-color: #2a1645;
+            border: 1px solid rgba(157, 78, 221, 0.35);
+            transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .vault-card:hover {
+            transform: translateY(-8px) scale(1.01);
+            border-color: #c77dff;
+            box-shadow: 0 16px 35px -5px rgba(157, 78, 221, 0.45), 0 0 20px rgba(199, 125, 255, 0.25) inset;
+        }
+
+        /* Ambient Background Pulses */
+        .ambient-glow-1 {
+            position: absolute; width: 750px; height: 750px;
+            background: radial-gradient(circle, rgba(157, 78, 221, 0.12) 0%, rgba(18, 9, 28, 0) 65%);
+            border-radius: 50%; top: -150px; left: -150px; pointer-events: none;
+            animation: pulseSlow 8s infinite alternate ease-in-out;
+        }
+        .ambient-glow-2 {
+            position: absolute; width: 650px; height: 650px;
+            background: radial-gradient(circle, rgba(199, 125, 255, 0.09) 0%, rgba(18, 9, 28, 0) 65%);
+            border-radius: 50%; bottom: 5%; right: -100px; pointer-events: none;
+            animation: pulseSlow 7s infinite alternate-reverse ease-in-out;
+        }
+        @keyframes pulseSlow {
+            0% { transform: scale(0.9) translate(0, 0); opacity: 0.6; }
+            100% { transform: scale(1.1) translate(30px, 30px); opacity: 1; }
+        }
+
+        /* Easter Egg: Smash Hammer Mode */
+        .smash-active * {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='44' height='44' viewBox='0 0 100 100' style='font-size:36px;'><text y='50%'>🔨</text></svg>") 16 16, crosshair !important;
+        }
+        .shattered-fx {
+            animation: shatterAnim 0.65s cubic-bezier(0.16, 1, 0.3, 1) forwards !important;
+            pointer-events: none !important;
+        }
+        @keyframes shatterAnim {
+            0% { opacity: 1; transform: scale(1) rotate(0deg); }
+            40% { filter: blur(3px) brightness(1.6); }
+            100% { opacity: 0; transform: scale(1.3) rotate(20deg) translateY(45px); filter: blur(8px); visibility: hidden; }
+        }
+
+        /* Easter Egg: Super Spin Logo */
+        @keyframes superSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(720deg) scale(1.2); filter: hue-rotate(90deg) brightness(1.4); }
+            100% { transform: rotate(1440deg) scale(1); filter: hue-rotate(0deg); }
+        }
+        .easter-egg-active {
+            animation: superSpin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 99999; opacity: 0; transition: opacity 0.5s;
+        }
+
+        .panel-slide {
+            transition: opacity 0.35s cubic-bezier(0.16, 1, 0.3, 1), transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+    </style>
+<link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script></head>
+<body class="antialiased flex flex-col min-h-screen relative">
+<div class="fixed inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true" style="contain:paint"><div class="ambient-glow-1"></div>
+<div class="ambient-glow-2"></div></div>
+<canvas id="confetti-canvas"></canvas>
+<!-- ================= NAVBAR ================= -->
+<nav class="bg-dark-bg/95 backdrop-blur-xl sticky top-0 z-40 border-b border-dark-border shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]">
+<div class="max-w-7xl 2xl:max-w-none mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10"><div class="flex items-center justify-between h-[72px] gap-4">
+<div class="flex items-center min-w-0">
+<a href="index.html" id="logo-container" class="flex-shrink-0 cursor-pointer select-none group mr-4 sm:mr-10" title="Click 5 lần để nhận bất ngờ!"><span class="text-2xl sm:text-3xl font-black tracking-widest flex items-center gap-2 logo-font"><i class="fa-solid fa-gamepad text-brand group-hover:text-brand-light transition-colors drop-shadow-[0_0_10px_rgba(157,78,221,0.5)]"></i><span class="text-white">5</span><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-light group-hover:from-brand-light group-hover:to-white transition-all">GUYS</span></span></a>
+<div class="hidden xl:block"><div class="ml-4 flex items-baseline space-x-1">
+<a data-nav href="index.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Trang chủ</a><a data-user data-nav href="library.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap !text-brand-light"><i class="fa-solid fa-layer-group text-xs mr-1"></i>Kho game</a>
+<a data-nav href="digital.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Kỹ thuật số</a>
+<a data-nav href="physical.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Vật lý &amp; Băng đĩa</a>
+<a data-nav href="rental.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Thuê cấu hình</a>
+<a data-nav href="mods.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Cộng đồng Mod</a>
+
+
+</div></div></div>
+<div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+<a data-nav href="search.html" title="Tìm kiếm" class="text-gray-300 hover:text-brand-light px-2 py-2 text-sm font-semibold tracking-wide whitespace-nowrap transition-colors">Tìm kiếm</a>
+<a data-user href="cart.html" title="Giỏ hàng" class="relative text-gray-300 hover:text-brand-light p-2"><i class="fa-solid fa-cart-shopping text-lg"></i><span id="cart-badge" data-cart-count class="absolute -top-0.5 -right-1 bg-brand text-white text-[10px] font-bold rounded-full w-4 h-4 grid place-items-center">0</span></a>
+<div data-user class="flex items-center">
+<div class="relative group cursor-pointer flex items-center gap-3 bg-dark-surface border border-dark-border px-3 sm:px-4 py-1.5 rounded-full hover:border-brand-light transition-all duration-300 shadow-md whitespace-nowrap"><div data-user-initial class="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-sm font-bold text-white shadow-inner">U</div><span data-user-name class="hidden sm:inline-block text-gray-200 text-sm font-medium pr-1 tracking-wide">User</span><i class="fa-solid fa-chevron-down text-xs text-brand-light group-hover:rotate-180 transition-transform duration-300"></i>
+<div class="absolute right-0 top-full pt-3 w-64 hidden group-hover:block z-50 cursor-default"><div class="bg-dark-surface border border-brand/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)] p-2"><a href="library.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-layer-group w-4 text-brand-light"></i>Kho game của tôi</a><a href="cart.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-cart-shopping w-4 text-brand-light"></i>Giỏ hàng &amp; Thanh toán</a><a href="orders.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-box w-4 text-brand-light"></i>Đơn hàng của tôi</a><a href="reviews.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-comments w-4 text-brand-light"></i>Đánh giá &amp; Cộng đồng</a><a href="loyalty.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-crown w-4 text-brand-light"></i>Khách hàng thân thiết</a><a href="support.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-headset w-4 text-brand-light"></i>Chăm sóc khách hàng</a></div></div></div>
+<a href="#" data-logout title="Đăng xuất" class="ml-2 text-gray-400 hover:text-red-400 px-3 py-2 rounded-md text-lg font-medium transition-colors border border-transparent hover:bg-dark-surface hover:border-red-500/30"><i class="fa-solid fa-power-off"></i></a>
+</div>
+<div data-guest class="flex items-center gap-2"><a href="register.html" class="text-gray-200 hover:text-brand-light px-2.5 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-300 border border-transparent hover:border-brand/50 whitespace-nowrap">Đăng ký</a><a href="login.html" class="bg-brand hover:bg-brand-light text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-bold transition-all duration-300 shadow-[0_0_15px_rgba(157,78,221,0.4)] border border-brand-light/30 whitespace-nowrap">Đăng nhập</a></div>
+</div></div>
+<div class="xl:hidden flex items-center gap-2 overflow-x-auto pb-3 pt-1 border-t border-dark-border/40 scrollbar-none"><a href="index.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Trang chủ</a><a data-user data-nav href="library.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap !text-brand-light">Kho game</a>
+<a data-nav href="digital.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Kỹ thuật số</a><a data-nav href="physical.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Vật lý &amp; Băng đĩa</a><a data-nav href="rental.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Thuê cấu hình</a><a data-nav href="mods.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Cộng đồng Mod</a><a data-user href="cart.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Giỏ hàng</a>
+<a data-user href="orders.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Đơn hàng</a><a data-user href="loyalty.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Tích điểm</a><a data-user href="support.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Hỗ trợ</a>
+</div></div></nav>
+<!-- ================= HERO SHOWCASE ================= -->
+<header class="relative overflow-hidden bg-vault-bg border-b border-vault-border py-14 lg:py-20">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+<div class="lg:col-span-7 space-y-6">
+<div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-vault-surface border border-vault-border text-xs font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-vault-primary animate-pulse"></span><span class="text-vault-textMuted">Chế độ Truy Cập:</span><span data-access-label class="text-vault-primary font-bold">Khách vãng lai • 5GUYS Vault</span></div>
+<h1 class="text-4xl sm:text-6xl font-black text-white uppercase tracking-tight leading-tight">
+                        Cổng Game Vault <br>
+<span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-vault-primary to-vault-primaryDark">
+                            Kỹ Thuật Số &amp; Vật Lý
+                        </span>
+</h1>
+<p class="text-vault-textMuted text-base sm:text-lg leading-relaxed max-w-xl">
+                        Nền tảng phân phối game bản quyền tích hợp <b class="text-vault-primary">Hệ Thống Tặng Quà Bạn Bè</b>, <b class="text-white">Chatbot AI PC2GAMES</b> tư vấn cấu hình thời gian thực và <b class="text-vault-secondary">Trung tâm hỗ trợ khiếu nại, hoàn tiền 24/7</b>.
+                    </p>
+<div class="flex flex-wrap gap-4 pt-2">
+<a class="px-8 py-3.5 rounded-full bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-extrabold text-sm uppercase tracking-wider flex items-center gap-2.5 transition-all shadow-purple-glow hover:scale-105" href="#gift-section">
+<i class="fa-solid fa-gift"></i> Tặng Quà Cho Bạn Bè
+                        </a>
+<button class="px-7 py-3.5 rounded-full bg-vault-surface border border-vault-border hover:border-vault-primary text-white text-sm font-bold flex items-center gap-2 transition-all" onclick="toggleSupportModal(true)">
+<i class="fa-solid fa-phone-volume text-vault-primary"></i> Trung Tâm CSKH
+                        </button>
+</div>
+<!-- Badges Row -->
+<div class="pt-4 flex flex-wrap gap-6 text-xs font-medium text-vault-textMuted">
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-bolt text-vault-primary"></i> Giao Key Tự Động 1s
+                        </div>
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-box-open text-vault-secondary"></i> Đĩa Vật Lý Nguyên Seal
+                        </div>
+<div class="flex items-center gap-2">
+<i class="fa-solid fa-shield-halved text-emerald-400"></i> Bảo Mật AES-256
+                        </div>
+</div>
+</div>
+<!-- Hero Graphic Showcase (Feature Cards) -->
+<div class="lg:col-span-5 relative">
+<div class="relative rounded-3xl p-6 bg-vault-surface/90 border border-vault-border shadow-2xl overflow-hidden group">
+<div class="flex justify-between items-center pb-4 border-b border-vault-border">
+<div class="flex items-center gap-2">
+<span class="w-3 h-3 rounded-full bg-red-500/80"></span>
+<span class="w-3 h-3 rounded-full bg-yellow-500/80"></span>
+<span class="w-3 h-3 rounded-full bg-green-500/80"></span>
+<span class="text-xs font-bold text-vault-textMuted ml-2">5GUYS SYSTEM HUB</span>
+</div>
+<span class="text-xs font-bold text-vault-primary bg-vault-bg px-2.5 py-0.5 rounded-full border border-vault-border">ACTIVE</span>
+</div>
+<div class="mt-6 space-y-4">
+<div class="p-4 rounded-2xl bg-vault-bg/90 border border-vault-border flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-vault-primaryDark/20 border border-vault-primary/40 flex items-center justify-center text-vault-primary text-xl flex-shrink-0">
+<i class="fa-solid fa-bolt"></i>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-bold text-white truncate">Digital Key Vault</h4>
+<span class="text-[10px] text-vault-primary uppercase font-extrabold">Instant</span>
+</div>
+<p class="text-xs text-vault-textMuted mt-0.5">Tự động kích hoạt bản quyền Steam &amp; Thư viện cá nhân.</p>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-vault-bg/90 border border-vault-border flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-vault-primary/20 border border-vault-primary/40 flex items-center justify-center text-vault-primary text-xl flex-shrink-0">
+<i class="fa-solid fa-gift"></i>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-bold text-white truncate">Hệ Thống Tặng Quà</h4>
+<span class="text-[10px] text-vault-secondary uppercase font-extrabold">Chuyên trách</span>
+</div>
+<p class="text-xs text-vault-textMuted mt-0.5">Gửi game cho bạn bè kèm thiệp mừng tùy biến.</p>
+</div>
+</div>
+<div class="p-4 rounded-2xl bg-vault-bg/90 border border-vault-border flex items-center gap-4">
+<div class="w-12 h-12 rounded-xl bg-vault-primaryDark/20 border border-vault-primary/40 flex items-center justify-center text-vault-primary text-xl flex-shrink-0">
+<i class="fa-solid fa-gamepad"></i>
+</div>
+<div class="flex-grow min-w-0">
+<div class="flex items-center justify-between">
+<h4 class="text-sm font-bold text-white truncate">PC2GAMES AI</h4>
+<span class="text-[10px] text-vault-primary uppercase font-extrabold">Trực tuyến</span>
+</div>
+<p class="text-xs text-vault-textMuted mt-0.5">Đối chiếu CPU, RAM, GPU để gợi ý game 60 FPS.</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</header>
+<!-- ================= MAIN STORE & PRODUCT CATALOG ================= -->
+<main class="flex-grow max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 w-full space-y-20" id="store-section">
+<!-- PRODUCT SHOWCASE (With Glitch Easter Egg) -->
+<div>
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-10 gap-4">
+<div>
+<h2 class="text-3xl font-black text-white tracking-wide uppercase border-l-4 border-vault-primary pl-4">
+                        Tựa Game Tiêu Biểu &amp; Bộ Sưu Tập
+                    </h2>
+<p class="text-sm text-vault-textMuted mt-2 pl-5">
+                        Lựa chọn phong phú giữa mã số tải tức thì (Digital) và đĩa đúc vật lý sưu tầm (Collector Edition).
+                    </p>
+</div>
+
+</div>
+<!-- Product Cards Grid -->
+<div id="home-games-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"></div>
+</div>
+<!-- ================= SECTION 2: HỆ THỐNG TẶNG QUÀ (GIFTING MODULE) ================= -->
+<section class="relative rounded-3xl p-8 sm:p-12 bg-gradient-to-r from-vault-surface via-vault-containerHigh to-vault-surface border border-vault-primary/40 shadow-2xl overflow-hidden" id="gift-section">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center relative z-10">
+<div class="lg:col-span-8 space-y-4">
+<div class="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-vault-bg border border-vault-border text-xs text-vault-primary font-bold">
+<i class="fa-solid fa-wand-magic-sparkles"></i> PHÂN NHIỆM BÁO CÁO: User
+                    </div>
+<h2 class="text-3xl sm:text-4xl font-black text-white uppercase tracking-tight">
+                        Hệ Thống Tặng Quà Game 5GUYS
+                    </h2>
+<p class="text-sm sm:text-base text-vault-textMuted max-w-2xl leading-relaxed">
+                        Bạn có thể chọn mua bất kỳ tựa game nào dưới dạng <b>quà tặng kỹ thuật số (Key tải nhanh)</b> hoặc <b>băng đĩa vật lý đóng gói cao cấp</b> để gửi tặng bạn bè, người thân kèm thiệp chúc mừng riêng biệt và tự động lưu vào kho đồ của người nhận.
+                    </p>
+<div class="flex flex-wrap gap-3 pt-2 text-xs font-semibold text-vault-text">
+<span class="bg-vault-bg/90 px-3.5 py-1.5 rounded-full border border-vault-border"><i class="fa-solid fa-check text-vault-primary mr-1.5"></i>Tùy biến thiệp mừng theo game</span>
+<span class="bg-vault-bg/90 px-3.5 py-1.5 rounded-full border border-vault-border"><i class="fa-solid fa-check text-vault-primary mr-1.5"></i>Lên lịch gửi quà chính xác</span>
+<span class="bg-vault-bg/90 px-3.5 py-1.5 rounded-full border border-vault-border"><i class="fa-solid fa-check text-vault-primary mr-1.5"></i>Đảm bảo an toàn giao dịch 100%</span>
+</div>
+</div>
+<div class="lg:col-span-4 flex justify-start lg:justify-end">
+<button class="w-full sm:w-auto px-8 py-5 rounded-full bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-black text-sm uppercase tracking-widest shadow-purple-glow transition-all hover:scale-105 flex items-center justify-center gap-3" onclick="openGiftModal('Gói Quà Game Tự Chọn', 'Tùy chọn', 'digital')">
+<i class="fa-solid fa-gift text-lg"></i> Khởi Tạo Quà Tặng Ngay
+                    </button>
+</div>
+</div>
+</section>
+</main>
+<!-- ================= FOOTER WITH SMASH EASTER EGG ================= -->
+<footer class="bg-dark-surface border-t border-brand/40 pt-16 pb-8 mt-auto relative z-10 overflow-hidden">
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-brand/10 blur-[100px] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
+                <div class="col-span-1 md:col-span-5 pr-4">
+                    <span class="text-3xl font-black tracking-widest mb-6 flex items-center gap-2 logo-font">
+                        <i class="fa-solid fa-gamepad text-brand"></i> 
+                        <span class="text-white">5</span><span class="text-brand-light">GUYS</span>
+                    </span>
+                    <p class="text-gray-400 text-sm leading-loose max-w-md font-medium">
+                        Nền tảng phân phối game bản quyền kỹ thuật số và thẻ game vật lý hàng đầu. Cam kết uy tín tuyệt đối, giao dịch bảo mật mã hóa AES-256 và đem lại trải nghiệm dịch vụ khách hàng tuyệt vời nhất cho cộng đồng game thủ Việt Nam.
+                    </p>
+                    <div class="mt-8 flex gap-4">
+                        <div class="bg-dark-bg p-3 rounded-xl border border-dark-border flex items-center gap-3 shadow-inner">
+                            <i class="fa-solid fa-shield-check text-brand-light text-xl"></i>
+                            <div>
+                                <div class="text-xs text-gray-500 font-bold uppercase">Bảo Mật</div>
+                                <div class="text-sm text-white font-medium">100% An Toàn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-span-1 md:col-span-3 md:col-start-7">
+                    <h3 class="text-white font-black mb-6 uppercase text-sm tracking-widest text-brand-light border-l-2 border-brand pl-3 font-display">Danh Mục</h3>
+                    <ul class="space-y-4 text-sm text-gray-400 font-medium">
+                        <li class=""><a href="digital.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Game Kỹ Thuật Số</a></li>
+                        <li class=""><a href="physical.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Thẻ Game Vật Lý</a></li>
+                        <li class=""><a href="search.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Tìm kiếm</a></li>
+                        <li class=""><a href="rental.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Thuê Cấu Hình Cloud</a></li>
+                        <li class=""><a href="mods.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Cộng Đồng Mod</a></li>
+                        <li class=""><a href="digital.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Phát Hành Sắp Tới</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1 md:col-span-3">
+                    <h3 class="text-white font-black mb-6 uppercase text-sm tracking-widest text-brand-light border-l-2 border-brand pl-3 font-display">Thông Tin &amp; Hỗ Trợ</h3>
+                    <ul class="space-y-4 text-sm text-gray-400 font-medium">
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Về 5GUYS Store</a></li>
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Điều khoản dịch vụ</a></li>
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Chính sách bảo mật</a></li>
+                        <li class="pt-2"><a href="index.html#gift-section" class="text-brand-light hover:text-white transition-all font-bold flex items-center gap-2 bg-brand/10 w-fit px-4 py-2 rounded-lg border border-brand/30 hover:bg-brand/20 hover:shadow-[0_0_10px_rgba(157,78,221,0.3)]"><i class="fa-solid fa-gift animate-bounce"></i> Nhận Quà Tặng</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-border pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+                <div class="flex items-center gap-2">
+                    <p class="">© 2026 5GUYS Game Store.</p>
+                    <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                    <p class="">Designed by Nhóm 5Guys 26C01.</p>
+                </div>
+                <div class="flex space-x-6 mt-6 md:mt-0 text-gray-400 items-center">
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-facebook text-xl"></i></a>
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-discord text-xl"></i></a>
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-youtube text-xl"></i></a>
+                    <!-- Nút ẩn đập phá website -->
+                    <span id="smash-btn" class="ml-4 opacity-5 font-black text-xl hover:opacity-100 transition-opacity text-brand-light" title="Click to Smash!">🔨</span>
+                </div>
+            </div>
+            <div class="flex justify-center mt-6"><span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-dark-surface/70 border border-brand/40 text-xs sm:text-sm font-semibold text-brand-light text-center"><i class="fa-solid fa-user-graduate"></i>Sinh viên thực hiện: Nhóm 5Guys - 26C01</span></div>
+        </div>
+    </footer>
+<!-- ================= FLOATING ACTION BUTTONS (FABS) STACK ================= -->
+<div class="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4 pointer-events-auto">
+<!-- 1. PHÍA TRÊN: NÚT VÀ PANEL HỖ TRỢ KHÁCH HÀNG (Icon Điện thoại bàn) -->
+<div class="relative flex flex-col items-end">
+<!-- Modal Panel Support -->
+<div class="panel-slide absolute bottom-16 right-0 w-[calc(100vw-2rem)] sm:w-[440px] max-h-[82vh] bg-vault-surface border border-vault-border rounded-3xl shadow-2xl flex flex-col overflow-hidden opacity-0 scale-95 translate-y-6 pointer-events-none origin-bottom-right z-50" id="support-panel">
+<!-- Panel Header -->
+<div class="p-5 bg-gradient-to-r from-vault-bg via-vault-surface to-vault-bg border-b border-vault-border flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full bg-vault-primary/20 border border-vault-border text-vault-primary flex items-center justify-center text-lg shadow-inner">
+<i class="fa-solid fa-phone-volume"></i>
+</div>
+<div>
+<h3 class="text-sm font-black text-white uppercase tracking-wider">Trung Tâm Hỗ Trợ</h3>
+<p class="text-[11px] text-vault-textMuted font-medium">Trực tuyến 24/7 • DaoKhoa</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-vault-bg text-gray-400 hover:text-white flex items-center justify-center transition-colors border border-vault-border" onclick="toggleSupportModal(false)">
+<i class="fa-solid fa-xmark text-sm"></i>
+</button>
+</div>
+<!-- Tab Navigation (FAQ, Biểu mẫu Khiếu Nại, Tra cứu Tiến Trình) -->
+<div class="flex border-b border-vault-border bg-vault-bg/90 p-1.5 gap-1.5 text-xs font-semibold">
+<button class="flex-1 py-2 rounded-full transition-all bg-vault-surface text-vault-primary shadow-sm border border-vault-border" id="tab-btn-faq" onclick="switchSupportSubTab('faq')">FAQ Nhanh</button>
+<button class="flex-1 py-2 rounded-full transition-all text-vault-textMuted hover:text-white border border-transparent" id="tab-btn-ticket" onclick="switchSupportSubTab('ticket')">Gửi Khiếu Nại</button>
+<button class="flex-1 py-2 rounded-full transition-all text-vault-textMuted hover:text-white border border-transparent" id="tab-btn-tracker" onclick="switchSupportSubTab('tracker')">Tiến Trình Đơn</button>
+</div>
+<!-- Panel Body -->
+<div class="flex-grow overflow-y-auto p-5 bg-vault-bg space-y-4 max-h-[55vh]">
+<!-- TAB 1: FAQ -->
+<div class="space-y-3" id="subtab-faq">
+<details class="group bg-vault-surface rounded-2xl border border-vault-border p-4 transition-colors">
+<summary class="font-bold text-xs text-white cursor-pointer list-none flex justify-between items-center group-open:text-vault-primary">
+<span class="">Làm sao để nhận Key game số?</span>
+<i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition-transform"></i>
+</summary>
+<p class="text-xs text-vault-textMuted mt-3 pt-3 border-t border-vault-border leading-relaxed">
+                                Key game sẽ được tự động gửi qua email đăng ký và lưu trữ vĩnh viễn trong phần <b>"Thư viện"</b> của tài khoản 5GUYS ngay lập tức sau khi thanh toán thành công.
+                            </p>
+</details>
+<details class="group bg-vault-surface rounded-2xl border border-vault-border p-4 transition-colors">
+<summary class="font-bold text-xs text-white cursor-pointer list-none flex justify-between items-center group-open:text-vault-primary">
+<span class="">Chính sách hoàn tiền (Refund)?</span>
+<i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition-transform"></i>
+</summary>
+<p class="text-xs text-vault-textMuted mt-3 pt-3 border-t border-vault-border leading-relaxed">
+                                Chấp nhận hoàn tiền 100% trong vòng 14 ngày với điều kiện: <br>
+                                - <b>Game số:</b> Chưa kích hoạt Key hoặc thời gian chơi dưới 2h.<br>
+                                - <b>Game vật lý:</b> Đĩa game còn nguyên seal niêm phong.
+                            </p>
+</details>
+<details class="group bg-vault-surface rounded-2xl border border-vault-border p-4 transition-colors">
+<summary class="font-bold text-xs text-white cursor-pointer list-none flex justify-between items-center group-open:text-vault-primary">
+<span class="">Giao đĩa game mất bao lâu?</span>
+<i class="fa-solid fa-chevron-down text-xs group-open:rotate-180 transition-transform"></i>
+</summary>
+<p class="text-xs text-vault-textMuted mt-3 pt-3 border-t border-vault-border leading-relaxed">
+                                Thông thường thời gian giao hàng nội địa từ 2-4 ngày làm việc. Khu vực TP.HCM áp dụng giao tốc hành trong 2h. Quý khách có thể theo dõi mã vận đơn tại tab Tiến Trình Đơn.
+                            </p>
+</details>
+</div>
+<!-- TAB 2: BIỂU MẪU KHIẾU NẠI & YÊU CẦU ĐỔI TRẢ -->
+<div class="hidden" id="subtab-ticket">
+<form class="space-y-3.5 text-xs" onsubmit="handleTicketSubmit(event)">
+<div>
+<label class="block text-vault-primary font-bold mb-1.5 uppercase text-[10px] tracking-wider">Mã Đơn Hàng (Order ID)</label>
+<input class="w-full bg-vault-bg border border-vault-border rounded-xl px-3.5 py-2.5 text-white focus:border-vault-primary focus:outline-none shadow-inner" id="ticket-order-id" placeholder="VD: 5G-12345678" required="" type="text">
+</div>
+<div>
+<label class="block text-vault-primary font-bold mb-1.5 uppercase text-[10px] tracking-wider">Chủ Đề Cần Hỗ Trợ</label>
+<select class="w-full bg-vault-bg border border-vault-border rounded-xl px-3.5 py-2.5 text-white focus:border-vault-primary focus:outline-none shadow-inner" id="ticket-type">
+<option value="refund">Yêu cầu hoàn tiền (Refund)</option>
+<option value="key-error">Lỗi Key / Không thể kích hoạt</option>
+<option value="physical-delay">Vận chuyển đĩa vật lý chậm trễ</option>
+<option value="gift-issue">Vấn đề quà tặng bạn bè chưa nhận được</option>
+<option value="payment-error">Lỗi thanh toán / Trừ tiền 2 lần</option>
+</select>
+</div>
+<div>
+<label class="block text-vault-primary font-bold mb-1.5 uppercase text-[10px] tracking-wider">Mô Tả Chi Tiết</label>
+<textarea class="w-full bg-vault-bg border border-vault-border rounded-xl px-3.5 py-2 text-white text-xs focus:border-vault-primary focus:outline-none resize-none shadow-inner" id="ticket-desc" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải để CSKH hỗ trợ nhanh nhất..." required="" rows="3"></textarea>
+</div>
+<button class="w-full py-3.5 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-extrabold text-xs uppercase tracking-wider transition-all shadow-purple-glow" type="submit">
+<i class="fa-solid fa-paper-plane mr-1.5"></i> Gửi Ticket Hỗ Trợ
+                            </button>
+</form>
+</div>
+<!-- TAB 3: THEO DÕI TIẾN TRÌNH XỬ LÝ (TRACKER) -->
+<div class="hidden space-y-4" id="subtab-tracker">
+<div class="flex gap-2">
+<input class="bg-vault-bg border border-vault-border rounded-full px-4 py-2 text-xs text-white focus:border-vault-primary focus:outline-none flex-grow shadow-inner" id="track-ticket-input" placeholder="Nhập mã Ticket..." type="text" value="5G-12345678">
+<button class="px-4 py-2 rounded-full bg-vault-surface border border-vault-border hover:border-vault-primary text-xs font-bold text-vault-primary transition-colors" onclick="renderTicketProgress()">
+                                Tra Cứu
+                            </button>
+</div>
+<!-- Timeline Progress Widget -->
+<div class="p-4 rounded-2xl bg-vault-surface border border-vault-border space-y-4 shadow-sm" id="tracker-result">
+<div class="flex justify-between items-center text-xs border-b border-vault-border pb-2.5">
+<span class="text-vault-textMuted">Mã Đơn: <b class="text-white">5G-12345678</b></span>
+<span class="px-2.5 py-0.5 rounded-full bg-vault-primaryDark/30 border border-vault-primary text-vault-primary text-[10px] font-bold">ĐANG XỬ LÝ</span>
+</div>
+<div class="space-y-3 text-xs">
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-vault-primary text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5 shadow-sm">✓</div>
+<div>
+<div class="font-bold text-white">Tiếp nhận yêu cầu</div>
+<div class="text-[11px] text-vault-textMuted">Hệ thống 5GUYS đã ghi nhận ticket vào hàng đợi</div>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-vault-primary text-white flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5 shadow-sm">✓</div>
+<div>
+<div class="font-bold text-white">Kiểm tra thông tin Key / Đơn giao</div>
+<div class="text-[11px] text-vault-textMuted">Đối chiếu với cổng thanh toán và kho hàng</div>
+</div>
+</div>
+<div class="flex items-start gap-3">
+<div class="w-6 h-6 rounded-full bg-vault-primary/20 border border-vault-primary text-vault-primary flex items-center justify-center text-[10px] font-bold flex-shrink-0 mt-0.5 animate-pulse">●</div>
+<div>
+<div class="font-bold text-vault-primary">Hoàn tất xử lý / Hoàn tiền ví</div>
+<div class="text-[11px] text-vault-textMuted">Đang gửi kết quả xử lý qua email người dùng</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer support note -->
+<div class="p-3 bg-vault-surface border-t border-vault-border text-center text-[11px] text-vault-textMuted">
+                    Hotline: <span class="text-vault-primary font-bold">1900-5GUYS</span> • Hỗ trợ kỹ thuật viên trực tuyến
+                </div>
+</div>
+<!-- NÚT FAB HỖ TRỢ KHÁCH HÀNG: Biểu tượng Chiếc Điện Thoại Bàn (fa-phone-volume) -->
+<button class="w-[60px] h-[60px] rounded-full bg-vault-surface border-2 border-vault-primary/50 hover:border-vault-primary text-vault-primary flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.6)] hover:scale-110 transition-all duration-300" id="support-fab-btn" onclick="toggleSupportModal()" title="Trung tâm hỗ trợ">
+<i class="fa-solid fa-phone-volume text-2xl"></i>
+</button>
+</div>
+<!-- 2. GÓC DƯỚI CÙNG: NÚT VÀ PANEL CHATBOT AI (Icon Tay Cầm Chơi Game fa-gamepad) -->
+<div class="relative flex flex-col items-end">
+<!-- Modal Panel AI Chatbot -->
+<div class="panel-slide absolute bottom-20 right-0 w-[calc(100vw-2rem)] sm:w-[410px] h-[500px] max-h-[75vh] bg-vault-surface border border-vault-primary/60 rounded-3xl shadow-[0_15px_50px_rgba(157,78,221,0.4)] flex flex-col overflow-hidden opacity-0 scale-95 translate-y-6 pointer-events-none origin-bottom-right z-50" id="ai-chat-panel">
+<!-- Chatbot Header -->
+<div class="p-4 bg-gradient-to-r from-vault-primaryDark via-vault-surface to-vault-primaryDark border-b border-vault-border flex items-center justify-between text-white shadow-md">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-white/20 border border-white/30 text-white flex items-center justify-center text-lg font-bold shadow-inner">
+<i class="fa-solid fa-gamepad"></i>
+</div>
+<div>
+<div class="flex items-center gap-2">
+<h3 class="text-sm font-black uppercase tracking-wider text-white">PC2GAMES AI</h3>
+<span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
+</div>
+<p class="text-[11px] text-vault-secondary font-semibold uppercase tracking-wider">Hệ thống phân tích cấu hình</p>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-black/20 text-white/80 hover:text-white flex items-center justify-center transition-colors" onclick="toggleAiChat(false)">
+<i class="fa-solid fa-xmark text-sm"></i>
+</button>
+</div>
+<!-- Chat Messages Stream -->
+<div class="flex-grow p-4 overflow-y-auto bg-vault-bg space-y-3.5 text-xs" id="chat-stream">
+<div class="flex gap-2.5 items-start">
+<div class="w-8 h-8 rounded-full bg-gradient-to-br from-vault-primaryDark to-vault-primary text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-purple-glow">
+<i class="fa-solid fa-robot"></i>
+</div>
+<div class="bg-vault-surface border border-vault-border p-3.5 rounded-2xl rounded-tl-sm text-vault-text leading-relaxed max-w-[85%] shadow-md">
+                            Khởi động hệ thống... <span class="text-vault-primary font-bold">Thành công!</span> <i class="fa-solid fa-circle-check text-green-400 ml-1"></i><br><br>
+                            Xin chào! Tôi là AI của <b>PC2GAMES</b> trên 5GUYS. Hãy nhập <b>Cấu hình PC</b> của bạn (VD: Core i5, RAM 16GB, RTX 3060) để tôi gợi ý những tựa game mượt mà nhất nhé!
+                        </div>
+</div>
+</div>
+<!-- Chat Input Controls -->
+<div class="p-3 bg-vault-surface border-t border-vault-border flex items-center gap-2">
+<input class="w-full bg-vault-bg border border-vault-border rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-vault-primary shadow-inner" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Nhập cấu hình PC (VD: i5, 16gb, 3060)..." type="text">
+<button class="w-11 h-11 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-bold flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow-purple-glow" onclick="sendChatMessage()">
+<i class="fa-solid fa-paper-plane text-xs"></i>
+</button>
+</div>
+</div>
+<!-- NÚT FAB CHATBOT: Biểu tượng Chiếc Tay Cầm Chơi Game (fa-gamepad) -->
+<button class="w-[72px] h-[72px] rounded-full bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg flex items-center justify-center shadow-[0_0_30px_rgba(157,78,221,0.8)] hover:scale-110 transition-all duration-300 relative group border-2 border-vault-primary/40" id="chatbot-fab-btn" onclick="toggleAiChat()" title="PC2GAMES AI">
+<i class="fa-solid fa-gamepad text-3xl group-hover:rotate-12 transition-transform"></i>
+<span class="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-vault-bg animate-pulse"></span>
+</button>
+</div>
+</div>
+<!-- ================= MODAL TẶNG QUÀ GAME (GIFTING MODAL) ================= -->
+<div class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 p-4" id="gift-modal">
+<div class="bg-vault-surface border-2 border-vault-borderSubtle rounded-3xl p-6 sm:p-8 w-full max-w-lg shadow-[0_0_60px_rgba(157,78,221,0.4)] relative">
+<button class="absolute top-5 right-5 w-8 h-8 rounded-full bg-vault-bg text-gray-400 hover:text-white flex items-center justify-center border border-vault-border" onclick="closeGiftModal()">
+<i class="fa-solid fa-xmark"></i>
+</button>
+<div class="flex items-center gap-4 mb-6">
+<div class="w-12 h-12 rounded-2xl bg-vault-primary/20 border border-vault-border text-vault-primary flex items-center justify-center text-2xl shadow-inner">
+<i class="fa-solid fa-gift"></i>
+</div>
+<div>
+<h3 class="text-xl font-black text-white uppercase tracking-wide">Gửi Quà Tặng Game</h3>
+<p class="text-xs text-vault-primary font-semibold">Đặc quyền Gamer • Phụ trách: Đào Nguyễn Anh Khoa</p>
+</div>
+</div>
+<form class="space-y-4 text-xs" onsubmit="handleGiftSubmit(event)">
+<div>
+<label class="block text-vault-textMuted font-bold mb-1 uppercase tracking-wider text-[10px]">Tựa Game Được Chọn</label>
+<input class="w-full bg-vault-bg border border-vault-border rounded-xl px-4 py-2.5 text-vault-primary font-bold shadow-inner" id="gift-game-name" readonly="" type="text">
+</div>
+<div>
+<label class="block text-vault-textMuted font-bold mb-1 uppercase tracking-wider text-[10px]">GamerTag hoặc Email Người Nhận</label>
+<input class="w-full bg-vault-bg border border-vault-border rounded-xl px-4 py-2.5 text-white focus:border-vault-primary focus:outline-none shadow-inner" placeholder="VD: KhoaDao2008 / banthan@gmail.com" required="" type="text">
+</div>
+<div>
+<label class="block text-vault-textMuted font-bold mb-1 uppercase tracking-wider text-[10px]">Thiệp Chúc Mừng Đi Kèm</label>
+<textarea class="w-full bg-vault-bg border border-vault-border rounded-xl px-4 py-2.5 text-white focus:border-vault-primary focus:outline-none resize-none shadow-inner" placeholder="Gửi lời chúc đến người nhận (Chúc bạn leo rank vui vẻ, cùng phá đảo nhé!)..." rows="3"></textarea>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-vault-bg border border-vault-border">
+<span class="text-vault-textMuted">Phương thức trao quà:</span>
+<span class="text-vault-primary font-bold">Kích hoạt trực tiếp vào Thư viện</span>
+</div>
+<button class="w-full py-4 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-black uppercase tracking-wider text-xs shadow-purple-glow transition-all hover:scale-[1.02]" type="submit">
+<i class="fa-solid fa-paper-plane mr-2"></i> Xác Nhận Gửi Quà Tặng
+                </button>
+</form>
+</div>
+</div>
+<!-- ================= TOAST NOTIFICATION CONTAINER ================= -->
+<div class="fixed top-28 right-8 z-[120] bg-vault-surface border-2 border-vault-primary shadow-[0_10px_30px_rgba(157,78,221,0.6)] rounded-2xl p-4 flex items-center gap-4 max-w-md opacity-0 translate-x-12 transition-all duration-500 pointer-events-none backdrop-blur-lg" id="toast">
+<div class="w-10 h-10 rounded-xl bg-vault-primaryDark/30 border border-vault-border text-vault-primary flex items-center justify-center font-bold flex-shrink-0 shadow-inner">
+<i class="fa-solid fa-bell text-lg animate-bounce"></i>
+</div>
+<div class="text-xs text-white font-semibold leading-relaxed" id="toast-text">
+            Thông báo từ hệ thống.
+        </div>
+</div>
+<!-- ================= JAVASCRIPT LOGIC ================= -->
+<script>
+        // -------------------------------------------------------------
+        // 1. WEB AUDIO API: SYNTHETIC RETRO COIN SOUND (EASTER EGG 1)
+        // -------------------------------------------------------------
+        let audioCtx;
+        function getAudioContext() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            return audioCtx;
+        }
+
+        // Mario Coin "Ting Ting" / Chest sound generator
+        function playCoinSound() {
+            try {
+                const ctx = getAudioContext();
+                const now = ctx.currentTime;
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = 'sine';
+
+                // Pitch envelope for "Ting-Ting" sound
+                osc.frequency.setValueAtTime(987.77, now); 
+                osc.frequency.setValueAtTime(1318.51, now + 0.1); 
+
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+
+                osc.start(now);
+                osc.stop(now + 0.4);
+            } catch(e) {}
+        }
+
+        // Crash sound for smash mode
+        function playCrashSound() {
+            try {
+                const ctx = getAudioContext();
+                const bufferSize = ctx.sampleRate * 0.3;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const output = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    output[i] = Math.random() * 2 - 1;
+                }
+                const whiteNoise = ctx.createBufferSource();
+                whiteNoise.buffer = buffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 1000;
+
+                const gain = ctx.createGain();
+                const now = ctx.currentTime;
+                gain.gain.setValueAtTime(1, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+
+                whiteNoise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+
+                whiteNoise.start(now);
+            } catch(e) {}
+        }
+
+        // -------------------------------------------------------------
+        // 2. TOAST SYSTEM
+        // -------------------------------------------------------------
+        let toastTimeout;
+        function showNotification(message) {
+            const toast = document.getElementById('toast');
+            const toastText = document.getElementById('toast-text');
+            toastText.innerHTML = message;
+            toast.classList.remove('opacity-0', 'translate-x-12', 'pointer-events-none');
+            toast.classList.add('opacity-100', 'translate-x-0');
+
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-x-12', 'pointer-events-none');
+                toast.classList.remove('opacity-100', 'translate-x-0');
+            }, 3600);
+        }
+
+        // -------------------------------------------------------------
+        // 3. CART SYSTEM
+        // -------------------------------------------------------------
+        function addToCart(title, price, kind) {
+            if (!G5.user()) {
+                G5.promptLogin('Vui lòng đăng nhập hoặc đăng ký tài khoản để thêm game vào giỏ hàng.');
+                return;
+            }
+            playCoinSound();
+            G5.add(title, kind || 'digital', G5.vnd(price) / G5.RATE);
+            showNotification(`Đã chuyển thẻ game vào Kho Đồ (Giỏ hàng)!<br><span class="text-vault-primary font-bold">${title}</span>`);
+        }
+
+        // -------------------------------------------------------------
+        // 4. EASTER EGG 2: SMASH WEBSITE MODE (Cây búa ở Footer)
+        // -------------------------------------------------------------
+        let isSmashActive = false;
+        const smashBtn = document.getElementById('smash-btn');
+        if (smashBtn) {
+            smashBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                isSmashActive = !isSmashActive;
+                if (isSmashActive) {
+                    document.body.classList.add('smash-active');
+                    showNotification('🛠️ <b>CHẾ ĐỘ ĐẬP PHÁ MỞ KHÓA!</b><br>Click vào bất kỳ đâu để đập. Nhấn lại búa hoặc ESC để thoát.');
+                } else {
+                    document.body.classList.remove('smash-active');
+                    showNotification('Đã tắt chế độ đập phá.');
+                }
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!isSmashActive) return;
+            if (e.target.closest('#chatbot-fab-btn') || e.target.closest('#support-fab-btn') || 
+                e.target.closest('#support-panel') || e.target.closest('#ai-chat-panel') || e.target.closest('#smash-btn')) {
+                return;
+            }
+            e.preventDefault();
+            e.stopPropagation();
+            playCrashSound();
+            e.target.classList.add('shattered-fx');
+        }, true);
+
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isSmashActive) {
+                isSmashActive = false;
+                document.body.classList.remove('smash-active');
+                showNotification('Đã tắt chế độ đập phá.');
+            }
+        });
+
+        // -------------------------------------------------------------
+        // 5. EASTER EGG 3: LOGO 5-CLICK TURBO SPIN & CONFETTI
+        // -------------------------------------------------------------
+        let logoClicks = 0;
+        let logoTimer;
+        const logoEl = document.getElementById('logo-container');
+        if (logoEl) {
+            logoEl.addEventListener('click', (e) => {
+                if (logoClicks < 4) e.preventDefault();
+                logoClicks++;
+                clearTimeout(logoTimer);
+                logoTimer = setTimeout(() => { logoClicks = 0; }, 1500);
+
+                if (logoClicks === 5) {
+                    e.preventDefault();
+                    logoClicks = 0;
+                    logoEl.classList.add('easter-egg-active');
+                    fireConfetti();
+                    showNotification('🎉 <b>ACHIEVEMENT UNLOCKED!</b><br>Bạn đã tìm thấy bí mật của 5GUYS!');
+                    setTimeout(() => logoEl.classList.remove('easter-egg-active'), 2000);
+                }
+            });
+        }
+
+        function fireConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            canvas.style.opacity = '1';
+
+            const particles = [];
+            const colors = ['#9d4edd', '#c77dff', '#ffffff', '#e0aaff', '#7b2cbf'];
+            for (let i = 0; i < 150; i++) {
+                particles.push({
+                    x: canvas.width / 2,
+                    y: canvas.height / 2,
+                    r: Math.random() * 8 + 3,
+                    dx: Math.random() * 15 - 7.5,
+                    dy: Math.random() * 15 - 7.5,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+
+            let opacity = 1;
+            function loop() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.x += p.dx;
+                    p.y += p.dy;
+                    p.dy += 0.15;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.globalAlpha = opacity;
+                    ctx.fill();
+                });
+                opacity -= 0.01;
+                if (opacity > 0) requestAnimationFrame(loop);
+                else { canvas.style.opacity = '0'; }
+            }
+            loop();
+        }
+
+        // -------------------------------------------------------------
+        // 6. FLOATING SUPPORT HUB (Landline Phone Icon)
+        // -------------------------------------------------------------
+        let isSupportOpen = false;
+        const supportPanel = document.getElementById('support-panel');
+        const supportFabIcon = document.querySelector('#support-fab-btn i');
+
+        function toggleSupportModal(forceState) {
+            isSupportOpen = (typeof forceState === 'boolean') ? forceState : !isSupportOpen;
+            if (isSupportOpen) {
+                toggleAiChat(false);
+                supportPanel.classList.remove('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
+                supportPanel.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
+                if (supportFabIcon) supportFabIcon.classList.replace('fa-phone-volume', 'fa-times');
+            } else {
+                supportPanel.classList.add('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
+                supportPanel.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
+                if (supportFabIcon) supportFabIcon.classList.replace('fa-times', 'fa-phone-volume');
+            }
+        }
+
+        function switchSupportSubTab(tabName) {
+            ['faq', 'ticket', 'tracker'].forEach(t => {
+                document.getElementById('subtab-' + t).classList.add('hidden');
+                document.getElementById('tab-btn-' + t).className = 'flex-1 py-2 rounded-full font-semibold transition-all text-vault-textMuted hover:text-white border border-transparent';
+            });
+            document.getElementById('subtab-' + tabName).classList.remove('hidden');
+            document.getElementById('tab-btn-' + tabName).className = 'flex-1 py-2 rounded-full font-bold transition-all bg-vault-surface text-vault-primary shadow-sm border border-vault-border';
+        }
+
+        function openSupportTab(tabName) {
+            toggleSupportModal(true);
+            switchSupportSubTab(tabName);
+        }
+
+        function handleTicketSubmit(e) {
+            e.preventDefault();
+            const orderId = document.getElementById('ticket-order-id').value;
+            showNotification(`Đã ghi nhận yêu cầu hỗ trợ cho đơn hàng <b>${orderId}</b>! Chúng tôi sẽ phản hồi qua Email.`);
+            e.target.reset();
+            switchSupportSubTab('tracker');
+        }
+
+        function renderTicketProgress() {
+            const inputVal = document.getElementById('track-ticket-input').value.trim();
+            if (!inputVal) return;
+            showNotification(`Đã cập nhật dữ liệu tiến trình cho mã đơn: <b>${inputVal}</b>.`);
+        }
+
+        // -------------------------------------------------------------
+        // 7. PC2GAMES AI CHATBOT (Gamepad Icon)
+        // -------------------------------------------------------------
+        let isChatOpen = false;
+        const aiChatPanel = document.getElementById('ai-chat-panel');
+        const chatStream = document.getElementById('chat-stream');
+        const chatInput = document.getElementById('chat-input');
+        const chatbotFabIcon = document.querySelector('#chatbot-fab-btn i');
+        const chatbotFabNotif = document.querySelector('#chatbot-fab-btn span');
+
+        function toggleAiChat(forceState) {
+            isChatOpen = (typeof forceState === 'boolean') ? forceState : !isChatOpen;
+            if (isChatOpen) {
+                toggleSupportModal(false);
+                aiChatPanel.classList.remove('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
+                aiChatPanel.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
+                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-gamepad', 'fa-times');
+                if (chatbotFabNotif) chatbotFabNotif.style.display = 'none';
+                setTimeout(() => chatInput.focus(), 300);
+            } else {
+                aiChatPanel.classList.add('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
+                aiChatPanel.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
+                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-times', 'fa-gamepad');
+            }
+        }
+
+        function escapeHtml(str) {
+            return str.replace(/&/g, '&amp;').replace(/&lt;/g, '&lt;').replace(/&gt;/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        function sendChatMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+
+            const userBubble = document.createElement('div');
+            userBubble.className = 'flex justify-end';
+            userBubble.innerHTML = `<div class="bg-gradient-to-r from-vault-primaryDark to-vault-primary text-white p-3.5 rounded-2xl rounded-tr-sm max-w-[85%] text-xs shadow-md font-medium leading-relaxed">${escapeHtml(text)}</div>`;
+            chatStream.appendChild(userBubble);
+            chatInput.value = '';
+            chatStream.scrollTop = chatStream.scrollHeight;
+
+            // Typing animation indicator
+            const typingIndicator = document.createElement('div');
+            typingIndicator.className = 'flex gap-2.5 items-start';
+            typingIndicator.innerHTML = `
+                <div class="w-8 h-8 rounded-full bg-gradient-to-br from-vault-primaryDark to-vault-primary text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-purple-glow">
+                    <i class="fa-solid fa-robot"></i>
+                </div>
+                <div class="bg-vault-surface border border-vault-border p-3 rounded-2xl rounded-tl-sm text-vault-primary flex items-center gap-1.5 shadow-md">
+                    <span class="w-2 h-2 bg-vault-primary rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-vault-primary rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    <span class="w-2 h-2 bg-vault-primary rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+                </div>
+            `;
+            chatStream.appendChild(typingIndicator);
+            chatStream.scrollTop = chatStream.scrollHeight;
+
+            setTimeout(() => {
+                typingIndicator.remove();
+                const replyHtml = generateAiLogic(text.toLowerCase());
+                const botBubble = document.createElement('div');
+                botBubble.className = 'flex gap-2.5 items-start';
+                botBubble.innerHTML = `
+                    <div class="w-8 h-8 rounded-full bg-gradient-to-br from-vault-primaryDark to-vault-primary text-white flex items-center justify-center text-xs flex-shrink-0 mt-0.5 shadow-purple-glow">
+                        <i class="fa-solid fa-robot"></i>
+                    </div>
+                    <div class="bg-vault-surface border border-vault-border p-3.5 rounded-2xl rounded-tl-sm text-vault-text text-xs leading-relaxed max-w-[85%] shadow-md">
+                        ${replyHtml}
+                    </div>
+                `;
+                chatStream.appendChild(botBubble);
+                chatStream.scrollTop = chatStream.scrollHeight;
+            }, 800);
+        }
+
+        function generateAiLogic(input) {
+            const t = input.toLowerCase();
+            let tier = null, gpuName = '';
+            const m = t.match(/(rtx|gtx|rx)\s*-?\s*(\d{3,4})/);
+            if (m) {
+                const n = parseInt(m[2], 10);
+                gpuName = (m[1] + ' ' + m[2]).toUpperCase();
+                if (m[1] === 'rtx') tier = n >= 3060 || n >= 4050 ? 'high' : 'mid';
+                else if (m[1] === 'gtx') tier = n >= 1660 || (n >= 1060 && n < 1100) ? 'mid' : 'low';
+                else tier = n >= 6600 ? 'high' : n >= 580 ? 'mid' : 'low';
+            } else if (/(uhd|iris|onboard|không có card|ko có card|igpu)/.test(t)) {
+                tier = 'low';
+            }
+            const ram = (t.match(/(\d+)\s*gb/) || [])[1];
+            if (!tier && ram) tier = parseInt(ram, 10) >= 16 ? 'mid' : 'low';
+            if (!tier) tier = /i9|i7|ryzen\s*[79]/.test(t) ? 'high' : /i5|ryzen\s*5/.test(t) ? 'mid' : /i3|pentium|celeron/.test(t) ? 'low' : null;
+            if (!tier) {
+                return 'Hệ thống đã nhận thông tin! Hãy cung cấp thêm thông số <b>Card màn hình (GPU)</b>, <b>CPU</b> hoặc <b>RAM</b> để PC2GAMES đối chiếu chính xác nhé!';
+            }
+            const label = { low: 'Nhẹ 🟢', mid: 'Tầm trung 🟡', high: 'Cao cấp 🔴' }[tier];
+            const defaults = { 
+                low: '<b>Hollow Knight</b> (cấu hình nhẹ)', 
+                mid: '<b>Sekiro</b> hoặc <b>Dark Souls III</b>', 
+                high: '<b>Elden Ring</b>, <b>Black Myth: Wukong</b> hoặc <b>Red Dead Redemption 2</b>' 
+            };
+            return `Cấu hình của bạn ${gpuName ? '(<b>' + gpuName + '</b>) ' : ''}thuộc phân khúc <b>${label}</b>.<br><br>🎮 Tựa game đề xuất chạy mượt 60 FPS: ${defaults[tier]}. Bạn có thể đặt mua key kích hoạt hoặc đĩa vật lý ngay trên trang!`;
+        }
+
+        // -------------------------------------------------------------
+        // 8. GIFT MODAL LOGIC
+        // -------------------------------------------------------------
+        const giftModal = document.getElementById('gift-modal');
+        function openGiftModal(gameTitle, price, type) {
+            document.getElementById('gift-game-name').value = `${gameTitle} (${price})`;
+            giftModal.classList.remove('opacity-0', 'pointer-events-none');
+            giftModal.classList.add('opacity-100', 'pointer-events-auto');
+        }
+
+        function closeGiftModal() {
+            giftModal.classList.add('opacity-0', 'pointer-events-none');
+            giftModal.classList.remove('opacity-100', 'pointer-events-auto');
+        }
+
+        function handleGiftSubmit(e) {
+            e.preventDefault();
+            playCoinSound();
+            closeGiftModal();
+            showNotification('🎁 <b>MÃ QUÀ TẶNG ĐÃ GỬI THÀNH CÔNG!</b><br>Người nhận sẽ nhận được thông báo và mã kích hoạt tức thì.');
+        }
+    </script>
+
+
+
+
+<script src="assets/catalog.js"></script></body></html>
+
+

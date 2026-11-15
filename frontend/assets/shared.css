@@ -1,0 +1,631 @@
+/* 5GUYS - shared.css: kiểu dùng chung cho các trang frontend. */
+/* 1. Trạng thái đăng nhập, điều hướng và logo. */
+html:not(.is-auth) [data-user] { display: none !important; }
+html.is-auth [data-guest] { display: none !important; }
+a[data-nav].is-current { color: #c77dff; background: #2a1645; }
+.logo-font { font-family: 'Inter', sans-serif; }
+/* Cặp nút tài khoản khách có cùng khung kích thước trên mọi trang. */
+[data-guest] > a[href="register.html"],
+[data-guest] > a[href="login.html"] {
+  box-sizing: border-box;
+  display: inline-flex;
+  width: 88px;
+  height: 34px;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  white-space: nowrap;
+}
+@media (min-width: 640px) {
+  [data-guest] > a[href="register.html"],
+  [data-guest] > a[href="login.html"] {
+    width: 112px;
+    height: 42px;
+    padding: 0 12px;
+  }
+}
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { scrollbar-width: none; }
+
+/* 2. Quy tắc responsive và chống tràn nội dung theo chiều ngang. */
+/* ---- Responsive an toàn cho mọi kích thước màn hình ---- */
+html { -webkit-text-size-adjust: 100%; }
+body { overflow-x: hidden; }
+svg, video, canvas { max-width: 100%; }
+button, input, select, textarea { font-family: inherit; }
+@media (max-width: 640px) {
+  main { overflow-x: hidden; }
+}
+
+/* Chống trang bị "nở" rộng hơn màn hình trên điện thoại (do các quầng sáng nền tràn ra ngoài):
+   trình duyệt di động sẽ phóng layout theo phần tràn, làm nội dung lệch trái và chừa khoảng trống bên phải. */
+html, body { max-width: 100%; overflow-x: clip; }
+.ambient-glow-1, .ambient-glow-2 { max-width: 100vw; }
+
+/* 3. Kích thước dùng chung cho nút hỗ trợ/chat nổi. */
+/* ---- Kích thước nút nổi đồng nhất trên tất cả trang ---- */
+#support-toggle-btn,
+#support-fab-btn,
+#chat-toggle-btn,
+#chatbot-fab-btn {
+  width: 60px !important;
+  height: 60px !important;
+  min-width: 60px !important;
+  min-height: 60px !important;
+  max-width: 60px !important;
+  max-height: 60px !important;
+  flex: 0 0 60px !important;
+  aspect-ratio: 1 / 1;
+  border-radius: 9999px !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+}
+#support-toggle-btn > i,
+#support-fab-btn > i,
+#chat-toggle-btn > i,
+#chatbot-fab-btn > i {
+  font-size: 1.4rem !important;
+  line-height: 1 !important;
+}
+#chat-toggle-btn > span,
+#chatbot-fab-btn > span {
+  pointer-events: none;
+}
+
+/* Navbar search is a text link now (not a competing magnifier + input). */
+ .chip { display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid rgba(199,125,255,.3); }
+ .chip.dg { background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff; }
+ .chip.ph { background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa; }
+.cover-fallback { background: radial-gradient(ellipse at 50% 0%, rgba(157,78,221,.35), transparent 65%), #1b1028; }
+nav a[title="Tìm kiếm"] {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+/* 4. Các thành phần dùng chung và điều chỉnh bố cục theo kích thước màn hình. */
+/* =====================================================================
+   5GUYS Vault v1.8 — shared responsive layer
+   Loaded by every page so the same layout rules apply consistently.
+   ===================================================================== */
+:root {
+  --g5-page-gutter: clamp(12px, 3.2vw, 40px);
+  --g5-mobile-gutter: 16px;
+  --g5-mobile-radius: 16px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: 5rem;
+}
+
+body {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow-x: clip;
+  overflow-wrap: break-word;
+}
+
+@supports not (overflow: clip) {
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+body > *,
+main,
+header,
+footer,
+section,
+article,
+aside,
+form,
+nav,
+.max-w-7xl,
+.max-w-6xl,
+.max-w-5xl,
+.max-w-4xl {
+  min-width: 0;
+}
+
+main,
+header,
+footer,
+section,
+article,
+form {
+  max-width: 100%;
+}
+
+img,
+picture,
+video,
+canvas,
+iframe,
+svg {
+  max-width: 100%;
+}
+
+img,
+picture,
+video,
+iframe {
+  height: auto;
+}
+
+img,
+video {
+  object-fit: initial;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+input,
+select,
+textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* Flex and grid children must be allowed to shrink instead of expanding
+   the page when they contain long text, prices, or user-provided values. */
+.flex > *,
+.grid > *,
+[class*="grid-cols-"] > *,
+[class*="flex-"] > * {
+  min-width: 0;
+}
+
+p,
+li,
+th,
+td,
+label,
+summary {
+  overflow-wrap: anywhere;
+}
+
+pre,
+code,
+kbd,
+samp {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+/* Scroll wide data horizontally inside its own region rather than forcing
+   the whole page wider than the device. */
+.overflow-x-auto,
+.overflow-x-scroll {
+  max-width: 100%;
+  -webkit-overflow-scrolling: touch;
+}
+
+table {
+  max-width: 100%;
+}
+
+main table {
+  display: block;
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+main table th,
+main table td {
+  white-space: nowrap;
+}
+
+/* Images and product covers should shrink in their cards, never the page. */
+.card,
+.vault-card,
+.game-card,
+.product-card,
+[class*="rounded-"] {
+  min-width: 0;
+}
+
+/* Keep text-field groups from imposing a fixed intrinsic width. */
+.relative,
+.input-wrapper,
+.input-group,
+.form-section,
+.feature-text {
+  min-width: 0;
+}
+
+/* Account menu: constrain the dropdown and permit keyboard focus as well as
+   pointer hover. */
+nav [data-user].group > .absolute {
+  max-width: calc(100vw - 24px);
+}
+
+nav [data-user].group:hover > .absolute,
+nav [data-user].group:focus-within > .absolute {
+  display: block;
+}
+
+/* Overlays/chat widgets never exceed the viewport width or usable height. */
+#support-panel,
+#chat-panel,
+#ai-chat-panel,
+#gift-modal,
+#modal-2fa,
+#g5-login-modal {
+  box-sizing: border-box;
+  max-width: calc(100vw - 24px);
+}
+
+#support-panel,
+#chat-panel,
+#ai-chat-panel {
+  max-height: min(75vh, 640px);
+  max-height: min(75dvh, 640px);
+}
+
+#gift-modal,
+#modal-2fa,
+#g5-login-modal {
+  padding: 12px;
+}
+
+#gift-modal > *,
+#modal-2fa > *,
+#g5-login-modal > * {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* --- Small laptop / tablet --- */
+@media (max-width: 1279px) {
+  nav .max-w-7xl,
+  nav .max-w-6xl {
+    max-width: 100%;
+  }
+
+  nav .xl\:hidden {
+    min-width: 0;
+  }
+
+  main > .max-w-7xl,
+  main > .max-w-6xl,
+  main > .max-w-5xl,
+  main > .max-w-4xl {
+    width: 100%;
+  }
+
+  .vault-card:hover,
+  .game-card:hover {
+    transform: none;
+  }
+}
+
+/* --- Phones and narrow portrait viewports --- */
+@media (max-width: 640px) {
+  :root {
+    --g5-page-gutter: var(--g5-mobile-gutter);
+  }
+
+  body {
+    font-size: 14px;
+  }
+
+  /* The common store header becomes two tidy rows: brand first, account and
+     actions second. The category strip below stays horizontally scrollable. */
+  nav > div > div.flex.items-center.justify-between {
+    height: auto !important;
+    min-height: 68px;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 4px 8px;
+    padding-top: 7px;
+    padding-bottom: 7px;
+  }
+
+  nav > div > div.flex.items-center.justify-between > div:first-child {
+    flex: 1 1 100%;
+    width: 100%;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  nav > div > div.flex.items-center.justify-between > div:nth-child(2) {
+    flex: 1 1 100%;
+    width: 100%;
+    min-width: 0;
+    justify-content: space-between;
+    gap: 6px;
+  }
+
+  nav #logo-container {
+    margin-right: 0 !important;
+  }
+
+  nav #logo-container > span {
+    gap: 5px;
+    font-size: clamp(1.25rem, 6vw, 1.6rem) !important;
+    letter-spacing: .09em !important;
+  }
+
+  nav a[title="Tìm kiếm"] {
+    flex: 0 0 auto;
+    padding: 7px 5px;
+    font-size: .8rem;
+  }
+
+  nav [data-user].group {
+    gap: 5px;
+    max-width: calc(100vw - 170px);
+    padding: 4px 7px;
+  }
+
+  nav [data-user-name] {
+    display: none !important;
+  }
+
+  nav [data-logout] {
+    margin-left: 0 !important;
+    padding: 6px 8px;
+  }
+
+  nav [data-guest] a {
+    padding-left: 9px;
+    padding-right: 9px;
+  }
+
+  nav .absolute.right-0.top-full.pt-3.w-64 {
+    width: min(16rem, calc(100vw - 24px));
+  }
+
+  nav .xl\:hidden.overflow-x-auto {
+    gap: 6px;
+    padding-bottom: 9px;
+    scrollbar-width: none;
+  }
+
+  nav .xl\:hidden.overflow-x-auto > a {
+    flex: 0 0 auto;
+    min-height: 34px;
+  }
+
+  main > .max-w-7xl,
+  main > .max-w-6xl,
+  main > .max-w-5xl,
+  main > .max-w-4xl,
+  main > section.max-w-7xl,
+  footer > .max-w-7xl {
+    padding-left: var(--g5-mobile-gutter) !important;
+    padding-right: var(--g5-mobile-gutter) !important;
+  }
+
+  main .py-16 {
+    padding-top: 2.5rem !important;
+    padding-bottom: 2.5rem !important;
+  }
+
+  main .py-14,
+  header.py-14 {
+    padding-top: 2.25rem !important;
+    padding-bottom: 2.25rem !important;
+  }
+
+  main .gap-10,
+  main .gap-12 {
+    gap: 1.25rem !important;
+  }
+
+  main .mb-12 {
+    margin-bottom: 1.75rem !important;
+  }
+
+  .text-5xl,
+  h1.text-5xl {
+    font-size: clamp(1.9rem, 8vw, 3rem) !important;
+    line-height: 1.08 !important;
+    overflow-wrap: anywhere;
+  }
+
+  .text-4xl,
+  h1.text-4xl,
+  h2.text-4xl {
+    font-size: clamp(1.65rem, 7vw, 2.35rem) !important;
+    line-height: 1.12 !important;
+  }
+
+  .text-3xl,
+  h1.text-3xl,
+  h2.text-3xl {
+    font-size: clamp(1.35rem, 6vw, 1.875rem) !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Small tag/filter triplets should become a readable vertical list. */
+  main .grid.grid-cols-3 {
+    grid-template-columns: repeat(1, minmax(0, 1fr)) !important;
+  }
+
+  /* Reduce card density and prevent content from being squeezed offscreen. */
+  .card,
+  .vault-card,
+  .game-card {
+    border-radius: var(--g5-mobile-radius);
+  }
+
+  .card.p-8,
+  .card.p-6,
+  .vault-card.p-8,
+  .vault-card.p-6 {
+    padding: 1rem !important;
+  }
+
+  .flex.flex-wrap,
+  .flex.items-center {
+    min-width: 0;
+  }
+
+  /* Keep modals and AI/support windows fully visible on short screens. */
+  #support-panel,
+  #chat-panel,
+  #ai-chat-panel {
+    width: min(calc(100vw - 24px), 420px) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 120px) !important;
+  }
+
+  #gift-modal,
+  #modal-2fa,
+  #g5-login-modal {
+    align-items: center;
+    justify-content: center;
+    padding: 12px !important;
+  }
+
+  #gift-modal > *,
+  #modal-2fa > *,
+  #g5-login-modal .g5-box {
+    width: 100%;
+    max-width: 100%;
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+
+  /* The contact/support page's chat area keeps a usable height on phones. */
+  [class~="h-[520px]"] {
+    height: min(520px, 68dvh) !important;
+    min-height: 360px;
+  }
+
+  /* Narrow authentication layouts: keep the form scrollable rather than
+     cropping the lower fields on a phone or a short landscape screen. */
+  .auth-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    margin: 0 auto !important;
+    border-radius: 18px !important;
+  }
+
+  .auth-hero,
+  .form-section {
+    width: 100%;
+    min-width: 0;
+    padding: 22px 18px !important;
+  }
+
+  .auth-hero {
+    border-right: 0 !important;
+    border-bottom: 1px solid rgba(157, 78, 221, .3) !important;
+  }
+
+  .auth-hero .feature-list {
+    gap: 14px;
+    margin-top: 20px;
+  }
+
+  .auth-hero .student-signature {
+    margin-top: 22px;
+  }
+
+  .otp-inputs-row {
+    max-width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .otp-digit {
+    max-width: calc((100vw - 80px) / 6);
+  }
+}
+
+/* Extra narrow phones (320–360px) */
+@media (max-width: 360px) {
+  nav > div > div.flex.items-center.justify-between {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  nav #logo-container > span {
+    font-size: 1.2rem !important;
+  }
+
+  nav a[title="Tìm kiếm"] {
+    font-size: .75rem;
+  }
+
+  nav [data-user].group {
+    max-width: calc(100vw - 164px);
+  }
+
+  nav [data-user-initial] {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .auth-hero,
+  .form-section {
+    padding: 18px 14px !important;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* Landscape phones and short desktop windows: never lock authentication
+   content behind a fixed-height viewport. */
+@media (max-height: 650px) {
+  html,
+  body {
+    height: auto;
+    min-height: 100%;
+    overflow-y: auto;
+  }
+
+  body.auth-page {
+    align-items: flex-start;
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+
+  .auth-container {
+    max-height: none !important;
+  }
+
+  .form-section {
+    overflow-y: visible;
+  }
+}
+
+/* Respect users who prefer less animation; this also reduces jank on lower
+   power phones without changing functional transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}

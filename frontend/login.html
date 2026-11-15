@@ -1,0 +1,928 @@
+<!DOCTYPE html><html lang="vi"><head>
+<title>Đăng nhập - 5GUYS Vault (Xác thực 2FA)</title>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<style>
+        * { box-sizing: border-box; }
+        html, body {
+            height: 100vh;
+            min-height: 100vh;
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+        body { 
+            background: radial-gradient(circle at 50% 50%, #1f1032 0%, #12091c 60%, #0a0510 100%);
+            color: #f3e8ff; 
+            font-family: 'Inter', sans-serif; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            position: relative; 
+        }
+        
+        h1, h2, h3, h4, .font-display { font-family: 'Inter', sans-serif; letter-spacing: -0.02em; }
+        
+        .ambient-glow-1 { 
+            position: absolute; 
+            width: 750px; 
+            height: 750px; 
+            background: radial-gradient(circle, rgba(157,78,221,0.2) 0%, rgba(18,9,28,0) 70%); 
+            border-radius: 50%; 
+            top: -200px; 
+            left: -200px; 
+            pointer-events: none; 
+            animation: pulse-glow 8s infinite alternate ease-in-out;
+        }
+        .ambient-glow-2 { 
+            position: absolute; 
+            width: 700px; 
+            height: 700px; 
+            background: radial-gradient(circle, rgba(199,125,255,0.15) 0%, rgba(10,5,16,0) 70%); 
+            border-radius: 50%; 
+            bottom: -150px; 
+            right: -150px; 
+            pointer-events: none; 
+            animation: pulse-glow 7s infinite alternate-reverse ease-in-out;
+        }
+        @keyframes pulse-glow {
+            0% { transform: scale(0.96); opacity: 0.7; }
+            100% { transform: scale(1.04); opacity: 1; }
+        }
+        
+        .auth-container { 
+            width: 95%; 
+            max-width: 1040px; 
+            max-height: 92vh;
+            display: flex; 
+            flex-direction: row;
+            background: rgba(26, 11, 46, 0.75); 
+            border: 1.5px solid rgba(199, 125, 255, 0.45); 
+            border-radius: 28px; 
+            box-shadow: 0 0 50px rgba(157, 78, 221, 0.35), 0 25px 70px -15px rgba(0, 0, 0, 0.8), inset 0 0 20px rgba(199, 125, 255, 0.08); 
+            backdrop-filter: blur(28px); 
+            -webkit-backdrop-filter: blur(28px); 
+            overflow: hidden; 
+            position: relative; 
+            z-index: 10; 
+        }
+        
+        /* Left Side: Branding / Features */
+        .auth-hero { 
+            flex: 1.1; 
+            padding: 46px 42px; 
+            background: linear-gradient(145deg, rgba(157, 78, 221, 0.16) 0%, rgba(18, 9, 28, 0.95) 100%); 
+            border-right: 1px solid rgba(157, 78, 221, 0.3); 
+            display: flex; 
+            flex-direction: column; 
+            justify-content: space-between; 
+            position: relative; 
+            overflow: hidden;
+        }
+        
+        .hero-logo { 
+            font-size: 34px; 
+            font-weight: 900; 
+            display: flex; 
+            align-items: center; 
+            gap: 14px; 
+            color: #ffffff; 
+            text-decoration: none; 
+            letter-spacing: -0.02em; 
+            text-shadow: 0 0 24px rgba(199, 125, 255, 0.65);
+        }
+        .hero-logo i { 
+            color: #c77dff; 
+            filter: drop-shadow(0 0 12px rgba(199,125,255,0.9)); 
+        }
+        
+        .feature-list { margin-top: 36px; display: flex; flex-direction: column; gap: 24px; }
+        .feature-item { display: flex; align-items: flex-start; gap: 16px; transition: transform 0.25s; }
+        .feature-item:hover { transform: translateX(6px); }
+        .feature-icon { 
+            width: 44px; 
+            height: 44px; 
+            border-radius: 14px; 
+            background: linear-gradient(135deg, rgba(157, 78, 221, 0.28), rgba(157, 78, 221, 0.1)); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            color: #c77dff; 
+            font-size: 19px; 
+            flex-shrink: 0; 
+            border: 1px solid rgba(199, 125, 255, 0.45); 
+            box-shadow: 0 8px 18px -4px rgba(157, 78, 221, 0.35);
+        }
+        .feature-text h4 { margin: 0 0 4px 0; font-size: 15px; font-weight: 700; color: #ffffff; }
+        .feature-text p { margin: 0; font-size: 13px; color: #cfc2d4; line-height: 1.5; }
+        
+        .student-signature {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: #ffffff;
+            letter-spacing: 0.02em;
+            padding-top: 18px;
+            border-top: 1px solid rgba(157, 78, 221, 0.25);
+            text-shadow: 0 0 10px rgba(199,125,255,0.4);
+            display: flex;
+            align-items: center;
+            gap: 9px;
+        }
+        
+        /* Right Side: Form View Container */
+        .form-section { 
+            flex: 1.25; 
+            padding: 42px 45px; 
+            background: #12091c; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+        
+        .back-link {
+            position: static;
+            align-self: flex-end;
+            margin-bottom: 14px; 
+            color: #cfc2d4; 
+            text-decoration: none; 
+            font-size: 13px; 
+            font-weight: 600; 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            transition: all 0.2s; 
+            padding: 7px 14px; 
+            border-radius: 10px; 
+            background: rgba(157, 78, 221, 0.12); 
+            border: 1px solid rgba(157,78,221,0.3);
+        }
+        .back-link:hover { 
+            color: #ffffff; 
+            background: rgba(157, 78, 221, 0.28); 
+            border-color: #c77dff; 
+            box-shadow: 0 0 15px rgba(157,78,221,0.35);
+        }
+        
+        .status-bar { 
+            border: 1px solid rgba(199,125,255,0.3); 
+            border-radius: 10px; 
+            padding: 8px 12px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 22px; 
+            margin-top: 4px; 
+            font-size: 11.5px; 
+            background: rgba(157,78,221,0.08); 
+            box-shadow: inset 0 0 10px rgba(157,78,221,0.12);
+        }
+        .status-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            color: #c77dff; 
+            font-family: 'Inter', monospace; 
+            font-weight: 500; 
+        }
+        .badge-encrypted { 
+            background: rgba(74, 222, 128, 0.15); 
+            color: #4ade80; 
+            padding: 3px 9px; 
+            border-radius: 6px; 
+            font-weight: 800; 
+            letter-spacing: 0.5px; 
+            font-size: 10.5px;
+            border: 1px solid rgba(74, 222, 128, 0.35); 
+            box-shadow: 0 0 10px rgba(74,222,128,0.25);
+        }
+        
+        h1 { font-size: 28px; font-weight: 800; color: #ffffff; margin: 0 0 6px 0; }
+        .subtitle { color: #cfc2d4; font-size: 14px; line-height: 1.45; margin: 0 0 22px 0; }
+        
+        .input-group { text-align: left; margin-bottom: 16px; }
+        .input-group label { 
+            display: flex; 
+            justify-content: space-between; 
+            color: #f3e8ff; 
+            font-size: 12.5px; 
+            font-weight: 600; 
+            margin-bottom: 7px; 
+        }
+        .input-wrapper { position: relative; display: flex; align-items: center; }
+        .input-wrapper i.icon-left { position: absolute; left: 16px; color: #c77dff; font-size: 15px; pointer-events: none;}
+        .input-wrapper input { 
+            width: 100%; 
+            background: rgba(31, 16, 50, 0.7); 
+            border: 1.5px solid rgba(157,78,221,0.35); 
+            border-radius: 13px; 
+            padding: 13px 44px 13px 44px; 
+            color: #ffffff; 
+            font-size: 14px; 
+            outline: none; 
+            transition: all 0.25s; 
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+        .input-wrapper input:focus { 
+            border-color: #c77dff; 
+            background: rgba(42,22,69,0.9); 
+            box-shadow: 0 0 0 3px rgba(199, 125, 255, 0.25), inset 0 2px 4px rgba(0,0,0,0.5);
+        }
+        .input-wrapper input::placeholder { color: #7b6291; font-weight: 500;}
+        .toggle-pw { 
+            position: absolute; 
+            right: 16px; 
+            color: #cfc2d4; 
+            cursor: pointer; 
+            transition: color 0.2s; 
+        }
+        .toggle-pw:hover { color: #c77dff; }
+        
+        .btn-submit { 
+            width: 100%; 
+            background: linear-gradient(135deg, #9d4edd, #c77dff); 
+            color: #ffffff; 
+            font-weight: 800; 
+            font-size: 14.5px; 
+            padding: 14px; 
+            border-radius: 13px; 
+            border: none; 
+            cursor: pointer; 
+            margin-top: 8px; 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            box-shadow: 0 10px 25px -5px rgba(157, 78, 221, 0.65); 
+            text-transform: uppercase; 
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .btn-submit:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 14px 35px -5px rgba(199, 125, 255, 0.85); 
+            filter: brightness(1.1);
+        }
+        .btn-submit:active { transform: translateY(0); }
+        
+        /* Social Logins */
+        .divider { 
+            display: flex; 
+            align-items: center; 
+            text-align: center; 
+            margin: 20px 0; 
+            color: #8c76a0; 
+            font-size: 11.5px; 
+            font-weight: 700; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+        }
+        .divider::before, .divider::after { 
+            content: ''; 
+            flex: 1; 
+            border-bottom: 1px solid rgba(157,78,221,0.25); 
+        }
+        .divider::before { margin-right: 14px; }
+        .divider::after { margin-left: 14px; }
+        
+        .social-buttons { display: flex; gap: 12px; }
+        .btn-social { 
+            flex: 1; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            gap: 8px; 
+            padding: 11px; 
+            border-radius: 12px; 
+            border: 1.5px solid rgba(157,78,221,0.3); 
+            background: rgba(31, 16, 50, 0.5); 
+            color: #ffffff; 
+            font-size: 13.5px; 
+            font-weight: 700; 
+            cursor: pointer; 
+            transition: all 0.25s; 
+            text-decoration: none;
+        }
+        .btn-social:hover { 
+            background: rgba(42,22,69,0.9); 
+            border-color: #c77dff; 
+            transform: translateY(-2px); 
+            box-shadow: 0 8px 20px rgba(157,78,221,0.25);
+        }
+        
+        .switch-auth { 
+            margin-top: 18px; 
+            text-align: center; 
+            font-size: 13px; 
+            color: #cfc2d4; 
+        }
+        .switch-auth a { 
+            color: #c77dff; 
+            text-decoration: none; 
+            font-weight: 800; 
+            margin-left: 4px;
+            transition: all 0.2s;
+        }
+        .switch-auth a:hover { text-decoration: underline; color: #ffffff; }
+
+        /* ================= 2FA OVERLAY & MODAL ================= */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(10, 5, 16, 0.85);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, backdrop-filter 0.3s ease;
+            padding: 16px;
+        }
+        .modal-overlay.active {
+            display: flex !important;
+            opacity: 1 !important;
+            pointer-events: auto !important;
+        }
+
+        .twofa-card {
+            background: #190c2a;
+            border: 2px solid #c77dff;
+            border-radius: 28px;
+            padding: 36px 32px;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 70px rgba(0,0,0,0.85), 0 0 50px rgba(199, 125, 255, 0.38);
+            text-align: center;
+            position: relative;
+            transform: scale(0.95) translateY(12px);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-overlay.active .twofa-card {
+            transform: scale(1) translateY(0);
+        }
+
+        .twofa-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(199,125,255,0.3);
+            color: #cfc2d4;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            transition: all 0.2s;
+        }
+        .twofa-close-btn:hover {
+            background: rgba(199,125,255,0.25);
+            color: #ffffff;
+            border-color: #c77dff;
+        }
+
+        .twofa-icon-wrap {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px auto;
+            border-radius: 22px;
+            background: radial-gradient(circle, rgba(199,125,255,0.3) 0%, rgba(157,78,221,0.08) 80%);
+            border: 2px solid rgba(199, 125, 255, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #c77dff;
+            font-size: 32px;
+            box-shadow: 0 0 32px rgba(157, 78, 221, 0.5);
+            animation: pulse-icon 2.5s infinite alternate ease-in-out;
+        }
+        @keyframes pulse-icon {
+            0% { box-shadow: 0 0 20px rgba(157, 78, 221, 0.3); transform: scale(0.98); }
+            100% { box-shadow: 0 0 45px rgba(199, 125, 255, 0.8); transform: scale(1.02); }
+        }
+
+        .otp-inputs-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            margin: 22px 0 16px 0;
+        }
+        .otp-separator {
+            color: #c77dff;
+            font-weight: 700;
+            font-size: 20px;
+            user-select: none;
+            padding: 0 2px;
+        }
+
+        .otp-digit {
+            width: 48px;
+            height: 56px;
+            border-radius: 13px;
+            background: rgba(13, 7, 20, 0.95);
+            border: 2px solid rgba(157, 78, 221, 0.45);
+            color: #ffffff;
+            font-size: 24px;
+            font-weight: 800;
+            text-align: center;
+            font-family: 'Inter', monospace;
+            outline: none;
+            transition: all 0.25s;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+        .otp-digit:focus {
+            border-color: #c77dff;
+            background: rgba(42, 22, 69, 0.9);
+            box-shadow: 0 0 20px rgba(199, 125, 255, 0.5), inset 0 2px 5px rgba(0,0,0,0.5);
+            transform: scale(1.04);
+        }
+
+        .quick-autofill-btn {
+            background: rgba(199, 125, 255, 0.14);
+            border: 1.5px solid rgba(199, 125, 255, 0.45);
+            color: #c77dff;
+            padding: 7px 18px;
+            border-radius: 9999px;
+            font-size: 12.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            transition: all 0.25s;
+            margin-bottom: 16px;
+        }
+        .quick-autofill-btn:hover {
+            background: rgba(199, 125, 255, 0.28);
+            color: #ffffff;
+            border-color: #c77dff;
+            box-shadow: 0 0 18px rgba(199,125,255,0.5);
+            transform: translateY(-1px);
+        }
+
+        .timer-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            font-size: 13px;
+            color: #cfc2d4;
+            margin-bottom: 20px;
+        }
+        .timer-badge {
+            color: #c77dff;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
+        }
+        .resend-link {
+            color: #cfc2d4;
+            cursor: pointer;
+            text-decoration: underline;
+            font-weight: 600;
+            transition: color 0.2s;
+        }
+        .resend-link:hover { color: #ffffff; }
+
+        .btn-verify {
+            width: 100%;
+            background: linear-gradient(135deg, #9d4edd, #c77dff);
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 14.5px;
+            padding: 15px;
+            border-radius: 13px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px -5px rgba(157, 78, 221, 0.7);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-verify:hover {
+            box-shadow: 0 14px 40px -5px rgba(199, 125, 255, 0.9);
+            filter: brightness(1.1);
+            transform: translateY(-2px);
+        }
+
+        /* Success Alert Toast */
+        .toast-box {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            background: #231038;
+            border: 2px solid #c77dff;
+            box-shadow: 0 12px 35px rgba(157,78,221,0.5);
+            border-radius: 14px;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 100000;
+            color: #ffffff;
+            font-size: 13.5px;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-20px);
+            pointer-events: none;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .toast-box.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Responsive handling */
+        @media (max-width: 860px) {
+            html, body {
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+            body {
+                padding: 20px 10px;
+                align-items: flex-start;
+            }
+            .auth-container {
+                flex-direction: column;
+                max-height: none;
+                margin: auto;
+            }
+            .auth-hero {
+                padding: 30px 24px;
+                border-right: none;
+                border-bottom: 1px solid rgba(157, 78, 221, 0.3);
+            }
+            .form-section {
+                padding: 32px 24px;
+            }
+        }
+        @media (max-width: 480px) {
+            .otp-inputs-row { gap: 4px; }
+            .otp-digit { width: 38px; height: 46px; font-size: 18px; border-radius: 9px; }
+            .otp-separator { display: none; }
+        }
+button, input, select, textarea { font-family: inherit; }
+    </style>
+<link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script></head>
+<body class="auth-page">
+<div class="ambient-glow-1"></div>
+<div class="ambient-glow-2"></div>
+<!-- Main Authentication Container -->
+<div class="auth-container">
+<!-- Left Side: Branding / Features -->
+<div class="auth-hero">
+<div class="hero-content">
+<a class="hero-logo" href="index.html">
+<i class="fa-solid fa-gamepad"></i> 5GUYS
+        </a>
+<div class="feature-list">
+<div class="feature-item">
+<div class="feature-icon"><i class="fa-solid fa-bolt"></i></div>
+<div class="feature-text">
+<h4 class="">Thư viện số tức thì</h4>
+<p class="">Kích hoạt tự động, tải game với băng thông tối đa ngay lập tức sau khi thanh toán.</p>
+</div>
+</div>
+<div class="feature-item">
+<div class="feature-icon"><i class="fa-solid fa-truck-fast"></i></div>
+<div class="feature-text">
+<h4 class="">Theo dõi đơn vật lý (Real-time)</h4>
+<p class="">Cập nhật trạng thái giao hàng từng phút cho đĩa game và gaming gear của bạn.</p>
+</div>
+</div>
+<div class="feature-item">
+<div class="feature-icon"><i class="fa-solid fa-shield-halved"></i></div>
+<div class="feature-text">
+<h4 class="">Bảo mật cấp độ Vault</h4>
+<p class="">Hệ thống phòng thủ nhiều lớp, mã hóa giao dịch AES-256 an toàn tuyệt đối.</p>
+</div>
+</div>
+</div>
+</div>
+<div class="student-signature">Nhóm 5Guys 26C01</div>
+</div>
+<!-- Right Side: Form -->
+<div class="form-section">
+<a class="back-link" href="index.html">
+        Store <i class="fa-solid fa-arrow-right"></i>
+</a>
+<div class="status-bar">
+<div class="status-left"><i class="fa-solid fa-terminal"></i> DB: <b>user_vault_sync</b></div>
+<div class="status-right"><span class="badge-encrypted"><i class="fa-solid fa-lock"></i> ENCRYPTED</span></div>
+</div>
+<!-- Standard Login View -->
+<div id="login-form-wrapper">
+<h1 class="font-display">Chào mừng trở lại</h1>
+<p class="subtitle">Truy cập thư viện game số và quản lý đơn hàng vật lý.</p>
+<form id="signin-form" onsubmit="handleSignInSubmit(event)">
+<div class="input-group">
+<label for="email-input" class="">Địa chỉ Email</label>
+<div class="input-wrapper">
+<i class="fa-solid fa-envelope icon-left"></i>
+<input id="email-input" placeholder="username@example.com" required="" type="email">
+</div>
+</div>
+<div class="input-group">
+<label for="password-input">
+<span class="">Mật khẩu bảo mật</span>
+<a href="#" onmouseout="this.style.color='#cfc2d4'" onmouseover="this.style.color='#c77dff'" style="color:#cfc2d4; text-decoration:none; font-size:12px;" class="">Quên mật khẩu?</a>
+</label>
+<div class="input-wrapper">
+<i class="fa-solid fa-key icon-left"></i>
+<input id="password-input" placeholder="••••••••••••" required="" type="password">
+<i class="fa-solid fa-eye toggle-pw" id="toggle-pw-btn" onclick="togglePasswordVisibility()"></i>
+</div>
+</div>
+<button class="btn-submit" id="btn-login-submit" type="submit">
+<i class="fa-solid fa-right-to-bracket"></i> XÁC THỰC TRUY CẬP
+            </button>
+</form>
+<div class="divider">Xác thực nhanh</div>
+<div class="social-buttons">
+<a class="btn-social discord" href="#"><i class="fa-brands fa-discord"></i> Discord</a>
+<a class="btn-social steam" href="#"><i class="fa-brands fa-steam"></i> Steam</a>
+</div>
+<div class="switch-auth">
+            Chưa có 5GUYS ID? <a href="register.html" class="">Đăng ký ngay</a>
+</div>
+</div>
+</div>
+</div>
+<!-- ================= 2FA VERIFICATION MODAL POPUP ================= -->
+<div class="modal-overlay" id="modal-2fa">
+<div class="twofa-card" id="twofa-card">
+<button class="twofa-close-btn" onclick="close2FAModal()" title="Đóng" type="button">
+<i class="fa-solid fa-times"></i>
+</button>
+<div class="twofa-icon-wrap">
+<i class="fa-solid fa-shield-halved"></i>
+</div>
+<h2 class="font-display" style="font-size: 22px; font-weight: 800; color: #ffffff; margin: 0 0 8px 0;">
+            XÁC THỰC 2 BƯỚC (2FA)
+        </h2>
+<p style="font-size: 13px; color: #cfc2d4; line-height: 1.5; margin: 0 0 16px 0;" class="">
+            Nhập mã bảo mật 6 chữ số từ ứng dụng Google Authenticator hoặc tin nhắn gửi tới thiết bị của bạn.
+        </p>
+<button class="quick-autofill-btn" id="btn-autofill-otp" onclick="autofillOTP()" type="button">
+<i class="fa-solid fa-bolt"></i> Tự động điền mã (849201)
+        </button>
+<form onsubmit="handleVerify2FA(event)">
+<!-- 6 Digit OTP Input Row [ 8 ] [ 4 ] [ 9 ] - [ 2 ] [ 0 ] [ 1 ] -->
+<div class="otp-inputs-row">
+<input autocomplete="one-time-code" class="otp-digit" data-idx="0" inputmode="numeric" maxlength="1" required="" type="text">
+<input class="otp-digit" data-idx="1" inputmode="numeric" maxlength="1" required="" type="text">
+<input class="otp-digit" data-idx="2" inputmode="numeric" maxlength="1" required="" type="text">
+<span class="otp-separator">-</span>
+<input class="otp-digit" data-idx="3" inputmode="numeric" maxlength="1" required="" type="text">
+<input class="otp-digit" data-idx="4" inputmode="numeric" maxlength="1" required="" type="text">
+<input class="otp-digit" data-idx="5" inputmode="numeric" maxlength="1" required="" type="text">
+</div>
+<div class="timer-row">
+<span class="">Mã hết hạn trong: <span class="timer-badge" id="timer-count">45 giây</span></span>
+<span class="">•</span>
+<span class="resend-link" onclick="resendOTP()">Gửi lại mã</span>
+</div>
+<button class="btn-verify" id="btn-verify-otp" type="submit">
+<i class="fa-solid fa-shield-check"></i> XÁC NHẬN &amp; ĐĂNG NHẬP
+            </button>
+<button onclick="close2FAModal()" style="background:transparent; border:none; color:#cfc2d4; font-size:13px; font-weight:600; margin-top:14px; cursor:pointer; text-decoration:underline;" type="button" class="">
+                ← Quay lại đăng nhập
+            </button>
+</form>
+</div>
+</div>
+<!-- Toast Notification -->
+<div class="toast-box" id="system-toast">
+<i class="fa-solid fa-circle-check" style="color:#4ade80; font-size:18px;"></i>
+<span id="toast-text" class="">Thông báo</span>
+</div>
+<script>
+    let countdownTimer = null;
+    let timeLeft = 45;
+
+    // Show Toast Notification
+    function showToast(msg) {
+        const toast = document.getElementById('system-toast');
+        const text = document.getElementById('toast-text');
+        if (!toast || !text) return;
+        text.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3500);
+    }
+
+    // Toggle password visibility
+    function togglePasswordVisibility() {
+        const input = document.getElementById('password-input');
+        const icon = document.getElementById('toggle-pw-btn');
+        if (!input || !icon) return;
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('fa-eye');
+            icon.classList.add('fa-eye-slash');
+        } else {
+            input.type = 'password';
+            icon.classList.remove('fa-eye-slash');
+            icon.classList.add('fa-eye');
+        }
+    }
+
+    // Trigger 2FA Modal on Sign In Submission
+    function handleSignInSubmit(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        
+        const email = emailInput ? emailInput.value.trim() : '';
+        const password = passwordInput ? passwordInput.value.trim() : '';
+
+        if (!email || !password) {
+            alert('Vui lòng nhập đầy đủ Email và Mật khẩu.');
+            return;
+        }
+
+        G5.api('/auth/login', { method: 'POST', body: { email: email, password: password } })
+            .then(function (result) { G5.setApiSession(result.token, result.user); open2FAModal(); })
+            .catch(function (error) { alert(error.message === 'invalid_credentials' ? 'Email hoặc mật khẩu không đúng.' : 'Không kết nối được API. Hãy kiểm tra backend đang chạy.'); });
+    }
+
+    // Open 2FA Modal Popup
+    function open2FAModal(e) {
+        if (e && e.preventDefault) e.preventDefault();
+
+        const overlay = document.getElementById('modal-2fa');
+        if (overlay) {
+            overlay.classList.add('active');
+        }
+        
+        // Focus on first OTP input
+        const firstDigit = document.querySelector('.otp-digit[data-idx="0"]');
+        if (firstDigit) {
+            setTimeout(() => {
+                firstDigit.focus();
+                firstDigit.select();
+            }, 200);
+        }
+        
+        startCountdown();
+        showToast('Đã gửi mã xác thực 2 bước (2FA) 6 số!');
+    }
+
+    // Close 2FA Modal
+    function close2FAModal() {
+        const overlay = document.getElementById('modal-2fa');
+        if (overlay) {
+            overlay.classList.remove('active');
+        }
+        if (countdownTimer) clearInterval(countdownTimer);
+    }
+
+    // Countdown timer for OTP
+    function startCountdown() {
+        if (countdownTimer) clearInterval(countdownTimer);
+        timeLeft = 45;
+        const timerEl = document.getElementById('timer-count');
+        if (timerEl) timerEl.textContent = timeLeft + ' giây';
+
+        countdownTimer = setInterval(() => {
+            timeLeft--;
+            if (timerEl) timerEl.textContent = timeLeft + ' giây';
+            if (timeLeft <= 0) {
+                clearInterval(countdownTimer);
+                if (timerEl) timerEl.textContent = 'Hết hạn';
+            }
+        }, 1000);
+    }
+
+    // Resend OTP code
+    function resendOTP() {
+        startCountdown();
+        showToast('Mã OTP 2FA mới đã được gửi lại!');
+    }
+
+    // Quick Autofill helper (849201)
+    function autofillOTP() {
+        const sampleCode = '849201';
+        const digits = document.querySelectorAll('.otp-digit');
+        digits.forEach((input, index) => {
+            input.value = sampleCode[index] || '';
+        });
+        if (digits.length > 0) {
+            digits[digits.length - 1].focus();
+        }
+        showToast('Đã tự động điền mã xác thực: 849201');
+    }
+
+    // Setup 6-digit OTP Input Auto Jump and Navigation
+    const otpInputs = document.querySelectorAll('.otp-digit');
+    otpInputs.forEach((input, idx) => {
+        // Typing auto-advance
+        input.addEventListener('input', (e) => {
+            const val = e.target.value.replace(/[^0-9]/g, '');
+            input.value = val ? val.slice(-1) : '';
+            if (input.value && idx < otpInputs.length - 1) {
+                otpInputs[idx + 1].focus();
+            }
+        });
+
+        // Backspace auto-retreat
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace') {
+                if (!input.value && idx > 0) {
+                    otpInputs[idx - 1].focus();
+                }
+            } else if (e.key === 'ArrowLeft' && idx > 0) {
+                otpInputs[idx - 1].focus();
+            } else if (e.key === 'ArrowRight' && idx < otpInputs.length - 1) {
+                otpInputs[idx + 1].focus();
+            }
+        });
+
+        // Paste 6-digit code support
+        input.addEventListener('paste', (e) => {
+            e.preventDefault();
+            const pasteData = (e.clipboardData || window.clipboardData).getData('text').replace(/[^0-9]/g, '');
+            if (pasteData) {
+                const chars = pasteData.slice(0, 6).split('');
+                chars.forEach((c, i) => {
+                    if (otpInputs[i]) otpInputs[i].value = c;
+                });
+                const lastIdx = Math.min(chars.length, otpInputs.length) - 1;
+                if (otpInputs[lastIdx]) otpInputs[lastIdx].focus();
+            }
+        });
+    });
+
+    // Submit 2FA Verification
+    function handleVerify2FA(e) {
+        if (e && e.preventDefault) e.preventDefault();
+        executeVerification();
+    }
+
+    function executeVerification() {
+        let code = '';
+        otpInputs.forEach(inp => code += inp.value);
+
+        if (code.length < 6) {
+            autofillOTP();
+            code = '849201';
+        }
+
+        const verifyBtn = document.getElementById('btn-verify-otp');
+        if (verifyBtn) {
+            verifyBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XÁC THỰC...';
+            verifyBtn.disabled = true;
+        }
+
+        setTimeout(() => {
+            showToast('Xác thực 2FA thành công! Chào mừng trở lại.');
+            if (verifyBtn) {
+                verifyBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> ĐÃ XÁC THỰC THÀNH CÔNG!';
+            }
+            
+            setTimeout(() => {
+                var em=(document.getElementById('email-input').value||'').trim();G5.login({email:em,name:(em.split('@')[0]||'User')});var nx=new URLSearchParams(location.search).get('next');window.location.href=(nx&&/^[\w-]+\.html$/.test(nx))?nx:'index.html';
+            }, 1200);
+        }, 750);
+    }
+
+    // Direct event listener binding
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginBtn = document.getElementById('btn-login-submit');
+        if (loginBtn) {
+            loginBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleSignInSubmit(e);
+            });
+        }
+    });
+
+    // Close on ESC
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') close2FAModal();
+    });
+</script>
+
+
+
+
+</body></html>
+
+

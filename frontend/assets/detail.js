@@ -1,0 +1,31 @@
+(function () {
+  const $=s=>document.querySelector(s), money=n=>new Intl.NumberFormat('vi-VN').format(Number(n)||0)+'đ';
+  function el(tag,cls,text){const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;}
+  function line(parent,label,value){const row=el('div','flex justify-between gap-4 border-b border-white/10 py-3');row.append(el('span','text-outline',label),el('span','text-right font-semibold text-white',value||'Đang cập nhật'));parent.appendChild(row);}
+  function reqList(data){const list=el('ul','space-y-2 text-sm text-gray-300');for(const [k,v] of Object.entries(data||{})){const li=el('li');li.append(el('strong','text-white',k+': '),document.createTextNode(String(v)));list.appendChild(li);}return list;}
+  async function init(){
+    const slug=new URLSearchParams(location.search).get('slug'), root=$('#game-detail');
+    if(!slug){root.replaceChildren(el('p','text-center py-20 text-outline','Thiếu mã game.'));return;}
+    try {
+      const {product:p}=await G5.api('/products/'+encodeURIComponent(slug));document.title=p.title+' | 5GUYS';
+      $('#crumb-title').textContent=p.title;$('#game-title').textContent=p.title;$('#game-byline').textContent=[p.developer,p.publisher].filter(Boolean).join(' · ');
+      const cover=$('#game-cover');cover.src=String(p.cover_url||'').replace('https://cdn.akamai.steamstatic.com/steam/apps/','https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/');cover.alt='Ảnh bìa '+p.title;cover.onerror=()=>{cover.classList.add('hidden');const fallback=$('#game-cover-fallback');fallback.textContent=p.title;fallback.classList.remove('hidden');};
+      $('#game-description').textContent=p.description||'Thông tin game đang được cập nhật.';
+      const formatBox=$('#game-formats'),formatOptions=formatBox.querySelector('div');
+      if((p.formats||[]).length>1){formatBox.classList.remove('hidden');(p.formats||[]).forEach(function(f){const option=el('a','rounded-2xl border px-4 py-3 transition-colors '+(f.slug===p.slug?'border-brand bg-brand/15 text-white':'border-white/10 bg-white/5 text-gray-300 hover:border-brand/60'));option.href='detail.html?slug='+encodeURIComponent(f.slug);option.setAttribute('aria-current',f.slug===p.slug?'true':'false');const label=el('strong','block text-sm',f.product_type==='digital'?'Kỹ thuật số':'Vật lý');const meta=el('span','block mt-1 text-xs text-outline',(f.platform||'')+' · '+money(f.price)+(f.product_type==='physical'?' · Tồn kho mẫu: '+(f.available_stock||0):''));option.append(label,meta);formatOptions.appendChild(option);});}
+      line($('#game-specs'),'Nhà phát triển',p.developer);line($('#game-specs'),'Nhà phát hành',p.publisher);line($('#game-specs'),'Thể loại',p.genre);line($('#game-specs'),'Ngày phát hành',p.release_date?new Date(p.release_date).toLocaleDateString('vi-VN',{timeZone:'UTC'}):'Đang cập nhật');line($('#game-specs'),'Nền tảng',[...new Set((p.formats||[]).map(f=>f.platform).filter(Boolean))].join(' · ')||p.platform);line($('#game-specs'),'Định dạng',[...new Set((p.formats||[]).map(f=>f.product_type))].map(t=>t==='digital'?'Kỹ thuật số':'Vật lý').join(' · ')|| (p.product_type==='digital'?'Kỹ thuật số':'Vật lý'));
+      $('#game-price').textContent=money(p.price);if(p.original_price&&Number(p.original_price)>Number(p.price)){const old=$('#game-original-price');old.textContent=money(p.original_price);old.classList.remove('hidden');}
+      const editions=$('#game-editions');(p.editions||[]).forEach(e=>{const row=el('div','rounded-xl border border-white/10 bg-white/5 p-3 flex justify-between gap-4');row.append(el('strong','text-white',e.edition_name),el('span','text-brand-light font-bold',money(e.price)));editions.appendChild(row);});if(!editions.children.length)editions.append(el('p','text-sm text-outline','Chưa có thông tin phiên bản.'));
+      if(p.product_type==='physical')$('#game-stock').textContent=p.available_stock>0?'Tồn kho mẫu: '+p.available_stock:'Tạm hết hàng';else $('#game-stock').textContent='Giao kỹ thuật số sau khi thanh toán';
+      const add=$('#game-add');add.dataset.add='';add.dataset.name=p.title;add.dataset.kind=p.product_type;add.dataset.price=Number(p.price)/25000;add.disabled=p.product_type==='physical'&&p.available_stock===0;
+      $('#buy-now').addEventListener('click',async()=>{if(add.disabled)return;if(!G5.user()){add.click();return;}try{await G5.add(p.title,p.product_type,Number(p.price)/25000);location.href='cart.html';}catch{G5.notify('Không thể thêm sản phẩm vào giỏ.');}});
+      $('#favorite').addEventListener('click',()=>{const key='5guys_favorites',ids=JSON.parse(localStorage.getItem(key)||'[]'),on=ids.includes(p.slug);localStorage.setItem(key,JSON.stringify(on?ids.filter(x=>x!==p.slug):ids.concat(p.slug)));$('#favorite').textContent=on?'♡ Yêu thích':'♥ Đã yêu thích';});
+      const media=$('#game-media');(p.media||[]).filter(x=>x.media_type==='screenshot').forEach(m=>{const img=el('img','w-full rounded-2xl border border-white/10');img.src=m.media_url;img.alt=m.caption||p.title;media.appendChild(img);});
+      const trailer=(p.media||[]).find(x=>x.media_type==='trailer');if(trailer){const a=el('a','btn mt-4 inline-flex','Xem trailer và ảnh trên Steam');a.href=trailer.media_url;a.target='_blank';a.rel='noopener noreferrer';$('#trailer-slot').appendChild(a);}
+      const r=$('#game-reviews');(p.reviews||[]).forEach(review=>{const card=el('article','card p-4');card.append(el('div','font-bold text-white',review.title||'Đánh giá'),el('p','text-sm text-outline mt-1',review.display_name+' · '+Number(review.rating).toFixed(1)+' ★'),el('p','mt-3 text-gray-200',review.body));r.appendChild(card);});if(!r.children.length)r.append(el('p','text-outline','Chưa có đánh giá được duyệt.'));
+      const requirements=p.requirements; if(requirements){$('#minimum-requirements').replaceChildren(reqList(requirements.minimum_requirements));$('#recommended-requirements').replaceChildren(reqList(requirements.recommended_requirements));}
+      root.classList.remove('hidden');$('#detail-loading').classList.add('hidden');
+    } catch {$('#detail-loading').textContent='Không tìm thấy game hoặc API chưa hoạt động. Hãy kiểm tra server rồi thử lại.';}
+  }
+  document.addEventListener('DOMContentLoaded',init);
+})();

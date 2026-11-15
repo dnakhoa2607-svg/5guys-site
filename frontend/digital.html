@@ -1,0 +1,710 @@
+<!DOCTYPE html><html lang="vi" class="scroll-smooth"><head>
+    <title>Game Kỹ Thuật Số - 5GUYS</title>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google Fonts: Inter ONLY -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="assets/tailwind-config.js"></script>
+
+    <style>
+        body {
+            background-color: #12091c;
+            color: #f3e8ff;
+            overflow-x: hidden;
+            transition: filter 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+        
+        h1, h2, h3, h4, .logo-font, .font-display {
+            font-family: 'Inter', sans-serif;
+            letter-spacing: -0.02em;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #12091c; }
+        ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
+
+        /* Game Card Hover */
+        .game-card {
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            box-shadow: 0 15px 30px -5px rgba(157, 78, 221, 0.5), 0 0 15px rgba(157, 78, 221, 0.3) inset;
+            border-color: #c77dff;
+        }
+
+        /* Easter Egg: Super Spin Logo */
+        @keyframes superSpin {
+            0% { transform: rotate(0deg) scale(1); }
+            50% { transform: rotate(720deg) scale(1.2); filter: hue-rotate(90deg) brightness(1.5); }
+            100% { transform: rotate(1440deg) scale(1); filter: hue-rotate(0deg); }
+        }
+        .easter-egg-active {
+            animation: superSpin 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        
+        #confetti-canvas {
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            pointer-events: none; z-index: 9999; opacity: 0; transition: opacity 0.5s;
+        }
+
+        /* Toast & Modals Transition */
+        .toast-enter { opacity: 1 !important; transform: translateY(0) !important; pointer-events: auto !important; }
+        .modal-enter { opacity: 1 !important; pointer-events: auto !important; }
+        .panel-enter { opacity: 1 !important; transform: scale(1) translateY(0) !important; pointer-events: auto !important; }
+
+        /* EASTER EGG CSS */
+        .smash-mode * {
+            cursor: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='40' height='48' viewport='0 0 100 100' style='font-size:30px;'><text y='50%'>🔨</text></svg>") 16 16, auto !important;
+            user-select: none;
+        }
+        .shattered {
+            animation: shatterAnim 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards !important;
+            pointer-events: none !important;
+        }
+        @keyframes shatterAnim {
+            0% { opacity: 1; transform: scale(1) rotate(0deg); }
+            50% { filter: blur(2px); }
+            100% { opacity: 0; transform: scale(1.4) rotate(15deg) translateY(40px); filter: blur(6px); visibility: hidden; }
+        }
+    </style>
+<link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script></head>
+<body data-kind="digital" class="antialiased flex flex-col min-h-screen">
+
+    <!-- Header Navigation (Khách / Logged Out) -->
+    <nav class="bg-dark-bg/95 backdrop-blur-xl sticky top-0 z-40 border-b border-dark-border shadow-[0_10px_30px_-10px_rgba(0,0,0,0.5)]">
+<div class="max-w-7xl 2xl:max-w-none mx-auto px-4 sm:px-6 lg:px-8 2xl:px-10"><div class="flex items-center justify-between h-[72px] gap-4">
+<div class="flex items-center min-w-0">
+<a href="index.html" id="logo-container" class="flex-shrink-0 cursor-pointer select-none group mr-4 sm:mr-10" title="Click 5 lần để nhận bất ngờ!"><span class="text-2xl sm:text-3xl font-black tracking-widest flex items-center gap-2 logo-font"><i class="fa-solid fa-gamepad text-brand group-hover:text-brand-light transition-colors drop-shadow-[0_0_10px_rgba(157,78,221,0.5)]"></i><span class="text-white">5</span><span class="text-transparent bg-clip-text bg-gradient-to-r from-brand to-brand-light group-hover:from-brand-light group-hover:to-white transition-all">GUYS</span></span></a>
+<div class="hidden xl:block"><div class="ml-4 flex items-baseline space-x-1">
+<a data-nav href="index.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Trang chủ</a><a data-user data-nav href="library.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap !text-brand-light"><i class="fa-solid fa-layer-group text-xs mr-1"></i>Kho game</a>
+<a data-nav href="digital.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Kỹ thuật số</a>
+<a data-nav href="physical.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Vật lý &amp; Băng đĩa</a>
+<a data-nav href="rental.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Thuê cấu hình</a>
+<a data-nav href="mods.html" class="px-3 py-2 rounded-md text-sm font-semibold tracking-wide transition-colors text-gray-300 hover:text-brand-light hover:bg-dark-surface whitespace-nowrap">Cộng đồng Mod</a>
+
+
+</div></div></div>
+<div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
+<a data-nav href="search.html" title="Tìm kiếm" class="text-gray-300 hover:text-brand-light px-2 py-2 text-sm font-semibold tracking-wide whitespace-nowrap transition-colors">Tìm kiếm</a>
+<a data-user href="cart.html" title="Giỏ hàng" class="relative text-gray-300 hover:text-brand-light p-2"><i class="fa-solid fa-cart-shopping text-lg"></i><span id="cart-badge" data-cart-count class="absolute -top-0.5 -right-1 bg-brand text-white text-[10px] font-bold rounded-full w-4 h-4 grid place-items-center">0</span></a>
+<div data-user class="flex items-center">
+<div class="relative group cursor-pointer flex items-center gap-3 bg-dark-surface border border-dark-border px-3 sm:px-4 py-1.5 rounded-full hover:border-brand-light transition-all duration-300 shadow-md whitespace-nowrap"><div data-user-initial class="w-8 h-8 rounded-full bg-gradient-to-br from-brand to-brand-light flex items-center justify-center text-sm font-bold text-white shadow-inner">U</div><span data-user-name class="hidden sm:inline-block text-gray-200 text-sm font-medium pr-1 tracking-wide">User</span><i class="fa-solid fa-chevron-down text-xs text-brand-light group-hover:rotate-180 transition-transform duration-300"></i>
+<div class="absolute right-0 top-full pt-3 w-64 hidden group-hover:block z-50 cursor-default"><div class="bg-dark-surface border border-brand/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)] p-2"><a href="library.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-layer-group w-4 text-brand-light"></i>Kho game của tôi</a><a href="cart.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-cart-shopping w-4 text-brand-light"></i>Giỏ hàng &amp; Thanh toán</a><a href="orders.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-box w-4 text-brand-light"></i>Đơn hàng của tôi</a><a href="reviews.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-comments w-4 text-brand-light"></i>Đánh giá &amp; Cộng đồng</a><a href="loyalty.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-crown w-4 text-brand-light"></i>Khách hàng thân thiết</a><a href="support.html" class="flex items-center gap-3 px-4 py-2.5 rounded-lg text-sm text-gray-300 hover:text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-headset w-4 text-brand-light"></i>Chăm sóc khách hàng</a></div></div></div>
+<a href="#" data-logout title="Đăng xuất" class="ml-2 text-gray-400 hover:text-red-400 px-3 py-2 rounded-md text-lg font-medium transition-colors border border-transparent hover:bg-dark-surface hover:border-red-500/30"><i class="fa-solid fa-power-off"></i></a>
+</div>
+<div data-guest class="flex items-center gap-2"><a href="register.html" class="text-gray-200 hover:text-brand-light px-2.5 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-all duration-300 border border-transparent hover:border-brand/50 whitespace-nowrap">Đăng ký</a><a href="login.html" class="bg-brand hover:bg-brand-light text-white px-3 sm:px-5 py-2 sm:py-2.5 rounded-md text-xs sm:text-sm font-bold transition-all duration-300 shadow-[0_0_15px_rgba(157,78,221,0.4)] border border-brand-light/30 whitespace-nowrap">Đăng nhập</a></div>
+</div></div>
+<div class="xl:hidden flex items-center gap-2 overflow-x-auto pb-3 pt-1 border-t border-dark-border/40 scrollbar-none"><a href="index.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Trang chủ</a><a data-user data-nav href="library.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap !text-brand-light">Kho game</a>
+<a data-nav href="digital.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Kỹ thuật số</a><a data-nav href="physical.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Vật lý &amp; Băng đĩa</a><a data-nav href="rental.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Thuê cấu hình</a><a data-nav href="mods.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Cộng đồng Mod</a><a data-user href="cart.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Giỏ hàng</a>
+<a data-user href="orders.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Đơn hàng</a><a data-user href="loyalty.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Tích điểm</a><a data-user href="support.html" class="flex-shrink-0 px-3 py-1.5 rounded-full text-xs font-semibold text-gray-300 hover:text-brand-light bg-dark-surface/60 border border-dark-border whitespace-nowrap">Hỗ trợ</a>
+</div></div></nav>
+    
+    <main class="flex-grow">
+        <div id="digital" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+            <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8 sm:mb-10">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-black text-white border-l-4 border-brand pl-4 tracking-wide uppercase whitespace-nowrap">Game Kỹ Thuật Số</h1>
+                    <p class="text-gray-400 mt-2 pl-5">Các tựa game Digital tải tức thì thịnh hành nhất tuần</p>
+                </div>
+                <a href="digital.html" class="text-brand-light font-semibold hover:text-white transition-colors flex items-center gap-2 self-start sm:self-auto">Xem tất cả <i class="fa-solid fa-arrow-right text-sm"></i></a>
+            </div>
+            
+            <div id="digital-games-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8"></div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-dark-surface border-t border-brand/40 pt-16 pb-8 mt-auto relative z-10 overflow-hidden">
+        <div class="absolute bottom-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-brand/10 blur-[100px] pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-10 mb-12">
+                <div class="col-span-1 md:col-span-5 pr-4">
+                    <span class="text-3xl font-black tracking-widest mb-6 flex items-center gap-2 logo-font">
+                        <i class="fa-solid fa-gamepad text-brand"></i> 
+                        <span class="text-white">5</span><span class="text-brand-light">GUYS</span>
+                    </span>
+                    <p class="text-gray-400 text-sm leading-loose max-w-md font-medium">
+                        Nền tảng phân phối game bản quyền kỹ thuật số và thẻ game vật lý hàng đầu. Cam kết uy tín tuyệt đối, giao dịch bảo mật mã hóa AES-256 và đem lại trải nghiệm dịch vụ khách hàng tuyệt vời nhất cho cộng đồng game thủ Việt Nam.
+                    </p>
+                    <div class="mt-8 flex gap-4">
+                        <div class="bg-dark-bg p-3 rounded-xl border border-dark-border flex items-center gap-3 shadow-inner">
+                            <i class="fa-solid fa-shield-check text-brand-light text-xl"></i>
+                            <div>
+                                <div class="text-xs text-gray-500 font-bold uppercase">Bảo Mật</div>
+                                <div class="text-sm text-white font-medium">100% An Toàn</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-span-1 md:col-span-3 md:col-start-7">
+                    <h3 class="text-white font-black mb-6 uppercase text-sm tracking-widest text-brand-light border-l-2 border-brand pl-3 font-display">Danh Mục</h3>
+                    <ul class="space-y-4 text-sm text-gray-400 font-medium">
+                        <li class=""><a href="digital.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Game Kỹ Thuật Số</a></li>
+                        <li class=""><a href="physical.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Thẻ Game Vật Lý</a></li>
+                        <li class=""><a href="search.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Tìm kiếm</a></li>
+                        <li class=""><a href="rental.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Thuê Cấu Hình Cloud</a></li>
+                        <li class=""><a href="mods.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Cộng Đồng Mod</a></li>
+                        <li class=""><a href="digital.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Phát Hành Sắp Tới</a></li>
+                    </ul>
+                </div>
+                
+                <div class="col-span-1 md:col-span-3">
+                    <h3 class="text-white font-black mb-6 uppercase text-sm tracking-widest text-brand-light border-l-2 border-brand pl-3 font-display">Thông Tin &amp; Hỗ Trợ</h3>
+                    <ul class="space-y-4 text-sm text-gray-400 font-medium">
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Về 5GUYS Store</a></li>
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Điều khoản dịch vụ</a></li>
+                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Chính sách bảo mật</a></li>
+                        <li class="pt-2"><a href="index.html#gift-section" class="text-brand-light hover:text-white transition-all font-bold flex items-center gap-2 bg-brand/10 w-fit px-4 py-2 rounded-lg border border-brand/30 hover:bg-brand/20 hover:shadow-[0_0_10px_rgba(157,78,221,0.3)]"><i class="fa-solid fa-gift animate-bounce"></i> Nhận Quà Tặng</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-dark-border pt-8 flex flex-col md:flex-row justify-between items-center text-gray-500 text-sm">
+                <div class="flex items-center gap-2">
+                    <p class="">© 2026 5GUYS Game Store.</p>
+                    <span class="w-1 h-1 bg-gray-600 rounded-full"></span>
+                    <p class="">Designed by Nhóm 5Guys 26C01.</p>
+                </div>
+                <div class="flex space-x-6 mt-6 md:mt-0 text-gray-400 items-center">
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-facebook text-xl"></i></a>
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-discord text-xl"></i></a>
+                    <a href="#" class="hover:text-brand-light hover:-translate-y-1 transition-all"><i class="fa-brands fa-youtube text-xl"></i></a>
+                    <!-- Nút ẩn đập phá website -->
+                    <span id="smash-toggle-btn" class="ml-4 opacity-5 font-black text-xl hover:opacity-100 transition-opacity text-brand-light" title="Click to Smash!">🔨</span>
+                </div>
+            </div>
+            <div class="flex justify-center mt-6"><span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-dark-surface/70 border border-brand/40 text-xs sm:text-sm font-semibold text-brand-light text-center"><i class="fa-solid fa-user-graduate"></i>Sinh viên thực hiện: Nhóm 5Guys - 26C01</span></div>
+        </div>
+    </footer>
+
+    <!-- ================= FLOATING ACTION BUTTONS & WIDGETS ================= -->
+    <div class="fixed bottom-4 sm:bottom-8 right-4 sm:right-8 z-50 flex flex-col items-end gap-4 sm:gap-5">
+        <!-- 2. CUSTOMER SUPPORT FAB & PANEL -->
+        <div class="relative flex flex-col items-end">
+            <div id="support-panel" class="absolute bottom-16 right-0 w-[calc(100vw-32px)] sm:w-[420px] max-h-[75vh] bg-dark-surface border border-brand/40 rounded-2xl shadow-[0_15px_40px_rgba(0,0,0,0.7)] flex flex-col overflow-hidden transition-all duration-300 opacity-0 scale-95 translate-y-6 pointer-events-none origin-bottom-right z-50">
+                <div class="bg-gradient-to-r from-dark-bg via-dark-surface to-dark-bg p-5 flex justify-between items-center text-white border-b border-brand/40 shadow-md">
+                    <div class="flex items-center gap-4">
+                        <div class="bg-brand/20 border border-brand/30 p-2.5 rounded-xl text-brand-light shadow-inner">
+                            <i class="fa-solid fa-headset text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-[16px] font-display">Trung Tâm Hỗ Trợ</h4>
+                            <p class="text-[11px] text-gray-400">Trực tuyến 24/7</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleSupport()" class="text-gray-400 hover:text-white bg-dark-bg w-8 h-8 rounded-full flex items-center justify-center transition-colors border border-dark-border hover:border-gray-500"><i class="fa-solid fa-times"></i></button>
+                </div>
+                
+                <!-- Support Tabs -->
+                <div class="flex border-b border-dark-border bg-dark-bg/80 p-2 gap-2">
+                    <button onclick="switchSupportTab('faq')" id="tab-faq" class="flex-1 py-2.5 text-sm font-bold text-brand-light bg-dark-surface rounded-lg transition-all shadow-sm border border-brand/20">FAQ Nhanh</button>
+                    <button onclick="switchSupportTab('form')" id="tab-form" class="flex-1 py-2.5 text-sm font-semibold text-gray-400 hover:text-gray-200 rounded-lg transition-all hover:bg-dark-surface/50 border border-transparent">Gửi Khiếu Nại</button>
+                </div>
+
+                <div class="flex-grow overflow-y-auto p-5 bg-dark-bg/95">
+                    <!-- FAQ Content -->
+                    <div id="content-faq" class="block space-y-4">
+                        <details class="bg-dark-surface border border-dark-border rounded-xl group overflow-hidden shadow-sm">
+                            <summary class="px-5 py-4 font-bold cursor-pointer list-none flex justify-between items-center bg-dark-surface hover:bg-brand/5 transition-colors">
+                                <span class="text-sm text-gray-200 group-open:text-brand-light transition-colors">Làm sao để nhận Key game số?</span>
+                                <i class="fa-solid fa-chevron-down text-sm text-gray-500 group-open:text-brand-light group-open:rotate-180 transition-all duration-300"></i>
+                            </summary>
+                            <div class="px-5 pb-4 text-[13px] text-gray-400 border-t border-dark-border pt-3 leading-relaxed bg-dark-bg/50">Key game sẽ được tự động gửi qua email đăng ký và lưu trữ vĩnh viễn trong phần <b class="text-gray-300">"Thư viện"</b> của tài khoản 5GUYS ngay lập tức sau khi thanh toán thành công.</div>
+                        </details>
+                        <details class="bg-dark-surface border border-dark-border rounded-xl group overflow-hidden shadow-sm">
+                            <summary class="px-5 py-4 font-bold cursor-pointer list-none flex justify-between items-center bg-dark-surface hover:bg-brand/5 transition-colors">
+                                <span class="text-sm text-gray-200 group-open:text-brand-light transition-colors">Giao đĩa game mất bao lâu?</span>
+                                <i class="fa-solid fa-chevron-down text-sm text-gray-500 group-open:text-brand-light group-open:rotate-180 transition-all duration-300"></i>
+                            </summary>
+                            <div class="px-5 pb-4 text-[13px] text-gray-400 border-t border-dark-border pt-3 leading-relaxed bg-dark-bg/50">Thông thường thời gian giao hàng nội địa từ 2-4 ngày làm việc. Khu vực TP.HCM áp dụng giao tốc hành trong 2h. Quý khách có thể theo dõi mã vận đơn tại mục Quản lý đơn hàng.</div>
+                        </details>
+                        <details class="bg-dark-surface border border-dark-border rounded-xl group overflow-hidden shadow-sm">
+                            <summary class="px-5 py-4 font-bold cursor-pointer list-none flex justify-between items-center bg-dark-surface hover:bg-brand/5 transition-colors">
+                                <span class="text-sm text-gray-200 group-open:text-brand-light transition-colors">Chính sách hoàn tiền (Refund)?</span>
+                                <i class="fa-solid fa-chevron-down text-sm text-gray-500 group-open:text-brand-light group-open:rotate-180 transition-all duration-300"></i>
+                            </summary>
+                            <div class="px-5 pb-4 text-[13px] text-gray-400 border-t border-dark-border pt-3 leading-relaxed bg-dark-bg/50">Chấp nhận hoàn tiền 100% trong vòng 14 ngày với điều kiện: <br>- <b>Game số:</b> Chưa kích hoạt Key hoặc thời gian chơi dưới 2h.<br>- <b>Game vật lý:</b> Đĩa game còn nguyên seal niêm phong.</div>
+                        </details>
+                    </div>
+
+                    <!-- Form Content -->
+                    <div id="content-form" class="hidden">
+                        <form onsubmit="event.preventDefault(); showToast('Đã ghi nhận yêu cầu hỗ trợ! Chúng tôi sẽ phản hồi qua Email.'); this.reset();" class="space-y-5">
+                            <div>
+                                <label class="block text-[11px] font-black text-brand-light mb-2 uppercase tracking-widest font-display">Mã Đơn Hàng (Order ID)</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-hashtag absolute left-4 top-3.5 text-gray-500"></i>
+                                    <input type="text" required="" class="w-full bg-dark-bg border border-dark-border rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all shadow-inner" placeholder="VD: 5G-12345678">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-brand-light mb-2 uppercase tracking-widest font-display">Chủ Đề Cần Hỗ Trợ</label>
+                                <div class="relative">
+                                    <i class="fa-solid fa-list absolute left-4 top-3.5 text-gray-500"></i>
+                                    <select required="" class="w-full bg-dark-bg border border-dark-border rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none transition-all shadow-inner appearance-none">
+                                        <option value="" class="text-gray-500">-- Lựa chọn vấn đề --</option>
+                                        <option>Yêu cầu hoàn tiền (Refund)</option>
+                                        <option>Lỗi Key / Không thể kích hoạt</option>
+                                        <option>Vận chuyển đĩa vật lý chậm trễ</option>
+                                        <option>Lỗi thanh toán / Trừ tiền 2 lần</option>
+                                        <option>Vấn đề khác</option>
+                                    </select>
+                                    <i class="fa-solid fa-angle-down absolute right-4 top-3.5 text-gray-500 pointer-events-none"></i>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-black text-brand-light mb-2 uppercase tracking-widest font-display">Mô Tả Chi Tiết</label>
+                                <textarea required="" rows="4" class="w-full bg-dark-bg border border-dark-border rounded-xl px-4 py-3 text-sm text-white focus:border-brand focus:ring-1 focus:ring-brand outline-none resize-none transition-all shadow-inner" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải để CSKH hỗ trợ nhanh nhất..."></textarea>
+                            </div>
+                            <button type="submit" class="w-full bg-gradient-to-r from-brand to-brand-dark hover:from-brand-light hover:to-brand text-white py-3.5 rounded-xl text-sm font-black tracking-wide uppercase transition-all shadow-[0_5px_20px_rgba(157,78,221,0.4)] hover:shadow-[0_5px_25px_rgba(199,125,255,0.6)] transform hover:-translate-y-0.5">Gửi Ticket Hỗ Trợ</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support Button -->
+            <button onclick="toggleSupport()" id="support-toggle-btn" title="Trung tâm hỗ trợ" class="bg-dark-surface border-2 border-brand/50 hover:border-brand-light text-brand-light w-[60px] h-[60px] rounded-full shadow-[0_10px_25px_rgba(0,0,0,0.6)] flex items-center justify-center transition-all duration-300 hover:scale-110 z-50">
+                <i class="fa-solid fa-headset text-2xl"></i>
+            </button>
+        </div>
+
+        <!-- 1. CHATBOT FAB & PANEL -->
+        <div class="relative flex flex-col items-end mt-2">
+            <!-- PC2GAMES Chatbot Panel -->
+            <div id="chat-panel" class="absolute bottom-20 right-0 w-[calc(100vw-32px)] sm:w-[360px] max-h-[75vh] h-[480px] bg-dark-surface border border-brand/60 rounded-2xl shadow-[0_15px_50px_rgba(157,78,221,0.3)] flex flex-col overflow-hidden transition-all duration-300 opacity-0 scale-95 translate-y-6 pointer-events-none origin-bottom-right z-50">
+                <div class="bg-gradient-to-r from-brand via-brand-dark to-brand p-4 flex justify-between items-center text-white shadow-lg relative overflow-hidden">
+                    <div class="absolute inset-0 opacity-30 bg-black/20"></div>
+                    <div class="flex items-center gap-3 relative z-10">
+                        <div class="bg-white/20 p-2 rounded-xl backdrop-blur-sm border border-white/30 shadow-inner">
+                            <i class="fa-solid fa-microchip text-xl text-white animate-pulse"></i>
+                        </div>
+                        <div>
+                            <h4 class="font-black text-[16px] leading-tight tracking-wide font-display">PC2GAMES AI</h4>
+                            <p class="text-[11px] text-purple-200 font-semibold tracking-wider uppercase">Hệ thống phân tích cấu hình</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleChat()" class="text-white/80 hover:text-white bg-black/20 w-8 h-8 rounded-full flex items-center justify-center transition-colors relative z-10"><i class="fa-solid fa-times"></i></button>
+                </div>
+                
+                <div id="chat-messages" class="flex-grow p-5 overflow-y-auto bg-[#0d0714] flex flex-col gap-5 text-sm scroll-smooth">
+                    <div class="flex gap-3">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-1 shadow-[0_0_15px_rgba(157,78,221,0.5)] border border-brand-light/30">
+                            <i class="fa-solid fa-robot text-white text-sm"></i>
+                        </div>
+                        <div class="bg-dark-surface border border-dark-border text-gray-200 p-4 rounded-2xl rounded-tl-sm max-w-[85%] leading-relaxed shadow-md">
+                            Khởi động hệ thống... <span class="text-brand-light font-bold">Thành công!</span> <i class="fa-solid fa-check-circle text-green-400 ml-1"></i><br><br>
+                            Xin chào! Tôi là AI của <b>PC2GAMES</b>. Hãy nhập <b>Cấu hình PC</b> của bạn (VD: Core i5, RAM 16GB, RTX 3060) để tôi gợi ý những tựa game mượt mà nhất trên 5GUYS nhé!
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="p-4 bg-dark-surface border-t border-brand/30 flex gap-3 items-center relative shadow-[0_-5px_20px_rgba(0,0,0,0.3)]">
+                    <div class="relative flex-grow">
+                        <input type="text" id="chat-input" placeholder="Nhập cấu hình PC..." class="w-full bg-dark-bg border border-dark-border text-white text-[13px] rounded-xl pl-4 pr-10 py-3.5 focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light transition-all shadow-inner">
+                        <i class="fa-solid fa-keyboard absolute right-4 top-4 text-gray-500"></i>
+                    </div>
+                    <button onclick="sendMessage()" class="bg-brand text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-brand-light transition-all duration-300 flex-shrink-0 shadow-[0_0_15px_rgba(157,78,221,0.5)] transform hover:scale-105 active:scale-95 border border-brand-light/50">
+                        <i class="fa-solid fa-paper-plane text-lg ml-[-2px]"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Chatbot Button -->
+            <button onclick="toggleChat()" id="chat-toggle-btn" title="PC2GAMES AI" class="bg-gradient-to-r from-brand to-brand-light hover:from-brand-light hover:to-white text-white hover:text-brand-dark w-[64px] sm:w-[72px] h-[64px] sm:h-[72px] rounded-full shadow-[0_0_30px_rgba(157,78,221,0.8)] flex items-center justify-center transition-all duration-300 hover:scale-110 relative z-50 group border-2 border-brand-light/50">
+                <i class="fa-solid fa-microchip text-2xl sm:text-3xl transition-transform duration-500"></i>
+                <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 border-2 border-dark-bg rounded-full animate-pulse"></span>
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= GIFT MODAL (Quà tặng) ================= -->
+    <div id="gift-modal" class="fixed inset-0 z-[100] bg-black/85 backdrop-blur-md flex items-center justify-center opacity-0 pointer-events-none transition-all duration-300 p-4">
+        <div class="bg-dark-surface border-2 border-brand/50 rounded-3xl p-6 sm:p-8 w-full max-w-xl transform scale-90 transition-transform duration-300 relative shadow-[0_0_60px_rgba(157,78,221,0.4)] overflow-hidden">
+            <div class="absolute -top-20 -right-20 w-64 h-64 bg-brand/30 rounded-full blur-[80px] pointer-events-none"></div>
+            
+            <button onclick="toggleGiftModal(false)" class="absolute top-5 right-5 text-gray-400 hover:text-white bg-dark-bg w-10 h-10 rounded-full flex items-center justify-center transition-colors border border-dark-border hover:border-gray-500 z-20">
+                <i class="fa-solid fa-times text-lg"></i>
+            </button>
+            
+            <div class="text-center mb-6 sm:mb-8 relative z-10">
+                <div class="w-20 sm:w-24 h-20 sm:h-24 bg-gradient-to-br from-brand/30 to-brand-dark/30 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-5 border-2 border-brand/50 shadow-[0_0_30px_rgba(157,78,221,0.4)] relative">
+                    <div class="absolute inset-0 rounded-full border border-brand-light/30 animate-ping opacity-50"></div>
+                    <i class="fa-solid fa-gift text-4xl sm:text-5xl text-brand-light drop-shadow-lg"></i>
+                </div>
+                <h1 class="text-2xl sm:text-3xl font-black text-white mb-2 uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-brand-light font-display">Kho Báu 5GUYS</h2>
+                <p class="text-brand-light/80 text-sm font-semibold tracking-wider uppercase">Đặc quyền dành riêng cho Gamer</p>
+            </div>
+            
+            <div class="space-y-4 text-sm text-gray-300 max-h-[45vh] overflow-y-auto pr-3 bg-[#0d0714] p-5 sm:p-6 rounded-2xl border border-dark-border relative z-10 shadow-inner">
+                <p class="leading-relaxed text-[15px] font-medium mb-4 text-white text-center">Tham gia hệ sinh thái 5GUYS để mở khóa các phần quà giá trị thực:</p>
+                <ul class="list-none space-y-4">
+                    <li class="flex items-start gap-4 p-3 rounded-xl bg-dark-surface/50 border border-brand/10 hover:border-brand/40 transition-colors">
+                        <div class="w-10 h-10 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0 border border-yellow-500/30">
+                            <i class="fa-solid fa-crown text-yellow-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white block mb-1 text-[15px] font-display">Thành viên VIP (Tier 3)</strong>
+                            <span class="text-gray-400 text-[13px] leading-relaxed">Tích lũy tổng chi tiêu trên 5.000.000đ nhận ngay 1 lượt quay vòng quay thực tế ảo mỗi tháng (Trúng Gaming Gear).</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4 p-3 rounded-xl bg-dark-surface/50 border border-brand/10 hover:border-brand/40 transition-colors">
+                        <div class="w-10 h-10 rounded-lg bg-blue-500/20 flex items-center justify-center flex-shrink-0 border border-blue-500/30">
+                            <i class="fa-solid fa-pen-nib text-blue-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white block mb-1 text-[15px] font-display">Chuyên Gia Đánh Giá</strong>
+                            <span class="text-gray-400 text-[13px] leading-relaxed">Viết Review chất lượng (trên 100 chữ) và nhận được 10+ Vote hữu ích: Tặng trực tiếp Voucher 50.000đ vào ví.</span>
+                        </div>
+                    </li>
+                    <li class="flex items-start gap-4 p-3 rounded-xl bg-dark-surface/50 border border-brand/10 hover:border-brand/40 transition-colors">
+                        <div class="w-10 h-10 rounded-lg bg-red-500/20 flex items-center justify-center flex-shrink-0 border border-red-500/30">
+                            <i class="fa-solid fa-calendar-star text-red-400 text-lg"></i>
+                        </div>
+                        <div>
+                            <strong class="text-white block mb-1 text-[15px] font-display">Sự Kiện Lễ Hội</strong>
+                            <span class="text-gray-400 text-[13px] leading-relaxed">Nhận Code Game Indie miễn phí vào các dịp Lễ lớn và sinh nhật 5GUYS. Theo dõi Fanpage để không bỏ lỡ.</span>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            
+            <button onclick="toggleGiftModal(false)" class="w-full mt-6 bg-gradient-to-r from-brand to-brand-dark hover:from-brand-light hover:to-brand text-white font-black uppercase tracking-widest text-base sm:text-lg py-3.5 sm:py-4 rounded-xl transition-all shadow-[0_10px_25px_rgba(157,78,221,0.5)] hover:shadow-[0_15px_35px_rgba(199,125,255,0.7)] hover:-translate-y-1 relative z-10 font-display">
+                Đã Rõ, Bắt Đầu Khám Phá!
+            </button>
+        </div>
+    </div>
+
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Toast Notification -->
+    <div id="toast-container" class="fixed top-24 sm:top-28 right-4 sm:right-8 z-[110] bg-dark-surface border-2 border-brand shadow-[0_10px_30px_rgba(157,78,221,0.6)] rounded-2xl flex items-center p-3.5 sm:p-4 w-[calc(100vw-32px)] sm:w-auto max-w-md transition-all duration-500 opacity-0 translate-x-20 pointer-events-none backdrop-blur-lg"><div class="bg-brand/20 p-2.5 sm:p-3 rounded-xl mr-3 sm:mr-4 border border-brand/40 shadow-inner flex-shrink-0"><i class="fa-solid fa-bell text-brand-light text-xl sm:text-2xl animate-bounce"></i></div><div id="toast-message" class="text-white text-xs sm:text-[15px] font-semibold leading-relaxed font-display flex-grow">System Message Here</div></div>
+
+    <!-- Scripts -->
+    <script>
+        function showToast(message) {
+            const toast = document.getElementById('toast-container');
+            const msgEl = document.getElementById('toast-message');
+            msgEl.innerHTML = message;
+            toast.style.transform = 'translateX(0)';
+            toast.style.opacity = '1';
+            setTimeout(() => {
+                toast.style.transform = 'translateX(50px)';
+                toast.style.opacity = '0';
+            }, 3500);
+        }
+
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        function playCoinSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            osc.type = 'sine';
+            const now = audioCtx.currentTime;
+            osc.frequency.setValueAtTime(987.77, now); 
+            osc.frequency.setValueAtTime(1318.51, now + 0.1);
+            gainNode.gain.setValueAtTime(0, now);
+            gainNode.gain.linearRampToValueAtTime(0.5, now + 0.01);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+            osc.start(now);
+            osc.stop(now + 0.4);
+        }
+
+        document.querySelectorAll('.add-to-cart-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                e.preventDefault();
+                playCoinSound();
+                showToast('Đã chuyển thẻ game vào Kho Đồ (Giỏ hàng)!');
+            });
+        });
+
+        let isSmashMode = false;
+        const smashToggleBtn = document.getElementById('smash-toggle-btn');
+
+        function playCrashSound() {
+            initAudio();
+            const bufferSize = audioCtx.sampleRate * 0.3;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) { data[i] = Math.random() * 2 - 1; }
+            const noiseSource = audioCtx.createBufferSource();
+            noiseSource.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'highpass'; filter.frequency.value = 1000;
+            const gainNode = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+            gainNode.gain.setValueAtTime(1, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.25);
+            noiseSource.connect(filter); filter.connect(gainNode); gainNode.connect(audioCtx.destination);
+            noiseSource.start(now);
+        }
+
+        if(smashToggleBtn) {
+            smashToggleBtn.addEventListener('click', (e) => {
+                e.stopPropagation(); 
+                isSmashMode = !isSmashMode;
+                if (isSmashMode) {
+                    document.body.classList.add('smash-mode');
+                    showToast('🛠️ CHẾ ĐỘ ĐẬP PHÁ MỞ KHÓA!<br><span class="text-sm font-normal text-gray-300">Click vào bất kỳ đâu để đập. Nhấn lại búa hoặc ESC để thoát.</span>');
+                } else {
+                    document.body.classList.remove('smash-mode');
+                    showToast('Đã tắt chế độ đập phá.');
+                }
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (!isSmashMode) return;
+            if (e.target.closest('#chat-toggle-btn') || e.target.closest('#support-toggle-btn') || e.target.closest('#smash-toggle-btn')) return;
+            e.preventDefault(); e.stopPropagation();
+            e.target.classList.add('shattered');
+            playCrashSound();
+        }, true);
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && isSmashMode) {
+                isSmashMode = false; document.body.classList.remove('smash-mode'); showToast('Đã tắt chế độ đập phá.');
+            }
+        });
+
+        let logoClicks = 0;
+        let easterEggTimer;
+        let logoGoHomeTimer;
+        const logo = document.getElementById('logo-container');
+        
+        if(logo) {
+            logo.addEventListener('click', (e) => {
+                // Luôn chặn chuyển trang ngay để đếm click; nếu không đủ 5 lần thì về trang chủ sau 0,45s
+                e.preventDefault();
+                logoClicks++;
+                clearTimeout(easterEggTimer);
+                clearTimeout(logoGoHomeTimer);
+                easterEggTimer = setTimeout(() => { logoClicks = 0; }, 1500);
+                if (logoClicks < 5) {
+                    logoGoHomeTimer = setTimeout(() => { location.href = 'index.html'; }, 450);
+                }
+
+                if (logoClicks === 5) {
+                    e.preventDefault();
+                    logo.classList.add('easter-egg-active');
+                    triggerConfetti();
+                    showToast('🎉 <b>ACHIEVEMENT UNLOCKED!</b><br><span class="text-sm font-normal">Bạn đã tìm thấy bí mật của 5GUYS.</span>');
+                    logoClicks = 0;
+                    setTimeout(() => { logo.classList.remove('easter-egg-active'); }, 2000);
+                }
+            });
+        }
+
+        function triggerConfetti() {
+            const canvas = document.getElementById('confetti-canvas');
+            if(!canvas) return;
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            canvas.style.opacity = 1;
+
+            const particles = [];
+            const colors = ['#9d4edd', '#c77dff', '#ffffff', '#e0aaff', '#7b2cbf'];
+            
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: canvas.width / 2, y: canvas.height / 2,
+                    r: Math.random() * 8 + 3, dx: Math.random() * 15 - 7.5, dy: Math.random() * 15 - 7.5,
+                    color: colors[Math.floor(Math.random() * colors.length)]
+                });
+            }
+
+            let opacity = 1;
+            function animate() {
+                ctx.clearRect(0,0,canvas.width,canvas.height);
+                let active = false;
+                particles.forEach(p => {
+                    p.x += p.dx; p.y += p.dy; p.dy += 0.15;
+                    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color; ctx.globalAlpha = opacity; ctx.fill();
+                    if(p.y < canvas.height) active = true;
+                });
+                opacity -= 0.01;
+                if(active && opacity > 0) requestAnimationFrame(animate);
+                else { canvas.style.opacity = 0; ctx.clearRect(0,0,canvas.width,canvas.height); }
+            }
+            animate();
+        }
+
+        let isChatOpen = false;
+        let isSupportOpen = false;
+        
+        const chatPanel = document.getElementById('chat-panel');
+        const supportPanel = document.getElementById('support-panel');
+        const chatBtnIcon = document.querySelector('#chat-toggle-btn i');
+        const supportBtnIcon = document.querySelector('#support-toggle-btn i');
+        const chatBtnNotif = document.querySelector('#chat-toggle-btn span');
+
+        function toggleChat() {
+            if (isSupportOpen) toggleSupport(); 
+            isChatOpen = !isChatOpen;
+            if (isChatOpen) {
+                chatPanel.classList.add('panel-enter');
+                chatBtnIcon.classList.replace('fa-microchip', 'fa-times');
+                if(chatBtnNotif) chatBtnNotif.style.display = 'none';
+                setTimeout(() => document.getElementById('chat-input').focus(), 300);
+            } else {
+                chatPanel.classList.remove('panel-enter');
+                chatBtnIcon.classList.replace('fa-times', 'fa-microchip');
+            }
+        }
+
+        function toggleSupport() {
+            if (isChatOpen) toggleChat(); 
+            isSupportOpen = !isSupportOpen;
+            if (isSupportOpen) {
+                supportPanel.classList.add('panel-enter');
+                supportBtnIcon.classList.replace('fa-headset', 'fa-times');
+            } else {
+                supportPanel.classList.remove('panel-enter');
+                supportBtnIcon.classList.replace('fa-times', 'fa-headset');
+            }
+        }
+
+        function switchSupportTab(tabName) {
+            ['faq', 'form'].forEach(name => {
+                document.getElementById('tab-' + name).className = 'flex-1 py-2.5 text-sm font-semibold text-gray-400 hover:text-gray-200 rounded-lg transition-all hover:bg-dark-surface/50 border border-transparent';
+                document.getElementById('content-' + name).classList.add('hidden');
+            });
+            document.getElementById('tab-' + tabName).className = 'flex-1 py-2.5 text-sm font-bold text-brand-light bg-dark-surface rounded-lg transition-all shadow-sm border border-brand/20';
+            document.getElementById('content-' + tabName).classList.remove('hidden');
+        }
+
+        const chatInput = document.getElementById('chat-input');
+        const chatMessages = document.getElementById('chat-messages');
+
+        if(chatInput) {
+            chatInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') sendMessage(); });
+        }
+
+        function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text) return;
+            appendMessage('user', text);
+            chatInput.value = '';
+            
+            const typingId = 'typing-' + Date.now();
+            appendTypingIndicator(typingId);
+            
+            setTimeout(() => {
+                document.getElementById(typingId).remove();
+                const reply = getAiResponse(text.toLowerCase());
+                appendMessage('bot', reply);
+            }, 1200);
+        }
+
+        function appendMessage(sender, text) {
+            const div = document.createElement('div');
+            div.className = sender === 'user' ? 'flex gap-3 justify-end' : 'flex gap-3';
+            
+            if (sender === 'user') {
+                div.innerHTML = `<div class="bg-brand text-white p-3.5 rounded-2xl rounded-tr-sm max-w-[85%] text-[13px] shadow-[0_5px_15px_rgba(157,78,221,0.3)] font-medium">${text}</div>`;
+            } else {
+                div.innerHTML = `
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-1 shadow-[0_0_15px_rgba(157,78,221,0.5)] border border-brand-light/30">
+                        <i class="fa-solid fa-robot text-white text-sm"></i>
+                    </div>
+                    <div class="bg-dark-surface border border-dark-border text-gray-200 p-4 rounded-2xl rounded-tl-sm max-w-[85%] text-[13px] shadow-md leading-relaxed font-medium">
+                        ${text}
+                    </div>`;
+            }
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        function appendTypingIndicator(id) {
+            const div = document.createElement('div');
+            div.id = id;
+            div.className = 'flex gap-3';
+            div.innerHTML = `
+                <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-1 shadow-[0_0_15px_rgba(157,78,221,0.5)] border border-brand-light/30">
+                    <i class="fa-solid fa-robot text-white text-sm"></i>
+                </div>
+                <div class="bg-dark-surface border border-dark-border text-gray-200 p-4 rounded-2xl rounded-tl-sm shadow-md flex items-center gap-1">
+                    <span class="w-2 h-2 bg-brand-light rounded-full animate-bounce"></span>
+                    <span class="w-2 h-2 bg-brand-light rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
+                    <span class="w-2 h-2 bg-brand-light rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+                </div>`;
+            chatMessages.appendChild(div);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function getAiResponse(input) {
+            if (input.includes('i3') || input.includes('4gb') || input.includes('gtx 750')) {
+                return "Hệ thống phân tích: Cấu hình Nhẹ 🟢<br><br>Khuyến nghị các siêu phẩm Indie rực rỡ trên 5GUYS: <b>Hollow Knight</b> hoặc <b>Dark Souls Remastered</b>. Trải nghiệm 60FPS mượt mà!";
+            } else if (input.includes('i5') || input.includes('8gb') || input.includes('1650') || input.includes('1060')) {
+                return "Hệ thống phân tích: Cấu hình Tầm Trung 🟡<br><br>Cỗ máy lý tưởng! Chiến tốt <b>GTA V</b> (High Settings), <b>The Witcher 3</b> hoặc đắm chìm vào đấu trường <b>Valorant</b>. Các tựa game này đang có sẵn thẻ Digital!";
+            } else if (input.includes('rtx') || input.includes('i7') || input.includes('i9') || input.includes('16gb') || input.includes('32gb')) {
+                return "Hệ thống phân tích: Cấu hình High-end / Khủng long 🔴🚀<br><br>Sức mạnh phần cứng tuyệt đối! Đừng lãng phí, hãy trải nghiệm đồ họa Ray-Tracing với <b>Elden Ring</b>, <b>Black Myth: Wukong</b> hoặc <b>Sekiro</b> ngay hôm nay.";
+            } else {
+                return "AI chưa thu thập đủ dữ liệu. Xin hãy cung cấp rõ hơn thông số về <b>CPU, RAM, và Card màn hình (VGA)</b> để tôi đối chiếu với Database của 5GUYS nhé!";
+            }
+        }
+
+        function toggleGiftModal(show) {
+            const modal = document.getElementById('gift-modal');
+            const inner = modal.querySelector('div');
+            if (show) {
+                modal.classList.add('modal-enter');
+                inner.classList.replace('scale-90', 'scale-100');
+            } else {
+                modal.classList.remove('modal-enter');
+                inner.classList.replace('scale-100', 'scale-90');
+            }
+        }
+    </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<script src="assets/catalog.js"></script></body></html>
+
+

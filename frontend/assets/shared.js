@@ -189,7 +189,8 @@
     },
     syncOrders: function () {
       if (!apiMode) return Promise.resolve(G5.getOrders());
-      return api('/orders').then(function (data) { return Promise.all((data.orders || []).map(function (o) { return api('/orders/' + o.id).then(function (detail) { var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0; var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : ''; return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage, label, o.id]; }); }); })); }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
+      return api('/orders').then(function (data) { return Promise.all((data.orders || []).map(function (o) { return api('/orders/' + o.id).then(function (detail) { var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0; var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : ''; var od = detail.order || {}, sa = od.shipping_address || null, ship = sa ? (od.recipient_name + ' · ' + od.recipient_phone + ' — ' + [sa.addressLine, sa.ward, sa.district, sa.city].filter(Boolean).join(', ')) : '';
+          return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage, label, o.id, item.product_type === 'physical' ? ship : '']; }); }); })); }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
     },
     getLibrary: function () { return apiMode ? api('/library').then(function (data) { return data.games || []; }) : Promise.resolve(null); },
     errorText: function (err) {
@@ -210,6 +211,7 @@
         wrong_password: 'Mật khẩu hiện tại không đúng.',
         address_not_found: 'Không tìm thấy địa chỉ.',
         too_many_addresses: 'Tối đa 10 địa chỉ giao hàng.',
+        address_required: 'Đơn có game đĩa cần địa chỉ giao hàng. Hãy chọn hoặc thêm địa chỉ.',
         reset_cooldown: 'Vui lòng đợi 1 phút trước khi yêu cầu mã mới.',
         invalid_or_expired_code: 'Mã xác nhận không đúng hoặc đã hết hạn.',
         too_many_attempts: 'Nhập sai mã quá 5 lần. Vui lòng yêu cầu mã mới.',

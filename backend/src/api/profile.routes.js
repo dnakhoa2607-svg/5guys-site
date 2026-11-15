@@ -87,7 +87,7 @@ async function saveAddress(userId, data, id) {
     const isDefault = data.isDefault || (!id && count === 0);
     if (isDefault) await conn.execute('UPDATE user_addresses SET is_default=FALSE WHERE user_id=?', [userId]);
     const values = [data.recipientName, data.phone, data.addressLine, data.ward || null, data.district || null, data.city];
-    let ok = true;
+    let ok = true, savedId = id;
     if (id) {
       const [r] = await conn.execute(
         `UPDATE user_addresses SET recipient_name=?,phone=?,address_line=?,ward=?,district=?,city=?${isDefault ? ',is_default=TRUE' : ''} WHERE id=? AND user_id=?`,
@@ -95,24 +95,37 @@ async function saveAddress(userId, data, id) {
       );
       ok = r.affectedRows > 0;
     } else {
-      await conn.execute(
+      const [r] = await conn.execute(
         'INSERT INTO user_addresses(recipient_name,phone,address_line,ward,district,city,is_default,user_id) VALUES(?,?,?,?,?,?,?,?)',
         [...values, isDefault, userId]
       );
+      savedId = r.insertId;
     }
     if (!ok) { await conn.rollback(); return false; }
     await conn.commit();
-    return true;
+    return savedId;
   } catch (e) { await conn.rollback(); throw e; } finally { conn.release(); }
 }
 
+// So sanh 2 dia chi: bo khoang trang thua, khong phan biet hoa/thuong
+const same = (a, b) => String(a || '').trim().replace(/\s+/g, ' ').toLowerCase() === String(b || '').trim().replace(/\s+/g, ' ').toLowerCase();
+const isSameAddress = (row, d) => same(row.recipient_name, d.recipientName) && same(row.phone, d.phone) && same(row.address_line, d.addressLine)
+  && same(row.ward, d.ward) && same(row.district, d.district) && same(row.city, d.city);
+
+// Them dia chi. Neu trung het 1 dia chi da luu thi dung lai dia chi cu (khong tao ban trung).
+// Tra ve addressId de trang thanh toan chon ngay dia chi vua them.
 router.post('/addresses', async (req, res, next) => {
   try {
-    const data = addressSchema.parse(req.body);
-    const [[{ count }]] = await db.execute('SELECT COUNT(*) AS count FROM user_addresses WHERE user_id=?', [req.user.sub]);
+    const data = addressSchema.parse(req.body), uid = req.user.sub;
+    const existing = (await listAddresses(uid)).find((row) => isSameAddress(row, data));
+    if (existing) {
+      if (data.isDefault && !existing.is_default) await saveAddress(uid, { ...data, isDefault: true }, existing.id);
+      return res.json({ addresses: await listAddresses(uid), addressId: existing.id, duplicate: true });
+    }
+    const [[{ count }]] = await db.execute('SELECT COUNT(*) AS count FROM user_addresses WHERE user_id=?', [uid]);
     if (count >= 10) return res.status(409).json({ error: 'too_many_addresses' });
-    await saveAddress(req.user.sub, data);
-    res.status(201).json({ addresses: await listAddresses(req.user.sub) });
+    const addressId = await saveAddress(uid, data);
+    res.status(201).json({ addresses: await listAddresses(uid), addressId, duplicate: false });
   } catch (e) { if (!phoneError(e, res)) next(e); }
 });
 

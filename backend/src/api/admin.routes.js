@@ -73,7 +73,7 @@ router.get('/orders', async (req, res, next) => {
     const where = q.status ? 'WHERE o.status=?' : '';
     const [orders] = await db.execute(
       `SELECT o.id, o.order_number, o.status, o.subtotal, o.tax_total, o.shipping_total, o.discount_total, o.total, o.placed_at, o.paid_at,
-              u.email, u.display_name,
+              u.email, u.display_name, o.recipient_name, o.recipient_phone, o.shipping_address,
               (SELECT GROUP_CONCAT(CONCAT(oi.product_title,' (',IF(oi.product_type='digital','số','đĩa'),') x',oi.quantity) SEPARATOR '; ')
                  FROM order_items oi WHERE oi.order_id=o.id) AS items,
               (SELECT SUM(oi.product_type='physical') FROM order_items oi WHERE oi.order_id=o.id) AS physical_count,

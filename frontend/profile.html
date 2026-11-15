@@ -7,7 +7,7 @@
 .glow:hover{border-color:#c77dff!important;box-shadow:0 0 20px -4px rgba(157,78,221,.5)}.btn{display:inline-block;text-align:center;background:#9d4edd;color:#fff;font-weight:700;border-radius:.375rem;padding:.6rem 1.25rem;border:1px solid rgba(199,125,255,.3);box-shadow:0 0 15px rgba(157,78,221,.4);transition:.3s}.btn:hover{background:#c77dff;box-shadow:0 0 25px rgba(199,125,255,.6)}
 .ghost{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.5rem 1rem;color:#e9d5ff;transition:.3s}.ghost:hover{border-color:#c77dff;color:#fff}.card{background:#2a1645;border:1px solid #3c096c;border-radius:1rem;transition:.3s}
 .inp{background:#12091c!important;border:1px solid #3c096c!important;border-radius:.5rem!important;color:#f3e8ff;padding:.6rem 1rem}.inp:focus{outline:0;box-shadow:0 0 0 2px #c77dff!important}.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
-.chip{font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid}.dg{background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff}.ph{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa}select.inp option{background:#12091c;color:#f3e8ff}select.inp:disabled{opacity:.5}input.inp:disabled{opacity:.6;cursor:not-allowed}</style><link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script></head>
+.chip{font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid}.dg{background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff}.ph{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa}select.inp option{background:#12091c;color:#f3e8ff}select.inp:disabled{opacity:.5}input.inp:disabled{opacity:.6;cursor:not-allowed}</style><link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script><script src="assets/address.js"></script></head>
 <body class="antialiased flex flex-col min-h-screen"><script src="assets/layout.js" data-part="nav"></script><main class="flex-grow"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
 <h1 class="text-3xl font-black text-white uppercase tracking-tight border-l-4 border-brand pl-4">Hồ sơ cá nhân</h1>
 <p class="text-gray-400 mt-2 mb-8 font-medium">Thông tin tài khoản, bảo mật và địa chỉ giao hàng</p>
@@ -95,15 +95,9 @@
   const ok=(el,t)=>{el.className='text-sm mt-3 text-emerald-300';el.textContent='✔ '+t};
   const fail=(el,err)=>{el.className='text-sm mt-3 text-red-400';el.textContent=typeof err==='string'?err:G5.errorText(err)};
   let profile=null,addresses=[],editingId=null;
-  // So dien thoai VN: dung 10 so, dau 03/05/07/08/09. Tu dong dinh dang "0912 345 678" khi go.
-  const normPhone=v=>{let d=String(v||'').trim();if(/^\+?84/.test(d.replace(/[\s.()-]/g,'')))d='0'+d.replace(/[\s.()-]/g,'').replace(/^\+?84/,'');return d.replace(/\D/g,'').slice(0,10)};
-  const validPhone=v=>/^0[35789]\d{8}$/.test(normPhone(v));
-  const fmtPhone=v=>{const d=normPhone(v);return [d.slice(0,4),d.slice(4,7),d.slice(7)].filter(Boolean).join(' ')};
-  const PHONE_MSG='Số điện thoại phải gồm 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09.';
-  // Chi cho go so, toi da 10 so, tu chen dau cach; bao loi khi roi khoi o
-  ['i-phone','a-phone'].forEach(id=>{const el=$(id);
-    el.addEventListener('input',()=>{const f=fmtPhone(el.value);if(el.value!==f)el.value=f;el.setCustomValidity('');el.classList.remove('!border-red-400')});
-    el.addEventListener('blur',()=>{const v=el.value.trim();const bad=v!==''&&!validPhone(v);el.setCustomValidity(bad?PHONE_MSG:'');el.classList.toggle('!border-red-400',bad)})});
+  // So dien thoai + dia gioi hanh chinh: dung chung voi trang Gio hang (assets/address.js)
+  const {normPhone,validPhone,fmtPhone,PHONE_MSG}=G5Addr;
+  G5Addr.bindPhone($('i-phone'));G5Addr.bindPhone($('a-phone'));
 
   if(!G5.isApiMode()){$('pf-guest').classList.remove('hidden');return}
   $('pf-body').classList.remove('hidden');
@@ -145,28 +139,9 @@
     if($('p-new').value===$('p-cur').value)return fail(m,'Mật khẩu mới phải khác mật khẩu hiện tại.');
     try{await G5.api('/profile/password',{method:'PUT',body:{currentPassword:$('p-cur').value,newPassword:$('p-new').value}});setPassOpen(false);ok(m,'Đã đổi mật khẩu')}catch(err){fail(m,err)}};
 
-  /* ---------- Dia gioi hanh chinh VN moi (sau sap nhap 1/7/2025): 34 tinh/thanh -> phuong/xa ----------
-     Nguon: provinces.open-api.vn/api/v2 (mien phi, khong can key) */
-  const GEO='https://provinces.open-api.vn/api/v2',geoCache={};
-  const geo=path=>geoCache[path]||(geoCache[path]=fetch(GEO+path).then(r=>{if(!r.ok)throw new Error('geo');return r.json()}).catch(e=>{delete geoCache[path];throw e}));
-  let wardNames=[];
-  const selName=sel=>sel.selectedOptions[0]&&sel.selectedOptions[0].dataset.name||'';
-  async function loadProvinces(name){const sel=$('a-city');sel.innerHTML='';sel.add(new Option('Chọn tỉnh / thành phố',''));
-    (await geo('/p/')).forEach(p=>{const o=new Option(p.name,p.code);o.dataset.name=p.name;if(p.name===name)o.selected=true;sel.add(o)})}
-  // Phuong/xa: o go de loc (datalist) vi moi tinh co toi vai tram phuong/xa
-  async function loadWards(name){const inp=$('a-ward'),list=$('a-ward-list'),c=$('a-city').value;
-    inp.value='';list.innerHTML='';wardNames=[];inp.disabled=true;inp.placeholder='Chọn tỉnh / thành phố trước';
-    if(!c)return;inp.placeholder='Đang tải...';
-    wardNames=(await geo('/p/'+c+'?depth=2')).wards.map(w=>w.name);
-    wardNames.forEach(n=>list.appendChild(new Option(n)));
-    inp.disabled=false;inp.placeholder='Gõ để tìm, VD: Bến Thành';if(name&&wardNames.includes(name))inp.value=name}
-  // Chap nhan go khong dau / khac hoa thuong neu khop dung 1 phuong
-  const plain=s=>s.normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/đ/g,'d').replace(/Đ/g,'D').toLowerCase().trim();
-  function matchWard(v){if(wardNames.includes(v))return v;const p=plain(v);if(!p)return '';
-    const exact=wardNames.filter(n=>plain(n)===p||plain(n).replace(/^(phuong|xa|dac khu) /,'')===p);return exact.length===1?exact[0]:''}
-  $('a-ward').addEventListener('change',()=>{const m=matchWard($('a-ward').value);if(m)$('a-ward').value=m});
-  const geoFail=()=>fail($('m-addr'),'Không tải được danh sách tỉnh/thành, phường/xã. Kiểm tra kết nối mạng.');
-  $('a-city').onchange=()=>loadWards().catch(geoFail);
+  /* ---------- Tinh / phuong (assets/address.js, dia gioi moi sau sap nhap) ---------- */
+  const geoFail=()=>fail($('m-addr'),G5Addr.GEO_FAIL);
+  const addrForm=G5Addr.form({city:$('a-city'),ward:$('a-ward'),list:$('a-ward-list'),onError:geoFail});
 
   /* ---------- Dia chi giao hang ---------- */
   function renderAddresses(list){addresses=list;const box=$('a-list');box.textContent='';
@@ -175,7 +150,7 @@
       const info=document.createElement('div');info.className='min-w-0 text-sm';
       const top=document.createElement('p');top.className='font-semibold text-white';top.textContent=a.recipient_name+' · '+fmtPhone(a.phone);
       if(a.is_default){const chip=document.createElement('span');chip.className='chip dg ml-2';chip.textContent='MẶC ĐỊNH';top.appendChild(chip)}
-      const line=document.createElement('p');line.className='text-on-surface-variant mt-1 break-words';line.textContent=[a.address_line,a.ward,a.district,a.city].filter(Boolean).join(', ');
+      const line=document.createElement('p');line.className='text-on-surface-variant mt-1 break-words';line.textContent=G5Addr.format(a);
       info.append(top,line);
       const acts=document.createElement('div');acts.className='flex gap-2 items-start';
       const btn=(t,fn,cls)=>{const b=document.createElement('button');b.type='button';b.className='ghost !py-1 !px-3 text-xs '+(cls||'');b.textContent=t;b.onclick=fn;acts.appendChild(b)};
@@ -190,15 +165,16 @@
     $('a-default').checked=a?!!a.is_default:!addresses.length;
     $('f-addr').classList.remove('hidden');$('a-name').focus();
     // Chon san tinh -> phuong theo ten da luu (dia chi cu theo dia gioi truoc sap nhap se phai chon lai)
-    try{await loadProvinces(a&&a.city);await loadWards(a&&a.ward)}catch(e){geoFail()}
+    try{await addrForm.load(a&&a.city,a&&a.ward)}catch(e){geoFail()}
   }
-  function save(id,body){return G5.api('/profile/addresses'+(id?'/'+id:''),{method:id?'PUT':'POST',body}).then(d=>{renderAddresses(d.addresses);$('f-addr').classList.add('hidden')})}
+  function save(id,body){return G5.api('/profile/addresses'+(id?'/'+id:''),{method:id?'PUT':'POST',body}).then(d=>{renderAddresses(d.addresses);$('f-addr').classList.add('hidden');
+    if(d.duplicate)G5.notify('Địa chỉ này đã có trong sổ địa chỉ, không lưu thêm bản trùng.')})}
   $('a-new').onclick=()=>openForm(null);
   $('a-cancel').onclick=()=>$('f-addr').classList.add('hidden');
   $('f-addr').onsubmit=e=>{e.preventDefault();if(!validPhone($('a-phone').value))return fail($('m-addr'),PHONE_MSG);
-    const ward=matchWard($('a-ward').value);if(!ward)return fail($('m-addr'),'Vui lòng chọn phường / xã có trong danh sách.');
+    const ward=addrForm.matchWard($('a-ward').value);if(!ward)return fail($('m-addr'),G5Addr.WARD_MSG);
     save(editingId,{recipientName:$('a-name').value,phone:normPhone($('a-phone').value),addressLine:$('a-line').value,
-      ward,district:'',city:selName($('a-city')),isDefault:$('a-default').checked}).catch(err=>fail($('m-addr'),err))};
+      ward,district:'',city:addrForm.cityName(),isDefault:$('a-default').checked}).catch(err=>fail($('m-addr'),err))};
 
   load();
 })();

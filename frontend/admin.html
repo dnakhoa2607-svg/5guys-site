@@ -142,7 +142,10 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;co
         h('tbody', {}, list.map(o => h('tr', {},
           h('td', { class: 'font-mono text-xs' }, o.order_number),
           h('td', {}, o.display_name, h('div', { class: 'text-xs text-outline' }, o.email)),
-          h('td', { class: 'text-xs max-w-xs' }, o.items || '—'),
+          h('td', { class: 'text-xs max-w-xs' }, o.items || '—',
+            // Dia chi giao hang (ban chup luc dat don) cho don co game dia
+            o.shipping_address ? h('div', { class: 'mt-1 text-outline' }, '🚚 ' + o.recipient_name + ' · ' + o.recipient_phone + ' — ' +
+              [o.shipping_address.addressLine, o.shipping_address.ward, o.shipping_address.district, o.shipping_address.city].filter(Boolean).join(', ')) : null),
           h('td', { class: 'font-semibold whitespace-nowrap' }, money(o.total)),
           h('td', {}, pill(ORDER_STATUS, o.status), ['requested', 'rejected'].includes(o.refund_status) ? h('div', { class: 'mt-1' }, pill(REFUND_STATUS, o.refund_status)) : null),
           h('td', { class: 'text-xs whitespace-nowrap' }, date(o.placed_at)),

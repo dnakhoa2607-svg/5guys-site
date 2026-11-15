@@ -12,6 +12,8 @@
 <div id="md" class="hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-xl grid place-items-center p-4"><div class="card p-6 w-full max-w-md"><h3 class="font-bold text-lg mb-1">Yêu cầu hoàn tiền</h3><p id="mo" class="mono text-xs text-primary-container mb-4"></p><select id="rr" class="inp w-full mb-3 text-sm"><option>Key không hoạt động</option><option>Mua nhầm sản phẩm</option><option>Hàng hư hỏng khi giao</option><option>Lý do khác</option></select><textarea id="rn" rows="3" class="inp w-full text-sm" placeholder="Mô tả chi tiết..."></textarea><div class="flex gap-2 justify-end mt-4"><button id="cx" class="ghost text-sm">Hủy</button><button id="sb" class="btn text-sm">Gửi yêu cầu</button></div></div></div></div></main><script src="assets/layout.js" data-part="footer"></script><script>
 const V=n=>Math.round(n*25000).toLocaleString('vi-VN')+'đ';
 const L=k=>k==='digital'?'KỸ THUẬT SỐ':'VẬT LÝ';
+// Thoat ky tu HTML cho du lieu nguoi dung nhap (dia chi giao hang)
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const S=['Đã đặt','Đang xử lý','Đang giao / Cấp key','Hoàn tất'];
 let O=Array.isArray(G5.getOrders())?G5.getOrders():[],F='Tất cả';
 const T=['Tất cả',...S];
@@ -23,7 +25,7 @@ function R(){
     return;
   }
   ol.innerHTML=visibleOrders.map(o=>`<div class="card glow p-5"><div class="flex flex-wrap justify-between gap-2"><div><span class="mono text-xs text-outline">${o[0]} · ${o[1]}</span><h3 class="font-semibold">${o[2]} <span class="chip ${o[3]==='digital'?'dg':'ph'}">${L(o[3])}</span></h3></div><span class="mono font-bold text-primary-container">${V(o[4])}</span></div>
-  <div class="flex items-center mt-4">${S.map((status,k)=>`<div class="flex-1 text-center"><div class="h-1.5 rounded-full ${k<=o[5]?'bg-primary-container':'bg-white/10'} mx-1"></div><p class="text-[10px] mt-1 ${k<=o[5]?'text-primary-container':'text-outline'}">${status}</p></div>`).join('')}</div>
+  ${o[8]?`<p class="text-xs text-on-surface-variant mt-2 break-words"><i class="fa-solid fa-truck-fast text-brand-light mr-1"></i>Giao tới: ${esc(o[8])}</p>`:''}<div class="flex items-center mt-4">${S.map((status,k)=>`<div class="flex-1 text-center"><div class="h-1.5 rounded-full ${k<=o[5]?'bg-primary-container':'bg-white/10'} mx-1"></div><p class="text-[10px] mt-1 ${k<=o[5]?'text-primary-container':'text-outline'}">${status}</p></div>`).join('')}</div>
   <div class="flex gap-2 mt-4 flex-wrap">${o[3]==='digital'&&o[5]>=1&&!o[6]?`<a href="library.html" class="ghost !py-1 text-xs"><i class="fa-solid fa-gamepad"></i> Xem trong Kho game</a>`:''}${o[6]?`<span class="chip" style="color:#f59e0b;border-color:#f59e0b">${o[6]}</span>`:`<button class="ghost !py-1 text-xs" onclick="op('${o[0]}')">Yêu cầu hoàn tiền</button>`}</div></div>`).join('');
 }
 window.op=id=>{mo.textContent=id;md.classList.remove('hidden')};

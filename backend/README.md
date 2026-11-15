@@ -24,7 +24,9 @@ All customer queries are scoped to the authenticated user. Passwords use bcrypt;
 
 ## Cập nhật v2 (Admin, thanh toán mô phỏng, hoàn tiền, đánh giá, hỗ trợ)
 
-- `POST /api/orders` nhận `{ paymentMethod, couponCode }`; server tự tính giảm giá, VAT 10%, phí thanh toán và tổng tiền.
+- `POST /api/orders` nhận `{ paymentMethod, couponCode, addressId }`; server tự tính giảm giá, VAT 10%, phí thanh toán và tổng tiền.
+  - Giỏ có game đĩa thì **bắt buộc** `addressId` (id trong sổ địa chỉ của chính người dùng), thiếu trả `address_required`, không phải của mình trả `address_not_found`. Giỏ chỉ có game số thì không cần.
+  - Server lưu **bản chụp** địa chỉ vào đơn (`recipient_name`, `recipient_phone`, `shipping_address`), nên sửa/xóa địa chỉ trong hồ sơ không làm đổi đơn cũ. `GET /api/orders/:id` và `GET /api/admin/orders` trả kèm 3 trường này.
 - `POST /api/orders/:id/pay` thanh toán mô phỏng (chỉ khi `NODE_ENV=development`): game số vào thư viện, đĩa trừ tồn kho, cộng điểm.
 - `POST /api/orders/:id/refund` khách gửi yêu cầu hoàn tiền.
 - `POST /api/products/:id/reviews` viết đánh giá (đánh dấu "đã mua" nếu có đơn đã thanh toán).
@@ -43,7 +45,7 @@ Tài khoản admin mặc định có sẵn trong `seed.sql`: `admin@5guys.vn` / 
 | GET | `/api/profile` | Thông tin người dùng, thống kê (đơn, game, điểm, hạng), danh sách địa chỉ |
 | PUT | `/api/profile` | Sửa `{ displayName, phone }` |
 | PUT | `/api/profile/password` | Đổi mật khẩu `{ currentPassword, newPassword }` |
-| POST | `/api/profile/addresses` | Thêm địa chỉ (tối đa 10) |
+| POST | `/api/profile/addresses` | Thêm địa chỉ (tối đa 10). Trả `addressId`; nếu trùng hệt địa chỉ đã có (không phân biệt hoa/thường, khoảng trắng) thì dùng lại địa chỉ cũ, `duplicate: true` |
 | PUT | `/api/profile/addresses/:id` | Sửa địa chỉ / đặt mặc định |
 | DELETE | `/api/profile/addresses/:id` | Xóa địa chỉ |
 | PUT / DELETE | `/api/profile/avatar` | Đổi / xóa ảnh đại diện (JPEG ≤ 300KB, lưu ở `backend/uploads/avatars/`). Giao diện chọn ảnh trên `profile.html` **chưa làm** |

@@ -692,7 +692,7 @@
 </div>
 <div class="status-bar">
 <div class="status-left"><i class="fa-solid fa-calendar-days"></i> <b id="access-time">--</b></div>
-<div class="status-right"><span class="badge-purple"><i class="fa-solid fa-check"></i> SECURE</span></div>
+<div class="status-right"><span class="badge-purple"><i class="fa-solid fa-check"></i> BẢO MẬT</span></div>
 </div>
 <h1 class="font-display">Đăng ký</h1>
 <p class="subtitle">Tạo Hybrid ID để lưu trữ game số và bộ sưu tập vật lý.</p>
@@ -965,6 +965,21 @@
   render();
 })();
 </script>
-<script>async function handleRegister(e){e.preventDefault();const f=e.currentTarget;const b=f.querySelector("button[type=submit]");if(b)b.disabled=true;try{await G5.api("/auth/register",{method:"POST",body:{displayName:document.getElementById("input-username").value.trim(),email:document.getElementById("input-email").value.trim(),password:document.getElementById("reg-password").value}});alert("Tạo tài khoản thành công. Hãy đăng nhập.");location.href="login.html"}catch(err){alert(G5.errorText(err))}finally{if(b)b.disabled=false}}</script></body></html>
-
-
+<script>async function handleRegister(e){e.preventDefault();const f=e.currentTarget;const b=f.querySelector("button[type=submit]");if(b)b.disabled=true;try{await G5.api("/auth/register",{method:"POST",body:{displayName:document.getElementById("input-username").value.trim(),email:document.getElementById("input-email").value.trim(),password:document.getElementById("reg-password").value}});alert("Tạo tài khoản thành công. Hãy đăng nhập.");location.href="login.html"}catch(err){alert(G5.errorText(err))}finally{if(b)b.disabled=false}}</script>
+<script>
+// Hien thi thu, ngay, gio luc nguoi dung truy cap trang (tu cap nhat moi 30 giay)
+(function () {
+  var el = document.getElementById('access-time');
+  if (!el) return;
+  function update() {
+    var now = new Date();
+    var day = now.toLocaleDateString('vi-VN', { weekday: 'long' });
+    var date = now.toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    var time = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+    el.textContent = day.charAt(0).toUpperCase() + day.slice(1) + ', ' + date + ' · ' + time;
+  }
+  update();
+  setInterval(update, 30000);
+})();
+</script>
+</body></html>

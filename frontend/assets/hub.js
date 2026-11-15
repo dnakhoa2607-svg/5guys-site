@@ -168,13 +168,31 @@
   }
 
   /* ---------------- KHO GAME ---------------- */
+  var GAME_LAUNCHERS = {
+    'neon-viper': 'games/neon-viper.html'
+  };
+
+  function slugifyTitle(title) {
+    return String(title || '')
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  function resolveGameUrl(game) {
+    var slug = game.slug || slugifyTitle(game.title);
+    if (GAME_LAUNCHERS[slug]) return GAME_LAUNCHERS[slug];
+    return 'games/' + encodeURIComponent(slug) + '.html';
+  }
+
   var DEMO = {
     cyberpunk: { title: 'Cyberpunk 2077: Phantom Liberty', key: '' },
     wukong: { title: 'Black Myth: Wukong', key: '' },
     eldenring: { title: 'Elden Ring: Erdtree', key: '' },
     gtav: { title: 'GTA V: Enhanced 2024', key: '' }
   };
-  var current = { title: DEMO.cyberpunk.title, key: DEMO.cyberpunk.key };
+  var current = { title: DEMO.cyberpunk.title, slug: 'cyberpunk-2077-phantom-liberty', cover: '', key: DEMO.cyberpunk.key };
   var realKey = current.key;
 
   function setKey(k) {
@@ -183,8 +201,23 @@
     if (t) t.textContent = k || 'Key sẽ được cấp khi có backend.';
   }
 
-  window.playSelected = function () {
-    showToast('Khởi Động Local', 'Đang nạp file thực thi ' + current.title + ' từ ổ NVMe D: ...');
+  window.playSelected = async function () {
+    if (!current.title) return;
+    var url = resolveGameUrl(current) + '?game=' + encodeURIComponent(current.title);
+    try {
+      var probe = await fetch(url, { method: 'HEAD' });
+      if (!probe.ok) {
+        showToast('Chưa Có Bản Chơi Web', 'Game "' + current.title + '" chưa có bản chơi trực tiếp trên trình duyệt.', false);
+        return;
+      }
+    } catch (e) {}
+
+    var tab = window.open(url, '_blank', 'noopener,noreferrer');
+    if (tab) {
+      showToast('Khởi Động Game 🎮', 'Đang mở ' + current.title + ' trong tab mới...');
+    } else {
+      showToast('Trình Duyệt Chặn Pop-up', 'Vui lòng cho phép mở tab mới để chơi ' + current.title + '.', false);
+    }
   };
 
   function selectCard(card, cards) {
@@ -196,14 +229,21 @@
     card.classList.add('bg-surface-container', 'border-brand-purple/50', 'shadow-[0_0_15px_rgba(157,78,221,0.2)]');
     var title = card.querySelector('h3').textContent.trim();
     var d = DEMO[card.dataset.game];
-    current = { title: d ? d.title : title, key: card.dataset.key || (d && d.key) || makeKey(title) };
+    var resolvedTitle = d ? d.title : title;
+    current = {
+      title: resolvedTitle,
+      slug: card.dataset.slug || slugifyTitle(resolvedTitle),
+      cover: card.dataset.cover || '',
+      key: card.dataset.key || (d && d.key) || makeKey(title)
+    };
     var h = document.getElementById('banner-title'); if (h) h.textContent = current.title;
     var p = document.getElementById('banner-desc');
-    if (p && card.dataset.game !== 'cyberpunk') p.textContent = 'Game đã được kích hoạt trong kho của bạn. Bấm CHƠI NGAY để khởi động trên máy, hoặc mở trên Cloud để chơi ở cấu hình cao mà không cần tải về.';
+    if (p && card.dataset.game !== 'cyberpunk') p.textContent = 'Game đã được kích hoạt trong kho của bạn. Bấm CHƠI NGAY để mở trực tiếp "' + current.title + '" trong tab mới.';
     if (p && card.dataset.game === 'cyberpunk') p.textContent = p.dataset.orig;
     var img = card.querySelector('img'), bi = document.getElementById('banner-img');
     if (bi) {
-      if (img) { bi.src = img.src; bi.style.visibility = 'visible'; }
+      if (current.cover) { bi.src = current.cover; bi.style.visibility = 'visible'; }
+      else if (img) { bi.src = img.src; bi.style.visibility = 'visible'; }
       else { bi.style.visibility = 'hidden'; }
     }
     setKey(current.key);
@@ -218,7 +258,7 @@
     if (G5.isApiMode() && !window.__g5ApiLibraryLoaded) {
       window.__g5ApiLibraryLoaded = true;
       G5.getLibrary().then(function (games) {
-        window.__g5ApiOwnedOrders = games.map(function (g) { return [g.id, new Date(g.acquired_at).toLocaleDateString('vi-VN'), g.title, 'digital', 0, 3]; });
+        window.__g5ApiOwnedOrders = games.map(function (g) { return [g.id, new Date(g.acquired_at).toLocaleDateString('vi-VN'), g.title, 'digital', 0, 3, g.slug, g.cover_url]; });
         initLibrary();
       }).catch(function () { window.__g5ApiLibraryLoaded = false; showToast('Không tải được thư viện', 'Hãy kiểm tra kết nối API.', false); });
       return;
@@ -261,6 +301,8 @@
       card.type = 'button';
       card.className = 'game-select-card w-full p-3 rounded-xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/10 cursor-pointer transition-all flex items-center gap-3 text-left';
       card.dataset.game = 'order-' + String(order[0] || title);
+      card.dataset.slug = order[6] || slugifyTitle(title);
+      card.dataset.cover = order[7] || '';
       card.dataset.key = '';
 
       var cover = document.createElement('span');

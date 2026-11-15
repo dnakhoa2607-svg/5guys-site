@@ -15,7 +15,10 @@ Mở `index.html` trực tiếp bằng trình duyệt (cần Internet để tả
 | library.html | Kho game của tôi | **chỉ người đã đăng nhập**; khách bị chuyển sang login, link ẩn khỏi menu |
 | rental.html | Thuê cấu hình Cloud | xem tự do; thuê / gia hạn / nạp ví cần đăng nhập |
 | mods.html | Cộng đồng Mod theo từng game | `?game=cyberpunk|wukong|eldenring|gtav`; tải mod cần đăng nhập |
-| login.html, register.html | Đăng nhập (2FA), Đăng ký | |
+| login.html, register.html | Đăng nhập (2FA), Đăng ký | trang đăng nhập có popup **Quên mật khẩu** (chế độ demo, mã hiện trên màn hình) |
+| profile.html | Hồ sơ cá nhân | thông tin, đổi mật khẩu, sổ địa chỉ (Tỉnh/Phường từ provinces.open-api.vn v2); cần đăng nhập |
+| admin.html | Trang quản trị | chỉ admin/staff; tài khoản mặc định `admin@5guys.vn` / `Admin@12345` |
+| assets/layout.js | Menu (nav) + footer dùng chung | **master layout**: sửa menu/footer ở đây cho mọi trang |
 | assets/shared.js | Đăng nhập, giỏ hàng, đơn hàng dùng chung | **nơi nối back-end** |
 | assets/shared.css | CSS dùng chung | |
 | assets/tailwind-config.js | Cấu hình Tailwind của các trang cũ | gộp từ các trang gốc |
@@ -34,7 +37,16 @@ Mở `index.html` trực tiếp bằng trình duyệt (cần Internet để tả
 Xem ../backend/README.md để chạy API và ../database/README.md để tạo schema MySQL.
 
 ## Nối với back-end sau này
-Chỉ cần thay thân các hàm trong `assets/shared.js` (`login`, `getCart/setCart/add`, `getOrders/placeOrder`) bằng `fetch()` tới API. Khi chuyển sang framework (Express/EJS, Laravel, ASP.NET...), tách navbar/footer lặp lại thành partial.
+Chỉ cần thay thân các hàm trong `assets/shared.js` (`login`, `getCart/setCart/add`, `getOrders/placeOrder`) bằng `fetch()` tới API. Navbar/footer đã được tách thành master layout `assets/layout.js`.
+
+## Master layout (menu + footer)
+Mỗi trang không chép lại menu và footer nữa, chỉ đặt:
+```html
+<script src="assets/layout.js" data-part="nav"></script>      <!-- chỗ đặt menu -->
+...
+<script src="assets/layout.js" data-part="footer"></script>   <!-- chỗ đặt footer -->
+```
+Script chèn HTML ngay tại vị trí đó khi trang đang tải, nên `shared.js` và script của từng trang (tô sáng mục menu đang xem, tên người dùng, đăng xuất, easter egg logo) vẫn chạy như trước. Thêm một mục menu: sửa `assets/layout.js` một lần là mọi trang đều có. Không áp dụng cho `login.html`, `register.html`, `admin.html` vì có giao diện riêng.
 
 ## Kho game
 Game đã mua ở cửa hàng (loại digital, trong `5guys_orders`) tự xuất hiện trong Kho game. Kho game không nạp sẵn game mẫu. Danh mục bán game trên trang chủ/các trang cửa hàng vẫn có sản phẩm minh họa. Key thật chưa được cấp ở bản demo; chỉ backend mới được phép cấp key từ kho license.

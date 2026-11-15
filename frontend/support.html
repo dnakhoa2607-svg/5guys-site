@@ -106,7 +106,15 @@ add("Xin chào! Mình có thể giúp gì cho bạn hôm nay?");
 qk.innerHTML=["Hoàn tiền","Key game","Thanh toán","Giao hàng"].map(q=>`<button class="ghost !py-1 !text-xs" onclick="send('${q}')">${q}</button>`).join('');
 fq.innerHTML=FQ.map(f=>`<details class="border border-white/10 rounded-xl p-3"><summary class="cursor-pointer font-medium">${f[0]}</summary><p class="text-on-surface-variant mt-2">${f[1]}</p></details>`).join('');
 sd.onclick=()=>send();mi.onkeydown=e=>e.key=="Enter"&&send();
-ts.onclick=()=>{tm.textContent=tk.value?"✔ Đã gửi ticket #TK-"+(1000+Math.floor(Math.random()*9000)):"Vui lòng nhập nội dung";tk.value=""};</script>
+ts.onclick=async()=>{if(!tk.value.trim()){tm.textContent="Vui lòng nhập nội dung";return}
+  if(G5.isApiMode()){try{const text=tk.value.trim();const r=await G5.api("/support/tickets",{method:"POST",body:{subject:text.slice(0,80),message:text}});tm.textContent="✔ Đã gửi ticket #"+r.ticket.code+". Theo dõi phản hồi bên dưới.";tk.value="";loadTickets()}catch(err){tm.textContent=G5.errorText(err)}return}
+  if(!G5.requireLogin("Vui lòng đăng nhập để gửi yêu cầu hỗ trợ."))return;tm.textContent="✔ Đã gửi ticket #TK-"+(1000+Math.floor(Math.random()*9000));tk.value=""};
+const ST={open:"Mới",in_progress:"Đang xử lý",resolved:"Đã giải quyết",closed:"Đã đóng"};
+function loadTickets(){if(!G5.isApiMode())return;let box=document.getElementById("my-tickets");if(!box){box=document.createElement("div");box.id="my-tickets";box.className="mt-4 space-y-2 text-sm";tm.insertAdjacentElement("afterend",box)}
+  G5.api("/support/tickets").then(d=>{box.textContent="";if(!d.tickets.length)return;const h=document.createElement("p");h.className="font-semibold mt-2";h.textContent="Ticket của bạn";box.appendChild(h);
+  d.tickets.forEach(t=>{const c=document.createElement("div");c.className="border border-white/10 rounded-xl p-3";const top=document.createElement("div");top.className="flex justify-between gap-2";const sj=document.createElement("b");sj.textContent="#TK-"+String(t.id).padStart(4,"0")+" · "+t.subject;const st=document.createElement("span");st.className="text-xs text-primary-container";st.textContent=ST[t.status]||t.status;top.append(sj,st);c.appendChild(top);
+  if(t.last_reply){const rp=document.createElement("p");rp.className="text-xs text-outline mt-1";rp.textContent="Phản hồi: "+t.last_reply;c.appendChild(rp)}box.appendChild(c)})}).catch(()=>{})}
+loadTickets();</script>
 
 </body></html>
 

@@ -21,3 +21,13 @@ Node.js 20+, Express, MySQL 8.0+. API source is isolated in `src/api`; business 
 - Auth required: `GET /api/library`, `GET /api/loyalty`
 
 All customer queries are scoped to the authenticated user. Passwords use bcrypt; tokens are signed JWTs; SQL is parameterized; public routes have rate limits. Checkout intentionally creates a pending-payment order. A real payment provider, webhook signature verification, physical shipping workflow, mail verification, password reset, admin authorization, and encryption-key management for digital license delivery need separate production setup. Never put real licenses or production secrets in seed data or Git.
+
+## Cập nhật v2 (Admin, thanh toán mô phỏng, hoàn tiền, đánh giá, hỗ trợ)
+
+- `POST /api/orders` nhận `{ paymentMethod, couponCode }`; server tự tính giảm giá, VAT 10%, phí thanh toán và tổng tiền.
+- `POST /api/orders/:id/pay` thanh toán mô phỏng (chỉ khi `NODE_ENV=development`): game số vào thư viện, đĩa trừ tồn kho, cộng điểm.
+- `POST /api/orders/:id/refund` khách gửi yêu cầu hoàn tiền.
+- `POST /api/products/:id/reviews` viết đánh giá (đánh dấu "đã mua" nếu có đơn đã thanh toán).
+- `POST|GET /api/support/tickets` gửi và xem ticket hỗ trợ.
+- `/api/admin/*` (vai trò admin/staff, kiểm tra trong database): `stats`, `orders`, `orders/:id/status`, `refunds`, `refunds/:id`, `products`, `users`, `tickets`.
+- Database cũ cần chạy `database/update_v2.sql` một lần. Nâng quyền admin bằng `database/make_admin.sql`.

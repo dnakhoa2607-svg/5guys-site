@@ -113,11 +113,13 @@ function R(){
   }
   ol.innerHTML=visibleOrders.map(o=>`<div class="card glow p-5"><div class="flex flex-wrap justify-between gap-2"><div><span class="mono text-xs text-outline">${o[0]} · ${o[1]}</span><h3 class="font-semibold">${o[2]} <span class="chip ${o[3]==='digital'?'dg':'ph'}">${L(o[3])}</span></h3></div><span class="mono font-bold text-primary-container">${V(o[4])}</span></div>
   <div class="flex items-center mt-4">${S.map((status,k)=>`<div class="flex-1 text-center"><div class="h-1.5 rounded-full ${k<=o[5]?'bg-primary-container':'bg-white/10'} mx-1"></div><p class="text-[10px] mt-1 ${k<=o[5]?'text-primary-container':'text-outline'}">${status}</p></div>`).join('')}</div>
-  <div class="flex gap-2 mt-4 flex-wrap">${o[3]==='digital'&&o[5]===3?`<button class="ghost !py-1 text-xs mono" onclick="this.textContent='XXXX-7F2A-9KQ1'"><i class="fa-solid fa-key"></i> Hiện key</button>`:''}${o[6]?`<span class="chip" style="color:#f59e0b;border-color:#f59e0b">${o[6]}</span>`:`<button class="ghost !py-1 text-xs" onclick="op('${o[0]}')">Yêu cầu hoàn tiền</button>`}</div></div>`).join('');
+  <div class="flex gap-2 mt-4 flex-wrap">${o[3]==='digital'&&o[5]>=1&&!o[6]?`<a href="library.html" class="ghost !py-1 text-xs"><i class="fa-solid fa-gamepad"></i> Xem trong Kho game</a>`:''}${o[6]?`<span class="chip" style="color:#f59e0b;border-color:#f59e0b">${o[6]}</span>`:`<button class="ghost !py-1 text-xs" onclick="op('${o[0]}')">Yêu cầu hoàn tiền</button>`}</div></div>`).join('');
 }
 window.op=id=>{mo.textContent=id;md.classList.remove('hidden')};
 cx.onclick=()=>md.classList.add('hidden');
-sb.onclick=()=>{let o=O.find(x=>x[0]===mo.textContent);if(o){o[6]='Đã gửi yêu cầu hoàn tiền';}md.classList.add('hidden');R()};
+sb.onclick=async()=>{let o=O.find(x=>x[0]===mo.textContent);if(!o)return;
+  if(G5.isApiMode()){try{await G5.api('/orders/'+o[7]+'/refund',{method:'POST',body:{reason:rr.value+(rn.value.trim()?': '+rn.value.trim():'')}});md.classList.add('hidden');rn.value='';O=await G5.syncOrders();R();G5.notify('Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xử lý.');}catch(err){G5.notify(G5.errorText(err));}return;}
+  O.filter(x=>x[0]===o[0]).forEach(x=>x[6]='Đã gửi yêu cầu hoàn tiền');md.classList.add('hidden');R()};
 R();
 if(G5.isApiMode())G5.syncOrders().then(rows=>{O=rows;R()}).catch(()=>G5.notify("Không tải được đơn hàng từ API."));</script>
 

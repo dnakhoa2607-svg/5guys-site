@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import db from '../db.js';
+import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 router.get('/', async (req, res, next) => {
@@ -32,10 +33,40 @@ router.get('/:idOrSlug', async (req, res, next) => {
       db.execute('SELECT media_type,media_url,caption,sort_order FROM game_media WHERE product_id=? ORDER BY sort_order',[id]),
       db.execute('SELECT minimum_requirements,recommended_requirements FROM game_requirements WHERE product_id=?',[id]),
       db.execute('SELECT edition_name,edition_description,price,original_price,product_type FROM product_editions WHERE product_id=? ORDER BY price',[id]),
-      db.execute("SELECT r.rating,r.title,r.body,r.created_at,u.display_name FROM reviews r JOIN users u ON u.id=r.user_id WHERE r.product_id=? AND r.status='published' ORDER BY r.created_at DESC LIMIT 20",[id])
+      db.execute("SELECT r.rating,r.title,r.body,r.created_at,r.verified_purchase,u.display_name FROM reviews r JOIN users u ON u.id=r.user_id WHERE r.product_id=? AND r.status='published' ORDER BY r.created_at DESC LIMIT 20",[id])
     ]);
     res.json({product:{...rows[0],formats,media,requirements:requirements[0]||null,editions,reviews}});
   }
   catch(e){next(e);}
+});
+
+// Viet / sua danh gia (moi nguoi 1 danh gia cho moi san pham). Danh dau "da mua" neu so huu game.
+router.post('/:id/reviews', requireAuth, async (req, res, next) => {
+  try {
+    const productId = z.coerce.number().int().positive().parse(req.params.id);
+    const data = z.object({
+      rating: z.coerce.number().int().min(1).max(5),
+      title: z.string().trim().max(180).optional().default(''),
+      body: z.string().trim().min(3).max(3000),
+    }).parse(req.body);
+    const [[product]] = await db.execute("SELECT id,title FROM products WHERE id=? AND status='active'", [productId]);
+    if (!product) return res.status(404).json({ error: 'product_not_found' });
+    const [bought] = await db.execute(
+      `SELECT 1 FROM order_items oi JOIN orders o ON o.id=oi.order_id JOIN products p ON p.id=oi.product_id
+       WHERE o.user_id=? AND p.title=? AND o.status IN ('paid','processing','shipped','fulfilled') LIMIT 1`,
+      [req.user.sub, product.title]
+    );
+    await db.execute(
+      `INSERT INTO reviews(user_id,product_id,rating,title,body,verified_purchase,status) VALUES(?,?,?,?,?,?,'published')
+       ON DUPLICATE KEY UPDATE rating=VALUES(rating),title=VALUES(title),body=VALUES(body),verified_purchase=VALUES(verified_purchase),created_at=CURRENT_TIMESTAMP`,
+      [req.user.sub, productId, data.rating, data.title, data.body, bought.length ? 1 : 0]
+    );
+    // Cap nhat diem trung binh hien tren the game
+    await db.execute(
+      "UPDATE products SET rating=(SELECT ROUND(AVG(rating),2) FROM reviews WHERE product_id=? AND status='published') WHERE id=?",
+      [productId, productId]
+    );
+    res.status(201).json({ ok: true, verifiedPurchase: !!bought.length });
+  } catch (e) { next(e); }
 });
 export default router;

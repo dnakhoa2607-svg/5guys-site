@@ -7,4 +7,6 @@ const pool = mysql.createPool({
   queueLimit: 0, charset: 'utf8mb4', timezone: 'Z', decimalNumbers: true
 });
 
+pool.on('connection', (conn) => { conn.query("SET time_zone = '+00:00'"); });
+
 export default pool;

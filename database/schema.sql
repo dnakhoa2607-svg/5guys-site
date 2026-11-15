@@ -87,7 +87,7 @@ CREATE TABLE cart_items (
 
 CREATE TABLE orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, order_number VARCHAR(32) NOT NULL UNIQUE,
-  user_id BIGINT UNSIGNED NOT NULL, status ENUM('pending_payment','paid','processing','fulfilled','cancelled','refunded','partially_refunded') NOT NULL DEFAULT 'pending_payment',
+  user_id BIGINT UNSIGNED NOT NULL, status ENUM('pending_payment','paid','processing','shipped','fulfilled','cancelled','refunded','partially_refunded') NOT NULL DEFAULT 'pending_payment',
   subtotal DECIMAL(12,2) NOT NULL, discount_total DECIMAL(12,2) NOT NULL DEFAULT 0,
   tax_total DECIMAL(12,2) NOT NULL DEFAULT 0, shipping_total DECIMAL(12,2) NOT NULL DEFAULT 0,
   total DECIMAL(12,2) NOT NULL, currency CHAR(3) NOT NULL DEFAULT 'VND',

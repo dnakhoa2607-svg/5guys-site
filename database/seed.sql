@@ -62,4 +62,7 @@ JSON_OBJECT('os','Windows 10/11 64-bit','processor','Intel Core i7 tương đư�
 FROM products WHERE slug IN ('hollow-knight','hollow-knight-silksong','elden-ring','sekiro-shadows-die-twice','dark-souls-remastered','dark-souls-ii-scholar-of-the-first-sin','dark-souls-iii','black-myth-wukong','red-dead-redemption','red-dead-redemption-ii','hollow-knight-physical','hollow-knight-silksong-physical','elden-ring-physical','sekiro-shadows-die-twice-physical','black-myth-wukong-physical','dark-souls-remastered-digital','dark-souls-ii-scholar-of-the-first-sin-digital','dark-souls-iii-digital','red-dead-redemption-digital','red-dead-redemption-ii-digital')
 ON DUPLICATE KEY UPDATE minimum_requirements=VALUES(minimum_requirements),recommended_requirements=VALUES(recommended_requirements);
 
-INSERT INTO product_editions(product_id,edition_name,
+INSERT INTO product_editions(product_id,edition_name,edition_description,price,original_price,product_type)
+SELECT id,'Standard','Phiên bản tiêu chuẩn',price,original_price,product_type
+FROM products WHERE status='active'
+ON DUPLICATE KEY UPDATE price=VALUES(price),original_price=VALUES(original_price);

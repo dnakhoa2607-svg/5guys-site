@@ -73,7 +73,7 @@
     user: function () { return rd(K.user, null); },
     api: api,
     isApiMode: function () { return apiMode; },
-    setApiSession: function (token, user) { apiToken = token; apiMode = true; localStorage.setItem('5guys_api_token', token); wr(K.user, { id: user.id, email: user.email, name: user.displayName || user.name }); document.documentElement.classList.add('is-auth'); },
+    setApiSession: function (token, user) { apiToken = token; apiMode = true; localStorage.setItem('5guys_api_token', token); wr(K.user, { id: user.id, email: user.email, name: user.displayName || user.name, role: user.role || 'customer' }); document.documentElement.classList.add('is-auth'); },
     login: function (u) { wr(K.user, u); },
     logout: function () { try { localStorage.removeItem(K.user); localStorage.removeItem('5guys_api_token'); apiToken = null; apiMode = false; } catch (e) {} },
     /* ---- Giỏ hàng: mảng [tên, 'digital'|'physical', giá (USD), số lượng] ---- */
@@ -96,14 +96,23 @@
       wr(K.cartPrefix + accountKey(), Array.isArray(c) ? c : []);
       G5.refresh();
     },
-    add: function (name, kind, usd, qty) {
+    add: function (name, kind, usd, qty, productId) {
       if (apiMode) {
-        return api('/products?q=' + encodeURIComponent(name) + '&type=' + encodeURIComponent(kind || 'digital')).then(function (data) {
-          var product = (data.products || []).find(function (p) { return p.title === name; });
-          if (!product) throw new Error('product_not_found');
-          return api('/cart/items', { method: 'PUT', body: { productId: product.id, quantity: (qty || 1) } });
-        }).then(function () { G5.syncCart(); }).catch(function () { G5.notify('Không thể thêm game. Hãy kiểm tra kết nối API và tồn kho.'); });
-        return;
+        kind = kind || 'digital';
+        // Uu tien id san pham (chinh xac ban so / ban dia); neu khong co thi tim theo ten roi chon dung dinh dang
+        var findId = productId ? Promise.resolve(Number(productId)) :
+          api('/products?q=' + encodeURIComponent(name) + '&type=' + encodeURIComponent(kind)).then(function (data) {
+            var product = (data.products || []).find(function (p) { return p.title === name; });
+            if (!product) throw new Error('product_not_found');
+            return api('/products/' + encodeURIComponent(product.slug)).then(function (d) {
+              var f = (d.product.formats || []).find(function (x) { return x.product_type === kind; });
+              return f ? f.id : product.id;
+            });
+          });
+        return findId.then(function (id) {
+          return api('/cart/items', { method: 'PUT', body: { productId: id, quantity: (qty || 1) } });
+        }).then(function () { G5.syncCart(); G5.notify('Đã thêm "' + name + '" (' + (kind === 'digital' ? 'bản số' : 'bản đĩa') + ') vào giỏ hàng.'); })
+          .catch(function (err) { G5.notify(G5.errorText(err)); });
       }
       var c = G5.getCart(), i;
       for (i = 0; i < c.length; i++) if (c[i][0] === name) break;
@@ -163,8 +172,8 @@
       var balance = G5.setWallet(G5.getWallet() + 50000);
       return { ok: true, balance: balance };
     },
-    placeOrder: function (items) {
-      if (apiMode) return api('/orders', { method: 'POST', body: {} });
+    placeOrder: function (items, options) {
+      if (apiMode) return api('/orders', { method: 'POST', body: options || {} });
       if (!G5.user()) return null;
       var o = G5.getOrders(), d = new Date();
       var date = pad(d.getDate()) + '/' + pad(d.getMonth() + 1) + '/' + d.getFullYear();
@@ -180,10 +189,40 @@
     },
     syncOrders: function () {
       if (!apiMode) return Promise.resolve(G5.getOrders());
-      return api('/orders').then(function (data) { return Promise.all((data.orders || []).map(function (o) { return api('/orders/' + o.id).then(function (detail) { var stage = ({ pending_payment: 0, paid: 1, processing: 1, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0; return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage]; }); }); })); }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
+      return api('/orders').then(function (data) { return Promise.all((data.orders || []).map(function (o) { return api('/orders/' + o.id).then(function (detail) { var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0; var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : ''; return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage, label, o.id]; }); }); })); }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
     },
     getLibrary: function () { return apiMode ? api('/library').then(function (data) { return data.games || []; }) : Promise.resolve(null); },
-    notify: function (message) { if (typeof window.showToast === 'function') window.showToast('Thông báo', message, false); else window.alert(message); },
+    errorText: function (err) {
+      var code = err && err.message;
+      return ({
+        invalid_credentials: 'Email hoặc mật khẩu không đúng.',
+        invalid_request: 'Thông tin chưa hợp lệ. Kiểm tra email đúng định dạng, mật khẩu tối thiểu 10 ký tự.',
+        already_exists: 'Email này đã được đăng ký.',
+        cart_empty: 'Giỏ hàng đang trống. Hãy thêm game trước khi thanh toán.',
+        insufficient_stock: 'Một sản phẩm hiện không đủ tồn kho.',
+        already_owned: 'Bạn đã sở hữu game kỹ thuật số này (xem trong Kho game).',
+        authentication_required: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
+        invalid_or_expired_token: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
+        forbidden: 'Bạn không có quyền thực hiện thao tác này.',
+        refund_already_requested: 'Đơn này đã có yêu cầu hoàn tiền.',
+        order_not_refundable: 'Đơn này chưa thanh toán nên không thể hoàn tiền.',
+        product_not_found: 'Không tìm thấy sản phẩm.',
+        'Failed to fetch': 'Không kết nối được API. Hãy kiểm tra backend đang chạy (npm run dev).'
+      })[code] || ('Có lỗi xảy ra: ' + (code || 'không rõ'));
+    },
+    isAdmin: function () { var u = G5.user(); return !!(u && (u.role === 'admin' || u.role === 'staff')); },
+    notify: function (message) {
+      if (typeof window.showToast === 'function') { window.showToast('Thông báo', message, false); return; }
+      // Thong bao nho goc phai duoi, tu an sau 3.5 giay (khong chan trang nhu alert)
+      var box = document.getElementById('g5-toast');
+      if (!box) {
+        box = document.createElement('div'); box.id = 'g5-toast';
+        box.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483001;max-width:340px;padding:12px 16px;border-radius:14px;background:#2a1645;border:1px solid #9d4edd;color:#f3e8ff;font:600 14px Inter,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .3s;opacity:0';
+        document.body.appendChild(box);
+      }
+      box.textContent = message; box.style.opacity = '1';
+      clearTimeout(box._t); box._t = setTimeout(function () { box.style.opacity = '0'; }, 3500);
+    },
     /* ---- Giao diện ---- */
     refresh: function () {
       var n = G5.user() ? G5.getCart().length : 0;
@@ -219,6 +258,15 @@
     document.querySelectorAll('a[data-nav]').forEach(function (a) {
       if (a.getAttribute('href').split('#')[0] === cur) a.classList.add('is-current');
     });
+    if (G5.isAdmin()) {
+      var lastNav = document.querySelector('a[data-nav][href="mods.html"]');
+      if (lastNav && !document.querySelector('a[data-nav][href="admin.html"]')) {
+        var adm = lastNav.cloneNode(false);
+        adm.setAttribute('href', 'admin.html');
+        adm.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị';
+        lastNav.insertAdjacentElement('afterend', adm);
+      }
+    }
     G5.refresh();
     if (apiMode) { G5.syncCart().catch(function () { G5.notify('Không thể tải giỏ hàng từ API.'); }); G5.syncOrders().catch(function () { G5.notify('Không thể tải đơn hàng từ API.'); }); }
   });
@@ -233,6 +281,7 @@
       return;
     }
     var name, kind, usd;
+    var productId = b.dataset.id || null;
     if (b.dataset.name) {
       name = b.dataset.name; kind = b.dataset.kind || 'digital'; usd = parseFloat(b.dataset.price) || 0;
     } else {
@@ -248,6 +297,6 @@
       usd = ps.length ? Math.min.apply(null, ps) / RATE : 0;
       kind = document.body.dataset.kind || 'digital';
     }
-    G5.add(name, kind, usd);
+    G5.add(name, kind, usd, 1, productId);
   }, true);
 })();

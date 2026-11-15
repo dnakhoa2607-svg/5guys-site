@@ -760,7 +760,7 @@ button, input, select, textarea { font-family: inherit; }
 
         G5.api('/auth/login', { method: 'POST', body: { email: email, password: password } })
             .then(function (result) { G5.setApiSession(result.token, result.user); open2FAModal(); })
-            .catch(function (error) { alert(error.message === 'invalid_credentials' ? 'Email hoặc mật khẩu không đúng.' : 'Không kết nối được API. Hãy kiểm tra backend đang chạy.'); });
+            .catch(function (error) { alert(G5.errorText(error)); });
     }
 
     // Open 2FA Modal Popup
@@ -898,7 +898,7 @@ button, input, select, textarea { font-family: inherit; }
             }
             
             setTimeout(() => {
-                var em=(document.getElementById('email-input').value||'').trim();G5.login({email:em,name:(em.split('@')[0]||'User')});var nx=new URLSearchParams(location.search).get('next');window.location.href=(nx&&/^[\w-]+\.html$/.test(nx))?nx:'index.html';
+                var em=(document.getElementById('email-input').value||'').trim();if(!G5.isApiMode())G5.login({email:em,name:(em.split('@')[0]||'User')});var nx=new URLSearchParams(location.search).get('next');window.location.href=(nx&&/^[\w-]+\.html$/.test(nx))?nx:'index.html';
             }, 1200);
         }, 750);
     }

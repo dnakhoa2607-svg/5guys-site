@@ -965,6 +965,6 @@
   render();
 })();
 </script>
-<script>async function handleRegister(e){e.preventDefault();const f=e.currentTarget;const b=f.querySelector("button[type=submit]");if(b)b.disabled=true;try{await G5.api("/auth/register",{method:"POST",body:{displayName:document.getElementById("input-username").value.trim(),email:document.getElementById("input-email").value.trim(),password:document.getElementById("reg-password").value}});alert("Tạo tài khoản thành công. Hãy đăng nhập.");location.href="login.html"}catch(err){alert(err.message==="already_exists"?"Email này đã được đăng ký.":err.message==="invalid_request"?"Thông tin chưa hợp lệ. Mật khẩu cần tối thiểu 10 ký tự.":"Không kết nối được API. Hãy kiểm tra backend đang chạy.")}finally{if(b)b.disabled=false}}</script></body></html>
+<script>async function handleRegister(e){e.preventDefault();const f=e.currentTarget;const b=f.querySelector("button[type=submit]");if(b)b.disabled=true;try{await G5.api("/auth/register",{method:"POST",body:{displayName:document.getElementById("input-username").value.trim(),email:document.getElementById("input-email").value.trim(),password:document.getElementById("reg-password").value}});alert("Tạo tài khoản thành công. Hãy đăng nhập.");location.href="login.html"}catch(err){alert(G5.errorText(err))}finally{if(b)b.disabled=false}}</script></body></html>
 
 

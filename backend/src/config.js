@@ -7,7 +7,8 @@ const env = z.object({
   FRONTEND_ORIGIN: z.string().default('http://localhost:5500'),
   DB_HOST: z.string().default('127.0.0.1'), DB_PORT: z.coerce.number().int().default(3306),
   DB_NAME: z.string().default('5guys_store'), DB_USER: z.string(), DB_PASSWORD: z.string(),
-  JWT_SECRET: z.string().min(32), JWT_EXPIRES_IN: z.string().default('2h')
+  JWT_SECRET: z.string().min(32), JWT_EXPIRES_IN: z.string().default('2h'),
+  GEMINI_API_KEY: z.string().optional(), GEMINI_MODEL: z.string().default('gemini-3.5-flash')
 }).parse(process.env);
 
 export default env;

@@ -304,6 +304,26 @@
     }
   };
 
+  /* ---- PC2GAMES AI: gợi ý game theo cấu hình (gọi Gemini qua back-end /api/ai/advisor) ----
+   * G5.askAi(text) -> Promise<string HTML>. Nếu back-end/AI lỗi thì Promise bị reject,
+   * trang gọi sẽ dùng luật gợi ý offline sẵn có làm dự phòng. */
+  var aiHistory = [];
+  function aiToHtml(text) {
+    var esc = String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    return esc
+      .replace(/\*\*(.+?)\*\*/g, '<b>$1</b>')
+      .replace(/(^|\n)\s*[-*]\s+/g, '$1• ')
+      .replace(/\*(\S(?:.*?\S)?)\*/g, '<i>$1</i>')
+      .replace(/\n/g, '<br>');
+  }
+  G5.askAi = function (text) {
+    return api('/ai/advisor', { method: 'POST', body: { message: text, history: aiHistory.slice(-10) } })
+      .then(function (data) {
+        aiHistory.push({ role: 'user', text: text.slice(0, 2000) }, { role: 'model', text: String(data.reply).slice(0, 2000) });
+        return aiToHtml(data.reply);
+      });
+  };
+
   // Áp trạng thái đăng nhập ngay từ <head> để không bị "nháy" giao diện.
   var u = G5.user();
   document.documentElement.classList.toggle('is-auth', !!u);

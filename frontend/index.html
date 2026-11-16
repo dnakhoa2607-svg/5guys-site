@@ -778,9 +778,9 @@
             chatStream.appendChild(typingIndicator);
             chatStream.scrollTop = chatStream.scrollHeight;
 
-            setTimeout(() => {
+            const ask = window.G5 && G5.askAi ? G5.askAi(text) : Promise.reject();
+            ask.catch(() => generateAiLogic(text.toLowerCase())).then(replyHtml => {
                 typingIndicator.remove();
-                const replyHtml = generateAiLogic(text.toLowerCase());
                 const botBubble = document.createElement('div');
                 botBubble.className = 'flex gap-2.5 items-start';
                 botBubble.innerHTML = `
@@ -793,7 +793,7 @@
                 `;
                 chatStream.appendChild(botBubble);
                 chatStream.scrollTop = chatStream.scrollHeight;
-            }, 800);
+            });
         }
 
         function generateAiLogic(input) {

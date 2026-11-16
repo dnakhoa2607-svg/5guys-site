@@ -1,0 +1,328 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import db from '../db.js';
+import { requireAuth, requireRole } from '../middleware/auth.js';
+
+// Tat ca route trong file nay chi danh cho admin (hoac nhan vien - staff)
+const router = Router();
+router.use(requireAuth, requireRole('admin', 'staff'));
+
+const idParam = z.coerce.number().int().positive();
+
+// Chay mot ham trong transaction, tu rollback neu loi
+async function inTransaction(work) {
+  const conn = await db.getConnection();
+  try {
+    await conn.beginTransaction();
+    const result = await work(conn);
+    await conn.commit();
+    return result;
+  } catch (e) {
+    await conn.rollback();
+    throw e;
+  } finally {
+    conn.release();
+  }
+}
+class HttpError extends Error { constructor(status, code) { super(code); this.status = status; this.code = code; } }
+function sendError(res, next, e) {
+  if (e instanceof HttpError) return res.status(e.status).json({ error: e.code });
+  next(e);
+}
+
+/* ===================== THONG KE ===================== */
+router.get('/stats', async (req, res, next) => {
+  try {
+    const [[revenue]] = await db.execute(
+      "SELECT COALESCE(SUM(total),0) AS revenue, COUNT(*) AS paid_orders FROM orders WHERE status IN ('paid','processing','shipped','fulfilled')"
+    );
+    const [byStatus] = await db.execute('SELECT status, COUNT(*) AS count FROM orders GROUP BY status');
+    const [[users]] = await db.execute("SELECT COUNT(*) AS count FROM users WHERE status='active'");
+    const [[products]] = await db.execute("SELECT COUNT(*) AS count FROM products WHERE status='active'");
+    const [[refunds]] = await db.execute("SELECT COUNT(*) AS count FROM refunds WHERE status='requested'");
+    const [[tickets]] = await db.execute("SELECT COUNT(*) AS count FROM support_tickets WHERE status IN ('open','in_progress')");
+    const [topProducts] = await db.execute(
+      `SELECT oi.product_title AS title, oi.product_type, SUM(oi.quantity) AS sold, SUM(oi.line_total) AS revenue
+       FROM order_items oi JOIN orders o ON o.id=oi.order_id
+       WHERE o.status IN ('paid','processing','shipped','fulfilled')
+       GROUP BY oi.product_title, oi.product_type ORDER BY revenue DESC LIMIT 5`
+    );
+    const [lowStock] = await db.execute(
+      `SELECT p.id, p.title, p.platform, i.quantity_on_hand - i.quantity_reserved AS available
+       FROM physical_inventory i JOIN products p ON p.id=i.product_id
+       WHERE p.status='active' AND i.quantity_on_hand - i.quantity_reserved <= i.low_stock_threshold
+       ORDER BY available LIMIT 10`
+    );
+    const [daily] = await db.execute(
+      `SELECT DATE(paid_at) AS day, SUM(total) AS revenue, COUNT(*) AS orders FROM orders
+       WHERE paid_at IS NOT NULL AND paid_at >= UTC_TIMESTAMP() - INTERVAL 14 DAY AND status <> 'refunded'
+       GROUP BY DATE(paid_at) ORDER BY day`
+    );
+    res.json({
+      revenue: Number(revenue.revenue), paidOrders: revenue.paid_orders, byStatus,
+      users: users.count, products: products.count, pendingRefunds: refunds.count, openTickets: tickets.count,
+      topProducts, lowStock, daily
+    });
+  } catch (e) { next(e); }
+});
+
+/* ===================== DON HANG ===================== */
+router.get('/orders', async (req, res, next) => {
+  try {
+    const q = z.object({ status: z.string().max(30).optional() }).parse(req.query);
+    const where = q.status ? 'WHERE o.status=?' : '';
+    const [orders] = await db.execute(
+      `SELECT o.id, o.order_number, o.status, o.subtotal, o.tax_total, o.shipping_total, o.discount_total, o.total, o.placed_at, o.paid_at,
+              u.email, u.display_name, o.recipient_name, o.recipient_phone, o.shipping_address,
+              (SELECT GROUP_CONCAT(CONCAT(oi.product_title,' (',IF(oi.product_type='digital','số','đĩa'),') x',oi.quantity) SEPARATOR '; ')
+                 FROM order_items oi WHERE oi.order_id=o.id) AS items,
+              (SELECT SUM(oi.product_type='physical') FROM order_items oi WHERE oi.order_id=o.id) AS physical_count,
+              (SELECT r.status FROM refunds r WHERE r.order_id=o.id ORDER BY r.id DESC LIMIT 1) AS refund_status
+       FROM orders o JOIN users u ON u.id=o.user_id ${where}
+       ORDER BY o.placed_at DESC LIMIT 200`,
+      q.status ? [q.status] : []
+    );
+    res.json({ orders });
+  } catch (e) { next(e); }
+});
+
+// Quy trinh: paid/processing -> shipped (dang giao) -> fulfilled (hoan tat); pending_payment -> cancelled
+const transitions = {
+  pending_payment: ['cancelled'],
+  paid: ['shipped', 'fulfilled', 'cancelled'],
+  processing: ['shipped', 'fulfilled'],
+  shipped: ['fulfilled'],
+};
+router.put('/orders/:id/status', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const { status } = z.object({ status: z.enum(['shipped', 'fulfilled', 'cancelled']) }).parse(req.body);
+    await inTransaction(async (conn) => {
+      const [[order]] = await conn.execute('SELECT id,status FROM orders WHERE id=? FOR UPDATE', [id]);
+      if (!order) throw new HttpError(404, 'order_not_found');
+      if (!(transitions[order.status] || []).includes(status)) throw new HttpError(409, 'invalid_transition');
+      if (status === 'cancelled' && order.status === 'pending_payment') {
+        // Tra lai hang dang giu cho don chua thanh toan
+        const [items] = await conn.execute("SELECT product_id,quantity FROM order_items WHERE order_id=? AND product_type='physical'", [id]);
+        for (const it of items) {
+          await conn.execute('UPDATE physical_inventory SET quantity_reserved=GREATEST(quantity_reserved-?,0) WHERE product_id=?', [it.quantity, it.product_id]);
+        }
+        await conn.execute("UPDATE payments SET status='failed' WHERE order_id=?", [id]);
+      }
+      if (status === 'fulfilled') {
+        await conn.execute(
+          "UPDATE order_fulfillments f JOIN order_items oi ON oi.id=f.order_item_id SET f.status='fulfilled', f.fulfilled_at=UTC_TIMESTAMP() WHERE oi.order_id=?",
+          [id]
+        );
+      }
+      await conn.execute('UPDATE orders SET status=? WHERE id=?', [status, id]);
+    });
+    res.json({ ok: true, status });
+  } catch (e) { sendError(res, next, e); }
+});
+
+/* ===================== HOAN TIEN ===================== */
+router.get('/refunds', async (req, res, next) => {
+  try {
+    const [refunds] = await db.execute(
+      `SELECT r.id, r.amount, r.reason, r.status, r.created_at, o.id AS order_id, o.order_number, o.status AS order_status, u.email
+       FROM refunds r JOIN orders o ON o.id=r.order_id JOIN users u ON u.id=o.user_id
+       ORDER BY r.status='requested' DESC, r.created_at DESC LIMIT 200`
+    );
+    res.json({ refunds });
+  } catch (e) { next(e); }
+});
+
+router.put('/refunds/:id', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const { action } = z.object({ action: z.enum(['approve', 'reject']) }).parse(req.body);
+    await inTransaction(async (conn) => {
+      const [[refund]] = await conn.execute('SELECT id,order_id,payment_id,status FROM refunds WHERE id=? FOR UPDATE', [id]);
+      if (!refund) throw new HttpError(404, 'refund_not_found');
+      if (refund.status !== 'requested') throw new HttpError(409, 'refund_already_handled');
+      if (action === 'reject') {
+        await conn.execute("UPDATE refunds SET status='rejected' WHERE id=?", [id]);
+        return;
+      }
+      const [[order]] = await conn.execute('SELECT id,user_id,status,total FROM orders WHERE id=? FOR UPDATE', [refund.order_id]);
+      // 1. Thu hoi game so khoi thu vien
+      await conn.execute(
+        "UPDATE game_library gl JOIN order_items oi ON oi.id=gl.order_item_id SET gl.status='revoked' WHERE oi.order_id=?",
+        [order.id]
+      );
+      // 2. Dia chua giao thi nhap lai kho
+      if (order.status === 'paid' || order.status === 'processing') {
+        const [items] = await conn.execute("SELECT product_id,quantity FROM order_items WHERE order_id=? AND product_type='physical'", [order.id]);
+        for (const it of items) {
+          await conn.execute('UPDATE physical_inventory SET quantity_on_hand=quantity_on_hand+? WHERE product_id=?', [it.quantity, it.product_id]);
+        }
+      }
+      // 3. Tru lai diem thuong da cong cho don nay
+      const [[earned]] = await conn.execute(
+        'SELECT COALESCE(SUM(points_delta),0) AS pts FROM loyalty_transactions WHERE order_id=? AND points_delta>0', [order.id]
+      );
+      if (Number(earned.pts) > 0) {
+        await conn.execute(
+          'INSERT INTO loyalty_transactions(user_id,order_id,points_delta,description) VALUES(?,?,?,?)',
+          [order.user_id, order.id, -Number(earned.pts), 'Thu hoi diem do hoan tien']
+        );
+        await conn.execute(
+          'UPDATE loyalty_accounts SET points_balance=GREATEST(points_balance-?,0), lifetime_spend=GREATEST(lifetime_spend-?,0) WHERE user_id=?',
+          [Number(earned.pts), Number(order.total), order.user_id]
+        );
+      }
+      // 4. Cap nhat trang thai
+      await conn.execute("UPDATE refunds SET status='processed' WHERE id=?", [id]);
+      await conn.execute("UPDATE payments SET status='refunded' WHERE id=?", [refund.payment_id]);
+      await conn.execute("UPDATE orders SET status='refunded' WHERE id=?", [order.id]);
+    });
+    res.json({ ok: true });
+  } catch (e) { sendError(res, next, e); }
+});
+
+/* ===================== SAN PHAM ===================== */
+const productSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  slug: z.string().trim().regex(/^[a-z0-9-]+$/).max(180),
+  description: z.string().max(5000).optional().default(''),
+  publisher: z.string().max(150).optional().default(''),
+  developer: z.string().max(150).optional().default(''),
+  release_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
+  platform: z.string().trim().min(1).max(80),
+  genre: z.string().max(80).optional().default(''),
+  cover_url: z.string().url().max(1000).optional().or(z.literal('')).default(''),
+  product_type: z.enum(['digital', 'physical']),
+  price: z.coerce.number().min(0),
+  original_price: z.coerce.number().min(0).optional().nullable(),
+  status: z.enum(['draft', 'active', 'inactive']).default('active'),
+  stock: z.coerce.number().int().min(0).optional(),
+});
+
+router.get('/products', async (req, res, next) => {
+  try {
+    const [products] = await db.execute(
+      `SELECT p.id,p.slug,p.title,p.platform,p.genre,p.product_type,p.price,p.original_price,p.discount_percent,p.status,p.cover_url,
+              p.publisher,p.developer,p.description,p.release_date,
+              i.quantity_on_hand, i.quantity_reserved
+       FROM products p LEFT JOIN physical_inventory i ON i.product_id=p.id
+       ORDER BY p.title, p.product_type`
+    );
+    res.json({ products });
+  } catch (e) { next(e); }
+});
+
+function discountOf(price, original) {
+  if (!original || Number(original) <= Number(price)) return 0;
+  return Math.round((1 - Number(price) / Number(original)) * 100);
+}
+
+router.post('/products', async (req, res, next) => {
+  try {
+    const p = productSchema.parse(req.body);
+    const original = p.original_price || p.price;
+    const id = await inTransaction(async (conn) => {
+      const [r] = await conn.execute(
+        `INSERT INTO products(slug,title,description,publisher,developer,release_date,platform,genre,cover_url,product_type,price,original_price,discount_percent,currency,status)
+         VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,'VND',?)`,
+        [p.slug, p.title, p.description, p.publisher, p.developer, p.release_date || null, p.platform, p.genre, p.cover_url,
+         p.product_type, p.price, original, discountOf(p.price, original), p.status]
+      );
+      if (p.product_type === 'physical') {
+        await conn.execute('INSERT INTO physical_inventory(product_id,sku,quantity_on_hand) VALUES(?,?,?)',
+          [r.insertId, 'SKU-' + p.slug.toUpperCase().slice(0, 60), p.stock || 0]);
+      }
+      await conn.execute(
+        "INSERT INTO product_editions(product_id,edition_name,edition_description,price,original_price,product_type) VALUES(?,'Standard','Phiên bản tiêu chuẩn',?,?,?)",
+        [r.insertId, p.price, original, p.product_type]
+      );
+      return r.insertId;
+    });
+    res.status(201).json({ id });
+  } catch (e) { next(e); }
+});
+
+router.put('/products/:id', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const p = productSchema.partial().parse(req.body);
+    await inTransaction(async (conn) => {
+      const [[cur]] = await conn.execute('SELECT * FROM products WHERE id=? FOR UPDATE', [id]);
+      if (!cur) throw new HttpError(404, 'product_not_found');
+      const merged = { ...cur, ...Object.fromEntries(Object.entries(p).filter(([, v]) => v !== undefined)) };
+      const original = merged.original_price || merged.price;
+      await conn.execute(
+        `UPDATE products SET title=?,description=?,publisher=?,developer=?,platform=?,genre=?,cover_url=?,price=?,original_price=?,discount_percent=?,status=? WHERE id=?`,
+        [merged.title, merged.description, merged.publisher, merged.developer, merged.platform, merged.genre, merged.cover_url,
+         merged.price, original, discountOf(merged.price, original), merged.status, id]
+      );
+      if (cur.product_type === 'physical' && p.stock !== undefined) {
+        const [[inv]] = await conn.execute('SELECT quantity_reserved FROM physical_inventory WHERE product_id=? FOR UPDATE', [id]);
+        if (inv && p.stock < inv.quantity_reserved) throw new HttpError(409, 'stock_below_reserved');
+        await conn.execute(
+          'INSERT INTO physical_inventory(product_id,quantity_on_hand) VALUES(?,?) ON DUPLICATE KEY UPDATE quantity_on_hand=VALUES(quantity_on_hand)',
+          [id, p.stock]
+        );
+      }
+    });
+    res.json({ ok: true });
+  } catch (e) { sendError(res, next, e); }
+});
+
+/* ===================== NGUOI DUNG ===================== */
+router.get('/users', async (req, res, next) => {
+  try {
+    const [users] = await db.execute(
+      `SELECT u.id,u.email,u.display_name,u.role,u.status,u.created_at,u.last_login_at,
+              (SELECT COUNT(*) FROM orders o WHERE o.user_id=u.id) AS orders,
+              COALESCE(l.points_balance,0) AS points
+       FROM users u LEFT JOIN loyalty_accounts l ON l.user_id=u.id ORDER BY u.created_at DESC`
+    );
+    res.json({ users });
+  } catch (e) { next(e); }
+});
+
+router.put('/users/:id', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const data = z.object({
+      role: z.enum(['customer', 'staff', 'admin']).optional(),
+      status: z.enum(['active', 'locked']).optional(),
+    }).parse(req.body);
+    if (String(id) === String(req.user.sub)) return res.status(409).json({ error: 'cannot_change_self' });
+    if (req.user.role !== 'admin') return res.status(403).json({ error: 'forbidden' });
+    if (data.role) await db.execute('UPDATE users SET role=? WHERE id=?', [data.role, id]);
+    if (data.status) await db.execute('UPDATE users SET status=? WHERE id=?', [data.status, id]);
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+/* ===================== HO TRO KHACH HANG ===================== */
+router.get('/tickets', async (req, res, next) => {
+  try {
+    const [tickets] = await db.execute(
+      `SELECT t.id,t.subject,t.message,t.status,t.priority,t.created_at,u.email,o.order_number,
+              (SELECT m.message FROM support_messages m WHERE m.ticket_id=t.id ORDER BY m.id DESC LIMIT 1) AS last_reply
+       FROM support_tickets t LEFT JOIN users u ON u.id=t.user_id LEFT JOIN orders o ON o.id=t.order_id
+       ORDER BY FIELD(t.status,'open','in_progress','resolved','closed'), t.created_at DESC LIMIT 200`
+    );
+    res.json({ tickets });
+  } catch (e) { next(e); }
+});
+
+router.put('/tickets/:id', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const data = z.object({
+      status: z.enum(['open', 'in_progress', 'resolved', 'closed']).optional(),
+      reply: z.string().trim().max(2000).optional(),
+    }).parse(req.body);
+    const [[t]] = await db.execute('SELECT id FROM support_tickets WHERE id=?', [id]);
+    if (!t) return res.status(404).json({ error: 'ticket_not_found' });
+    if (data.reply) await db.execute('INSERT INTO support_messages(ticket_id,sender_user_id,message) VALUES(?,?,?)', [id, req.user.sub, data.reply]);
+    if (data.status) await db.execute('UPDATE support_tickets SET status=? WHERE id=?', [data.status, id]);
+    res.json({ ok: true });
+  } catch (e) { next(e); }
+});
+
+export default router;

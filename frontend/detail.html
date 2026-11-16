@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chi tiết game | 5GUYS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script><script src="assets/tailwind-config.js"></script>
+  <style>.btn{display:inline-block;text-align:center;background:#9d4edd;color:#fff;font-weight:700;border-radius:.375rem;padding:.6rem 1.25rem;border:1px solid rgba(199,125,255,.3);box-shadow:0 0 15px rgba(157,78,221,.4);transition:.3s}.btn:hover{background:#c77dff}.btn:disabled{opacity:.5}
+.ghost{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.5rem 1rem;color:#e9d5ff;transition:.3s}.ghost:hover{border-color:#c77dff;color:#fff}.card{background:#2a1645;border:1px solid #3c096c;border-radius:1rem}
+.inp{background:#12091c!important;border:1px solid #3c096c!important;border-radius:.5rem!important;color:#f3e8ff;padding:.6rem 1rem}.inp:focus{outline:0;box-shadow:0 0 0 2px #c77dff!important}</style>
+  <link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script>
+</head>
+<body class="antialiased flex flex-col min-h-screen bg-dark-bg text-white">
+  <!-- ================= NAVBAR ================= -->
+<script src="assets/layout.js" data-part="nav"></script>
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+    <p class="text-xs uppercase tracking-wider text-outline mb-6"><a href="index.html" class="hover:text-brand-light">Cửa hàng</a> / <a href="search.html" class="hover:text-brand-light">Game</a> / <span id="crumb-title">Chi tiết</span></p>
+    <div id="detail-loading" class="text-center py-24 text-outline">Đang tải thông tin game…</div>
+    <article id="game-detail" class="hidden">
+      <section class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)] gap-8 lg:gap-12 items-start">
+        <div class="relative"><div class="relative min-h-[360px] sm:min-h-[520px] grid place-items-center overflow-hidden rounded-3xl bg-dark-surface border border-dark-border"><img id="game-cover" class="absolute inset-0 h-full w-full object-contain" alt="Ảnh bìa game"><div id="game-cover-fallback" class="hidden p-8 text-center text-2xl font-black text-brand-light"></div></div><div id="game-media" class="grid sm:grid-cols-2 gap-3 mt-4"></div><div id="trailer-slot"></div></div>
+        <div class="lg:sticky lg:top-24"><span class="chip dg">5GUYS GAME DETAIL</span><h1 id="game-title" class="text-3xl sm:text-5xl font-black tracking-tight mt-4"></h1><p id="game-byline" class="text-sm text-outline mt-3"></p><p id="game-description" class="text-gray-300 leading-7 mt-7"></p>
+          <div class="card p-5 mt-7"><div id="game-formats" class="hidden mb-5"><p class="text-xs text-outline uppercase tracking-wider mb-2">Chọn hình thức</p><div class="grid sm:grid-cols-2 gap-2"></div></div><div class="flex items-center justify-between gap-3"><div class="min-w-0 flex-none"><p class="text-xs text-outline uppercase tracking-wider">Giá bán</p><del id="game-original-price" class="hidden text-xs text-outline"></del><p id="game-price" class="text-2xl sm:text-3xl font-black text-primary-container mt-1 whitespace-nowrap leading-none"></p></div><p id="game-stock" class="ml-auto max-w-[48%] shrink-0 text-right text-xs sm:text-sm leading-snug text-emerald-300"></p></div><div id="game-editions" class="space-y-2 mt-5"></div><div class="grid grid-cols-2 gap-3 mt-5"><button id="game-add" class="min-h-12 rounded-full border border-brand/50 bg-dark-surface px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand/20 transition-colors disabled:opacity-50" type="button"><i class="fa-solid fa-cart-plus mr-1 sm:mr-2"></i>Thêm giỏ</button><button id="buy-now" class="min-h-12 rounded-full bg-brand px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand-light transition-colors" type="button">Mua ngay</button></div><button id="favorite" class="min-h-11 rounded-full border border-brand/30 px-4 py-2 ghost w-full mt-3 hover:bg-brand/10 transition-colors" type="button">♡ Yêu thích</button></div>
+          <section class="mt-8"><h2 class="text-xl font-bold border-l-4 border-brand pl-3">Thông số</h2><div id="game-specs" class="mt-3"></div></section>
+        </div>
+      </section>
+      <section class="mt-14"><p class="text-xs text-amber-200 mb-3">Cấu hình trong database demo chỉ để minh họa; hãy xác minh yêu cầu chính thức của từng game trước khi mua.</p><div class="grid lg:grid-cols-2 gap-6"><div class="card p-5"><h2 class="text-xl font-bold">Cấu hình tối thiểu</h2><div id="minimum-requirements" class="mt-4 text-sm text-gray-300"><p>Đang cập nhật cấu hình theo từng game.</p></div></div><div class="card p-5"><h2 class="text-xl font-bold">Cấu hình đề nghị</h2><div id="recommended-requirements" class="mt-4 text-sm text-gray-300"><p>Đang cập nhật cấu hình theo từng game.</p></div></div></div></section>
+      <section class="mt-14"><div class="flex flex-wrap items-end justify-between gap-4"><div><h2 class="text-2xl font-black">Đánh giá người chơi</h2><p class="text-sm text-outline mt-1">Chỉ hiển thị đánh giá đã được duyệt.</p></div><a href="reviews.html" class="ghost">Cộng đồng &amp; đánh giá</a></div><div id="game-reviews" class="grid md:grid-cols-2 gap-4 mt-5"></div></section>
+    </article>
+  </main>
+  <script src="assets/layout.js" data-part="footer"></script>
+  <script src="assets/detail.js"></script>
+</body>
+</html>
+
+
+
+
+

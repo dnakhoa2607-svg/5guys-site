@@ -1,0 +1,182 @@
+<!DOCTYPE html><html lang="vi" class="scroll-smooth"><head><title>5GUYS - Hồ sơ cá nhân</title><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"><script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<style>body{background:#12091c;color:#f3e8ff;overflow-x:hidden;font-family:Inter,sans-serif}h1,h2,h3,h4{letter-spacing:-.02em}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:#12091c}::-webkit-scrollbar-thumb{background:#3c096c;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#9d4edd}
+.game-card{transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1)}.game-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 15px 30px -5px rgba(157,78,221,.5),0 0 15px rgba(157,78,221,.3) inset;border-color:#c77dff}
+.glow:hover{border-color:#c77dff!important;box-shadow:0 0 20px -4px rgba(157,78,221,.5)}.btn{display:inline-block;text-align:center;background:#9d4edd;color:#fff;font-weight:700;border-radius:.375rem;padding:.6rem 1.25rem;border:1px solid rgba(199,125,255,.3);box-shadow:0 0 15px rgba(157,78,221,.4);transition:.3s}.btn:hover{background:#c77dff;box-shadow:0 0 25px rgba(199,125,255,.6)}
+.ghost{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.5rem 1rem;color:#e9d5ff;transition:.3s}.ghost:hover{border-color:#c77dff;color:#fff}.card{background:#2a1645;border:1px solid #3c096c;border-radius:1rem;transition:.3s}
+.inp{background:#12091c!important;border:1px solid #3c096c!important;border-radius:.5rem!important;color:#f3e8ff;padding:.6rem 1rem}.inp:focus{outline:0;box-shadow:0 0 0 2px #c77dff!important}.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.chip{font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid}.dg{background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff}.ph{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa}select.inp option{background:#12091c;color:#f3e8ff}select.inp:disabled{opacity:.5}input.inp:disabled{opacity:.6;cursor:not-allowed}</style><link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script><script src="assets/address.js"></script></head>
+<body class="antialiased flex flex-col min-h-screen"><script src="assets/layout.js" data-part="nav"></script><main class="flex-grow"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+<h1 class="text-3xl font-black text-white uppercase tracking-tight border-l-4 border-brand pl-4">Hồ sơ cá nhân</h1>
+<p class="text-gray-400 mt-2 mb-8 font-medium">Thông tin tài khoản, bảo mật và địa chỉ giao hàng</p>
+
+<div id="pf-guest" class="card p-8 text-center hidden"><i class="fa-solid fa-lock text-3xl text-primary-container"></i><p class="mt-3 text-on-surface-variant">Vui lòng đăng nhập để xem hồ sơ.</p><a href="login.html?next=profile.html" class="btn mt-4">Đăng nhập</a></div>
+
+<div id="pf-body" class="hidden grid lg:grid-cols-3 gap-6">
+  <!-- Cot trai: the tom tat -->
+  <div class="space-y-6">
+    <div class="card p-6 text-center" style="box-shadow:0 0 24px -6px rgba(157,78,221,.35)">
+      <div id="pf-avatar" class="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-brand to-brand-light grid place-items-center text-3xl font-black text-white">U</div>
+      <h2 id="pf-name" class="mt-4 text-xl font-extrabold text-white break-words"></h2>
+      <p id="pf-email" class="text-sm text-outline break-all"></p>
+      <div class="mt-3 flex justify-center gap-2 flex-wrap"><span id="pf-role" class="chip dg"></span><span id="pf-tier" class="chip ph"></span></div>
+      <div class="grid grid-cols-3 gap-2 mt-6 text-center">
+        <a href="orders.html" class="rounded-xl bg-dark-bg border border-dark-border p-3 hover:border-brand-light transition-colors"><p id="st-orders" class="mono text-xl font-bold text-primary-container">0</p><p class="text-[11px] text-outline">Đơn hàng</p></a>
+        <a href="library.html" class="rounded-xl bg-dark-bg border border-dark-border p-3 hover:border-brand-light transition-colors"><p id="st-games" class="mono text-xl font-bold text-primary-container">0</p><p class="text-[11px] text-outline">Game</p></a>
+        <a href="loyalty.html" class="rounded-xl bg-dark-bg border border-dark-border p-3 hover:border-brand-light transition-colors"><p id="st-points" class="mono text-xl font-bold text-primary-container">0</p><p class="text-[11px] text-outline">Điểm</p></a>
+      </div>
+      <p class="text-xs text-outline mt-5">Thành viên từ <span id="pf-since"></span></p>
+    </div>
+  </div>
+
+  <!-- Cot phai -->
+  <div class="lg:col-span-2 space-y-6">
+    <!-- Thong tin ca nhan: mac dinh chi xem, bam Chinh sua moi sua duoc -->
+    <form id="f-info" class="card p-6">
+      <div class="flex items-center justify-between gap-3 mb-4">
+        <h3 class="font-bold text-lg"><i class="fa-solid fa-user text-brand-light mr-2"></i>Thông tin cá nhân</h3>
+        <button id="info-edit" class="ghost text-sm" type="button"><i class="fa-solid fa-pen mr-1"></i>Chỉnh sửa</button>
+      </div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <label class="text-sm">Tên hiển thị<input id="i-name" class="inp w-full mt-1" maxlength="100" required disabled></label>
+        <label class="text-sm">Số điện thoại<input id="i-phone" class="inp w-full mt-1" maxlength="20" inputmode="tel" disabled placeholder="Chưa cập nhật"></label>
+        <label class="text-sm sm:col-span-2">Email<input id="i-email" class="inp w-full mt-1" disabled></label>
+      </div>
+      <div id="info-actions" class="hidden flex items-center gap-3 mt-5"><button class="btn" type="submit">Lưu thay đổi</button><button id="info-cancel" class="ghost" type="button">Hủy</button></div>
+      <p id="m-info" class="text-sm mt-3"></p>
+    </form>
+
+    <!-- Bao mat: bam Doi mat khau moi hien form -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between gap-3">
+        <div><h3 class="font-bold text-lg"><i class="fa-solid fa-key text-brand-light mr-2"></i>Bảo mật</h3><p class="text-sm text-outline mt-1">Mật khẩu: ••••••••••</p></div>
+        <button id="pass-open" class="ghost text-sm" type="button"><i class="fa-solid fa-lock mr-1"></i>Đổi mật khẩu</button>
+      </div>
+      <form id="f-pass" class="hidden mt-5 border-t border-white/10 pt-5">
+        <div class="grid sm:grid-cols-3 gap-4">
+          <label class="text-sm">Mật khẩu hiện tại<input id="p-cur" type="password" class="inp w-full mt-1" autocomplete="current-password" required></label>
+          <label class="text-sm">Mật khẩu mới<input id="p-new" type="password" class="inp w-full mt-1" autocomplete="new-password" minlength="10" required></label>
+          <label class="text-sm">Nhập lại mật khẩu mới<input id="p-new2" type="password" class="inp w-full mt-1" autocomplete="new-password" minlength="10" required></label>
+        </div>
+        <p class="text-xs text-outline mt-2">Mật khẩu mới tối thiểu 10 ký tự.</p>
+        <div class="flex items-center gap-3 mt-4"><button class="btn" type="submit">Lưu mật khẩu</button><button id="pass-cancel" class="ghost" type="button">Hủy</button></div>
+      </form>
+      <p id="m-pass" class="text-sm mt-3"></p>
+    </div>
+
+    <!-- Dia chi giao hang -->
+    <div class="card p-6">
+      <div class="flex items-center justify-between gap-3 mb-4"><h3 class="font-bold text-lg"><i class="fa-solid fa-location-dot text-brand-light mr-2"></i>Địa chỉ giao hàng</h3><button id="a-new" class="ghost text-sm" type="button"><i class="fa-solid fa-plus mr-1"></i>Thêm địa chỉ</button></div>
+      <div id="a-list" class="space-y-3"></div>
+      <form id="f-addr" class="hidden mt-4 border border-brand/40 rounded-xl p-4">
+        <p id="a-title" class="font-semibold mb-3">Thêm địa chỉ mới</p>
+        <div class="grid sm:grid-cols-2 gap-3">
+          <label class="text-sm">Người nhận<input id="a-name" class="inp w-full mt-1" maxlength="100" required></label>
+          <label class="text-sm">Số điện thoại<input id="a-phone" class="inp w-full mt-1" maxlength="20" placeholder="VD: 0912 345 678" inputmode="tel" required></label>
+          <label class="text-sm">Tỉnh / Thành phố<select id="a-city" class="inp w-full mt-1" required><option value="">Đang tải...</option></select></label>
+          <label class="text-sm">Phường / Xã<input id="a-ward" list="a-ward-list" class="inp w-full mt-1" required disabled autocomplete="off" placeholder="Chọn tỉnh / thành phố trước"><datalist id="a-ward-list"></datalist></label>
+          <label class="text-sm sm:col-span-2">Số nhà, tên đường<input id="a-line" class="inp w-full mt-1" maxlength="255" required placeholder="VD: 12 Lê Lợi"></label>
+          <label class="text-sm flex items-center gap-2 sm:col-span-2"><input id="a-default" type="checkbox" class="accent-purple-500">Đặt làm mặc định</label>
+        </div>
+        <div class="flex items-center gap-3 mt-4"><button class="btn" type="submit">Lưu địa chỉ</button><button id="a-cancel" class="ghost" type="button">Hủy</button><span id="m-addr" class="text-sm"></span></div>
+      </form>
+    </div>
+  </div>
+</div>
+</div>
+</main><script src="assets/layout.js" data-part="footer"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const ROLE={customer:'Khách hàng',staff:'Nhân viên',admin:'Quản trị viên'};
+  const TIER={bronze:'🥉 Bronze',silver:'🥈 Silver',gold:'🥇 Gold',platinum:'💎 Platinum'};
+  const ok=(el,t)=>{el.className='text-sm mt-3 text-emerald-300';el.textContent='✔ '+t};
+  const fail=(el,err)=>{el.className='text-sm mt-3 text-red-400';el.textContent=typeof err==='string'?err:G5.errorText(err)};
+  let profile=null,addresses=[],editingId=null;
+  // So dien thoai + dia gioi hanh chinh: dung chung voi trang Gio hang (assets/address.js)
+  const {normPhone,validPhone,fmtPhone,PHONE_MSG}=G5Addr;
+  G5Addr.bindPhone($('i-phone'));G5Addr.bindPhone($('a-phone'));
+
+  if(!G5.isApiMode()){$('pf-guest').classList.remove('hidden');return}
+  $('pf-body').classList.remove('hidden');
+
+  function render(d){
+    profile=d;const u=d.user,name=u.display_name||u.email;
+    $('pf-avatar').textContent=name.charAt(0).toUpperCase();
+    $('pf-name').textContent=name;$('pf-email').textContent=u.email;
+    $('pf-role').textContent=ROLE[u.role]||u.role;$('pf-tier').textContent=TIER[d.stats.tier]||d.stats.tier;
+    $('st-orders').textContent=d.stats.orders;$('st-games').textContent=d.stats.games;$('st-points').textContent=Number(d.stats.points).toLocaleString('vi-VN');
+    $('pf-since').textContent=new Date(u.created_at).toLocaleDateString('vi-VN');
+    $('i-email').value=u.email;setInfoEditing(false);
+    renderAddresses(d.addresses);
+  }
+  function load(){G5.api('/profile').then(render).catch(err=>{if(/token|authentication/.test(err.message)){G5.logout();location.href='login.html?next=profile.html'}else fail($('m-info'),err)})}
+
+  /* ---------- Thong tin ca nhan: xem / chinh sua ---------- */
+  function setInfoEditing(on){
+    ['i-name','i-phone'].forEach(id=>$(id).disabled=!on);
+    $('info-actions').classList.toggle('hidden',!on);$('info-edit').classList.toggle('hidden',on);
+    if(!on&&profile){$('i-name').value=profile.user.display_name||'';$('i-phone').value=fmtPhone(profile.user.phone)}
+    if(on){$('m-info').textContent='';$('i-name').focus()}
+  }
+  $('info-edit').onclick=()=>setInfoEditing(true);
+  $('info-cancel').onclick=()=>setInfoEditing(false);
+  $('f-info').onsubmit=async e=>{e.preventDefault();if($('i-name').disabled)return;const m=$('m-info');
+    const rawPhone=$('i-phone').value.trim();if(rawPhone&&!validPhone(rawPhone))return fail(m,PHONE_MSG);
+    try{const displayName=$('i-name').value.trim(),phone=rawPhone?normPhone(rawPhone):'';
+      await G5.api('/profile',{method:'PUT',body:{displayName,phone}});
+      G5.login(Object.assign({},G5.user(),{name:displayName}));if(G5.refresh)G5.refresh();
+      profile.user.display_name=displayName;profile.user.phone=phone;render(profile);ok(m,'Đã lưu thông tin')}catch(err){fail(m,err)}};
+
+  /* ---------- Doi mat khau: bam nut moi hien form ---------- */
+  function setPassOpen(on){$('f-pass').classList.toggle('hidden',!on);$('pass-open').classList.toggle('hidden',on);$('f-pass').reset();if(on){$('m-pass').textContent='';$('p-cur').focus()}}
+  $('pass-open').onclick=()=>setPassOpen(true);
+  $('pass-cancel').onclick=()=>{setPassOpen(false);$('m-pass').textContent=''};
+  $('f-pass').onsubmit=async e=>{e.preventDefault();const m=$('m-pass');
+    if($('p-new').value!==$('p-new2').value)return fail(m,'Mật khẩu nhập lại không khớp.');
+    if($('p-new').value===$('p-cur').value)return fail(m,'Mật khẩu mới phải khác mật khẩu hiện tại.');
+    try{await G5.api('/profile/password',{method:'PUT',body:{currentPassword:$('p-cur').value,newPassword:$('p-new').value}});setPassOpen(false);ok(m,'Đã đổi mật khẩu')}catch(err){fail(m,err)}};
+
+  /* ---------- Tinh / phuong (assets/address.js, dia gioi moi sau sap nhap) ---------- */
+  const geoFail=()=>fail($('m-addr'),G5Addr.GEO_FAIL);
+  const addrForm=G5Addr.form({city:$('a-city'),ward:$('a-ward'),list:$('a-ward-list'),onError:geoFail});
+
+  /* ---------- Dia chi giao hang ---------- */
+  function renderAddresses(list){addresses=list;const box=$('a-list');box.textContent='';
+    if(!list.length){box.innerHTML='<p class="text-sm text-outline text-center py-4">Chưa có địa chỉ nào.</p>';return}
+    list.forEach(a=>{const c=document.createElement('div');c.className='rounded-xl border p-4 flex flex-wrap justify-between gap-3 '+(a.is_default?'border-brand-light/60 bg-brand/10':'border-white/10');
+      const info=document.createElement('div');info.className='min-w-0 text-sm';
+      const top=document.createElement('p');top.className='font-semibold text-white';top.textContent=a.recipient_name+' · '+fmtPhone(a.phone);
+      if(a.is_default){const chip=document.createElement('span');chip.className='chip dg ml-2';chip.textContent='MẶC ĐỊNH';top.appendChild(chip)}
+      const line=document.createElement('p');line.className='text-on-surface-variant mt-1 break-words';line.textContent=G5Addr.format(a);
+      info.append(top,line);
+      const acts=document.createElement('div');acts.className='flex gap-2 items-start';
+      const btn=(t,fn,cls)=>{const b=document.createElement('button');b.type='button';b.className='ghost !py-1 !px-3 text-xs '+(cls||'');b.textContent=t;b.onclick=fn;acts.appendChild(b)};
+      if(!a.is_default)btn('Đặt mặc định',()=>save(a.id,{...toBody(a),isDefault:true}).catch(err=>G5.notify(G5.errorText(err))));
+      btn('Sửa',()=>openForm(a));
+      btn('Xóa',()=>{if(confirm('Xóa địa chỉ này?'))G5.api('/profile/addresses/'+a.id,{method:'DELETE'}).then(d=>renderAddresses(d.addresses)).catch(err=>G5.notify(G5.errorText(err)))},'hover:!border-red-400');
+      c.append(info,acts);box.appendChild(c)})}
+  const toBody=a=>({recipientName:a.recipient_name,phone:a.phone,addressLine:a.address_line,ward:a.ward||'',district:a.district||'',city:a.city,isDefault:!!a.is_default});
+  async function openForm(a){editingId=a?a.id:null;$('a-title').textContent=a?'Sửa địa chỉ':'Thêm địa chỉ mới';$('m-addr').textContent='';
+    const u=profile&&profile.user||{};
+    $('a-name').value=a?a.recipient_name:(u.display_name||'');$('a-phone').value=fmtPhone(a?a.phone:u.phone);$('a-line').value=a?a.address_line:'';
+    $('a-default').checked=a?!!a.is_default:!addresses.length;
+    $('f-addr').classList.remove('hidden');$('a-name').focus();
+    // Chon san tinh -> phuong theo ten da luu (dia chi cu theo dia gioi truoc sap nhap se phai chon lai)
+    try{await addrForm.load(a&&a.city,a&&a.ward)}catch(e){geoFail()}
+  }
+  function save(id,body){return G5.api('/profile/addresses'+(id?'/'+id:''),{method:id?'PUT':'POST',body}).then(d=>{renderAddresses(d.addresses);$('f-addr').classList.add('hidden');
+    if(d.duplicate)G5.notify('Địa chỉ này đã có trong sổ địa chỉ, không lưu thêm bản trùng.')})}
+  $('a-new').onclick=()=>openForm(null);
+  $('a-cancel').onclick=()=>$('f-addr').classList.add('hidden');
+  $('f-addr').onsubmit=e=>{e.preventDefault();if(!validPhone($('a-phone').value))return fail($('m-addr'),PHONE_MSG);
+    const ward=addrForm.matchWard($('a-ward').value);if(!ward)return fail($('m-addr'),G5Addr.WARD_MSG);
+    save(editingId,{recipientName:$('a-name').value,phone:normPhone($('a-phone').value),addressLine:$('a-line').value,
+      ward,district:'',city:addrForm.cityName(),isDefault:$('a-default').checked}).catch(err=>fail($('m-addr'),err))};
+
+  load();
+})();
+</script>
+</body></html>

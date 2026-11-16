@@ -1,0 +1,129 @@
+<!DOCTYPE html><html class="scroll-smooth" lang="vi"><head><title>5GUYS - Giỏ hàng &amp; Thanh toán</title><meta charset="utf-8"><meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com" rel="preconnect"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"><script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<style>body{background:#12091c;color:#f3e8ff;overflow-x:hidden;font-family:Inter,sans-serif}h1,h2,h3,h4{letter-spacing:-.02em}::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:#12091c}::-webkit-scrollbar-thumb{background:#3c096c;border-radius:4px}::-webkit-scrollbar-thumb:hover{background:#9d4edd}
+.game-card{transition:transform .3s cubic-bezier(.4,0,.2,1),box-shadow .3s cubic-bezier(.4,0,.2,1)}.game-card:hover{transform:translateY(-8px) scale(1.02);box-shadow:0 15px 30px -5px rgba(157,78,221,.5),0 0 15px rgba(157,78,221,.3) inset;border-color:#c77dff}
+.glow:hover{border-color:#c77dff!important;box-shadow:0 0 20px -4px rgba(157,78,221,.5)}.btn{display:inline-block;text-align:center;background:#9d4edd;color:#fff;font-weight:700;border-radius:.375rem;padding:.6rem 1.25rem;border:1px solid rgba(199,125,255,.3);box-shadow:0 0 15px rgba(157,78,221,.4);transition:.3s}.btn:hover{background:#c77dff;box-shadow:0 0 25px rgba(199,125,255,.6)}
+.ghost{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.5rem 1rem;color:#e9d5ff;transition:.3s}.ghost:hover{border-color:#c77dff;color:#fff}.card{background:#2a1645;border:1px solid #3c096c;border-radius:1rem;transition:.3s}
+.inp{background:#12091c!important;border:1px solid #3c096c!important;border-radius:.5rem!important;color:#f3e8ff;padding:.6rem 1rem}.inp:focus{outline:0;box-shadow:0 0 0 2px #c77dff!important}.mono{font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.chip{font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid}.dg{background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff}.ph{background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa}</style><link rel="stylesheet" href="assets/shared.css"><script>window.G5_REQUIRE_AUTH=true</script><script src="assets/shared.js"></script><script src="assets/address.js"></script></head>
+<body class="antialiased flex flex-col min-h-screen"><script src="assets/layout.js" data-part="nav"></script><main class="flex-grow"><div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full"><h1 class="text-3xl font-black text-white uppercase tracking-tight border-l-4 border-brand pl-4">Giỏ hàng &amp; Thanh toán</h1><p class="text-gray-400 mt-2 mb-8 font-medium">Hỗ trợ thanh toán quốc tế và nội địa, minh bạch từng khoản phí</p><div class="grid lg:grid-cols-3 gap-6"><div class="lg:col-span-2 space-y-6"><div class="card p-5"><h3 class="font-bold mb-3">Giỏ hàng (<span id="n" class="">3</span>)</h3><div class="divide-y divide-white/5" id="items"><p class="py-6 text-center text-outline">Giỏ hàng trống</p></div></div><!-- Dia chi giao hang: chi hien khi gio co game dia -->
+<div id="ship-card" class="card p-5 hidden">
+  <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+    <h3 class="font-bold"><i class="fa-solid fa-truck-fast text-brand-light mr-2"></i>Địa chỉ giao hàng <span class="text-xs font-normal text-outline">(cho game đĩa)</span></h3>
+    <a href="profile.html" class="text-xs text-outline hover:text-brand-light">Quản lý sổ địa chỉ</a>
+  </div>
+  <div id="ship-list" class="space-y-2"></div>
+  <button id="ship-new" type="button" class="ghost text-sm mt-3"><i class="fa-solid fa-plus mr-1"></i>Thêm địa chỉ mới</button>
+  <form id="ship-form" class="hidden mt-3 border border-brand/40 rounded-xl p-4">
+    <p class="font-semibold mb-3">Địa chỉ mới</p>
+    <div class="grid sm:grid-cols-2 gap-3">
+      <label class="text-sm">Người nhận<input id="s-name" class="inp w-full mt-1" maxlength="100" required></label>
+      <label class="text-sm">Số điện thoại<input id="s-phone" class="inp w-full mt-1" maxlength="20" placeholder="VD: 0912 345 678" inputmode="tel" required></label>
+      <label class="text-sm">Tỉnh / Thành phố<select id="s-city" class="inp w-full mt-1" required><option value="">Đang tải...</option></select></label>
+      <label class="text-sm">Phường / Xã<input id="s-ward" list="s-ward-list" class="inp w-full mt-1" required disabled autocomplete="off" placeholder="Chọn tỉnh / thành phố trước"><datalist id="s-ward-list"></datalist></label>
+      <label class="text-sm sm:col-span-2">Số nhà, tên đường<input id="s-line" class="inp w-full mt-1" maxlength="255" required placeholder="VD: 12 Lê Lợi"></label>
+      <label class="text-sm flex items-center gap-2 sm:col-span-2"><input id="s-default" type="checkbox" class="accent-purple-500">Đặt làm địa chỉ mặc định</label>
+    </div>
+    <div class="flex flex-wrap items-center gap-3 mt-4"><button class="btn text-sm" type="submit">Lưu và giao tới địa chỉ này</button><button id="s-cancel" class="ghost text-sm" type="button">Hủy</button></div>
+  </form>
+  <p id="ship-msg" class="text-sm mt-2"></p>
+</div>
+<div class="card p-5"><h3 class="font-bold mb-3">Phương thức thanh toán (mô phỏng)</h3><p class="text-sm text-amber-200 bg-amber-950/40 border border-amber-400/30 rounded-xl p-3 mb-4">Bản demo không kết nối ngân hàng và không thu tiền. Nút bên dưới chỉ ghi đơn thử nghiệm trên trình duyệt.</p><p class="mono text-xs text-outline mb-2">QUỐC TẾ</p><div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-5" id="intl"><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm" style="border-color: rgb(199, 125, 255);"><input type="radio" name="pm" value="visa" class="accent-purple-500"><i class="fa-solid fa-credit-card"></i>Visa / Mastercard</label><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="paypal" class="accent-purple-500"><i class="fa-brands fa-paypal"></i>PayPal</label><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="apple" class="accent-purple-500"><i class="fa-solid fa-mobile-screen"></i>Apple / Google Pay</label></div><p class="mono text-xs text-outline mb-2">NỘI ĐỊA (VND)</p><div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="dom"><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="momo" class="accent-purple-500"><i class="fa-solid fa-wallet"></i>MoMo</label><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="zalo" class="accent-purple-500"><i class="fa-solid fa-wallet"></i>ZaloPay</label><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="vnpay" class="accent-purple-500"><i class="fa-solid fa-qrcode"></i>VNPay QR</label><label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="bank" class="accent-purple-500"><i class="fa-solid fa-building-columns"></i>Chuyển khoản</label></div></div></div>
+<aside class="card p-5 h-fit lg:sticky lg:top-24"><h3 class="font-bold mb-4">Chi tiết chi phí</h3><div class="space-y-2 text-sm mono" id="bd"><div class="flex justify-between "><span class="text-on-surface-variant">Tạm tính</span><span class="">4.124.250đ</span></div><div class="flex justify-between text-primary-container"><span class="text-on-surface-variant">Giảm giá (0%)</span><span class="">−0đ</span></div><div class="flex justify-between text-primary-container"><span class="text-on-surface-variant">Điểm thưởng</span><span class="">−0đ</span></div><div class="flex justify-between "><span class="text-on-surface-variant">VAT (10%)</span><span class="">412.425đ</span></div><div class="flex justify-between "><span class="text-on-surface-variant">Phí thanh toán</span><span class="">131.564đ</span></div><hr class="border-white/10"><div class="flex justify-between text-lg font-bold text-primary-container"><span class="text-on-surface-variant">TỔNG CỘNG</span><span class="">4.668.239đ</span></div><div class="flex justify-between "><span class="text-on-surface-variant">Quy đổi USD</span><span class="">$≈ 186.73</span></div><div class="flex justify-between text-xs"><span class="text-on-surface-variant">Điểm nhận được</span><span class="">+466 điểm</span></div></div><div class="flex gap-2 mt-4"><input class="inp flex-1 text-sm" id="cp" placeholder="Mã giảm giá (SELL10)"><button class="ghost text-sm" id="ap">Áp dụng</button></div><label class="flex items-center gap-2 text-sm mt-4"><input class="accent-purple-500" id="pt" type="checkbox"> Dùng 500 điểm (−50.000đ)</label><p class="text-xs mt-2 h-4" id="msg"></p><button class="btn w-full mt-3" id="pay">THANH TOÁN <i class="fa-solid fa-bolt"></i></button><p class="text-[11px] text-outline mt-3"><i class="fa-solid fa-lock"></i> Bản demo: chưa thu tiền, chưa phát hành key và chưa xử lý hoàn tiền.</p></aside></div></div></main><script src="assets/layout.js" data-part="footer"></script><script>const V=n=>Math.round(n*25000).toLocaleString('vi-VN')+'đ',L=k=>k=='digital'?'KỸ THUẬT SỐ':'VẬT LÝ';
+const imgMap={
+  "Vương Quốc Phép Thuật":"https://lh3.googleusercontent.com/aida/AEtjO1VNJlCm-ksGuQ9ZfrIFlM46TsYha4NZt1in9YPP8qjrLvejwA85NAaXXFkwurRC-Op9ui9_lOROn7l9SuMfdOq2aGw7IKLx4AzHEp2__SZ9hUNyVMekQUYOQKSwUOosFMSL_mF2WcwTNdjaf42jYEuLEYKBmEGxYHpmc5RIi7npsVdlmbSnl8_fdyzLr6LdvpUP9qpqnBqLVFaVIvApqcpdbXqNl_A_6n5LNbSZ281weU4av8t2naG4DhE",
+  "Hành Trình Vô Tận (Đĩa)":"https://lh3.googleusercontent.com/aida/AEtjO1V5o79MoaKEmXV3AcMZVpjRMn7QLBkqtba4BrV9WXsIG-YMrpJqR4ADSVsdSQCtjuRBr4N5GR-0rY-_CSheiBKF6R8t5LpH504mtlnD7GNm8rH-A1e45MJZqfG1xltjQQuMrZSU4hKuVQgE5uAC4tPQjpjlgB2H9x4gGTyqVDiQBjBeqW5kADXmhwHkF-NHHsXrrgkHuILAVz0bpiPFnYU5drB5AG9rcmIGOQLvC_SIO_a_dFNH53YkbO0",
+  "Nông Trại Pixel":"https://lh3.googleusercontent.com/aida/AEtjO1WxLhJnhZkywWtKBJCfp8bRO1IygJoCBBVGCKTMBkZP3DPeTIVzh4Y9Rxl57T-0LzbIFhmX4frUQ8vr-lPqjbCbqfnVUh00mWm1wPtukObAqSJsOLgOtaBElJvStBSCRflcy6oFgBLPd1otNaDgHzVS8YTvtaygGxS2fniO8gq32qGyrR9-S3G8EmWZlHV_dNIN0jfx3I3Vyl3l7YxfwUwZfQNaxv-VIPAarlqy_iG-jAJcW1Eau2GLxQ"
+};
+let it=G5.getCart(),cd=0;
+const I=[["visa","Visa / Mastercard","fa-credit-card",.029],["paypal","PayPal","fa-brands fa-paypal",.034],["apple","Apple / Google Pay","fa-mobile-screen",.02]],D=[["momo","MoMo","fa-wallet",0],["zalo","ZaloPay","fa-wallet",0],["vnpay","VNPay QR","fa-qrcode",.005],["bank","Chuyển khoản","fa-building-columns",0]];
+let m="visa";const rate=25000;
+const opt=a=>a.map(x=>`<label class="pm flex items-center gap-2 border border-white/10 rounded-full px-4 py-2 cursor-pointer text-sm"><input type="radio" name="pm" value="${x[0]}" class="accent-purple-500"><i class="${x[2].includes("brands")?x[2]:"fa-solid "+x[2]}"></i>${x[1]}</label>`).join('');
+intl.innerHTML=opt(I);dom.innerHTML=opt(D);
+function R(){G5.setCart(it);items.innerHTML=it.map((x,i)=>`<div class="py-3 flex flex-wrap items-center gap-3"><img src="${imgMap[x[0]]||'https://placehold.co/96x128/2a1645/c77dff?text='+encodeURIComponent(x[0].slice(0,10))}" class="w-12 h-16 rounded-lg object-cover border border-dark-border" alt="${x[0]}"><div class="flex-1 min-w-[8rem]"><p class="font-semibold text-sm">${x[0]}</p><span class="chip ${x[1]=="digital"?"dg":"ph"}">${L(x[1])}</span></div><div class="flex items-center border border-white/10 rounded-full"><button class="px-3" onclick="q(${i},-1)">−</button><span class="mono text-sm">${x[3]}</span><button class="px-3" onclick="q(${i},1)">+</button></div><span class="mono w-24 text-right">${V(x[2]*x[3])}</span><button onclick="it.splice(${i},1);R()" class="text-outline hover:text-error ml-2"><i class="fa-solid fa-trash"></i></button></div>`).join('')||'<p class="py-6 text-center text-outline">Giỏ hàng trống</p>';
+n.textContent=it.length;let s=it.reduce((a,x)=>a+x[2]*x[3],0),dc=s*cd,pp=pt.checked&&G5.getPoints()>=500?2:0,vat=(s-dc-pp)*.1,fee=(I.concat(D).find(x=>x[0]==m)[3])*(s-dc-pp+vat),t=s-dc-pp+vat+fee,dm=D.some(x=>x[0]==m);
+const r=(a,b,c="")=>`<div class="flex justify-between ${c}"><span class="text-on-surface-variant">${a}</span><span>${b}</span></div>`;
+bd.innerHTML=r("Tạm tính",V(s))+r("Giảm giá ("+cd*100+"%)","−"+V(dc),"text-primary-container")+r("Điểm thưởng","−"+V(pp),"text-primary-container")+r("VAT (10%)",V(vat))+r("Phí thanh toán",V(fee))+'<hr class="border-white/10">'+r("TỔNG CỘNG",V(t),"text-lg font-bold text-primary-container")+r(dm?"Thanh toán nội địa":"Quy đổi USD","$"+(dm?"VND":"≈ "+t.toFixed(2)))+r("Điểm nhận được","+"+Math.floor(t*2.5)+" điểm","text-xs");
+document.querySelectorAll('.pm').forEach(l=>l.style.borderColor=l.querySelector('input').checked?"#c77dff":"");pt.disabled=G5.getPoints()<500;pt.parentElement.title=pt.disabled?"Bạn cần ít nhất 500 điểm để đổi ưu đãi.":"";if(window.Ship)Ship.update()}
+window.q=(i,d)=>{it[i][3]=Math.max(1,it[i][3]+d);R()};
+document.querySelectorAll('input[name=pm]').forEach(e=>e.onchange=()=>{m=e.value;R()});document.querySelector('input[value=visa]').checked=true;
+ap.onclick=()=>{cd=cp.value.toUpperCase()=="SELL10"?.1:0;msg.textContent=cd?"Đã áp dụng giảm 10%":"Mã không hợp lệ";msg.style.color=cd?"#c77dff":"#ffb4ab";R()};pt.onchange=R;
+pay.onclick=()=>{if(!it.length){msg.textContent="Giỏ hàng trống";msg.style.color="#ffb4ab";return}if(!G5.user()){location.href="login.html?next=cart.html";return}if(pt.checked&&G5.getPoints()<500){msg.textContent="Bạn chưa đủ 500 điểm để đổi.";msg.style.color="#ffb4ab";return}if(pt.checked&&!G5.spendPoints(500,"Đổi 50.000đ tại giỏ hàng")){msg.textContent="Không thể dùng điểm thưởng.";msg.style.color="#ffb4ab";return}const id=G5.placeOrder(it);const earned=Math.floor((it.reduce((a,x)=>a+x[2]*x[3],0)-it.reduce((a,x)=>a+x[2]*x[3],0)*cd- (pt.checked?2:0))*rate/10000);G5.addPoints(earned,"Tích điểm từ đơn "+id);it.length=0;R();msg.textContent="Đã ghi nhận đơn demo "+id+"; không phát sinh thanh toán thật. Điểm thưởng đã cập nhật.";msg.style.color="#c77dff"};R();if(G5.isApiMode()){pt.checked=false;pt.disabled=true;G5.syncCart().then(c=>{it=c;R()}).catch(()=>G5.notify("Không tải được giỏ hàng từ API."));pay.addEventListener("click",async e=>{e.preventDefault();e.stopImmediatePropagation();if(!it.length){msg.textContent="Giỏ hàng đang trống. Hãy thêm game trước khi thanh toán.";msg.style.color="#ffb4ab";return}if(Ship.needed()&&!Ship.selected()){msg.textContent="Thiếu địa chỉ giao hàng: hãy chọn hoặc thêm địa chỉ cho game đĩa.";msg.style.color="#ffb4ab";Ship.focus();return}try{const result=await G5.placeOrder(null,{paymentMethod:m,couponCode:cd?cp.value.trim():undefined,addressId:Ship.needed()?Ship.selected():undefined});await G5.api("/orders/"+result.order.id+"/pay",{method:"POST"});msg.textContent="Thanh toán thử nghiệm thành công. Mã đơn: "+result.order.orderNumber+" · Tổng: "+Number(result.order.total).toLocaleString("vi-VN")+"đ";msg.style.color="#c77dff";it=[];await G5.syncCart();await G5.syncOrders();R()}catch(err){msg.textContent=G5.errorText(err);msg.style.color="#ffb4ab"}},true)}</script>
+
+<script>
+/* Dia chi giao hang cho don co game dia.
+ * - Chon tu so dia chi (chon san dia chi mac dinh) hoac them dia chi moi ngay tai day.
+ * - Dia chi moi duoc luu vao so dia chi; neu trung dia chi da co thi server tra lai dia chi cu.
+ * - Gio chi co game so thi an phan nay va khong gui dia chi. */
+window.Ship=(function(){
+  const $=id=>document.getElementById(id);
+  let addresses=[],selectedId=null,loaded=false,loading=null,profileUser={};
+  const msgEl=$('ship-msg');
+  const say=(t,ok)=>{msgEl.textContent=t||'';msgEl.className='text-sm mt-2 '+(ok?'text-emerald-300':'text-red-400')};
+  const form=G5Addr.form({city:$('s-city'),ward:$('s-ward'),list:$('s-ward-list'),onError:say});
+  G5Addr.bindPhone($('s-phone'));
+  const needed=()=>G5.isApiMode()&&Array.isArray(it)&&it.some(x=>x[1]==='physical');
+
+  function render(){
+    const box=$('ship-list');box.textContent='';
+    if(!addresses.length){const p=document.createElement('p');p.className='text-sm text-outline';p.textContent='Bạn chưa có địa chỉ nào. Thêm địa chỉ bên dưới để giao game đĩa.';box.appendChild(p);return}
+    addresses.forEach(a=>{
+      const lb=document.createElement('label');
+      lb.className='flex items-start gap-3 rounded-xl border p-3 cursor-pointer transition-colors '+(a.id===selectedId?'border-brand-light bg-brand/10':'border-white/10 hover:border-brand/50');
+      const r=document.createElement('input');r.type='radio';r.name='ship-addr';r.value=a.id;r.checked=a.id===selectedId;r.className='accent-purple-500 mt-1';
+      r.onchange=()=>{selectedId=a.id;say('');render()};
+      const info=document.createElement('div');info.className='text-sm min-w-0';
+      const top=document.createElement('p');top.className='font-semibold text-white';top.textContent=a.recipient_name+' · '+G5Addr.fmtPhone(a.phone);
+      if(a.is_default){const c=document.createElement('span');c.className='chip dg ml-2';c.textContent='MẶC ĐỊNH';top.appendChild(c)}
+      const line=document.createElement('p');line.className='text-on-surface-variant break-words';line.textContent=G5Addr.format(a);
+      info.append(top,line);lb.append(r,info);box.appendChild(lb);
+    });
+  }
+  function setList(list,pick){
+    addresses=list||[];
+    if(pick)selectedId=pick;
+    if(!addresses.some(a=>a.id===selectedId)){const d=addresses.find(a=>a.is_default)||addresses[0];selectedId=d?d.id:null}
+    render();
+  }
+  function load(){
+    if(loading)return loading;
+    loading=G5.api('/profile').then(d=>{profileUser=d.user||{};loaded=true;setList(d.addresses);if(!addresses.length)openForm()})
+      .catch(err=>say(G5.errorText(err))).then(()=>{loading=null});
+    return loading;
+  }
+  function openForm(){
+    $('ship-form').classList.remove('hidden');$('ship-new').classList.add('hidden');
+    $('s-name').value=$('s-name').value||profileUser.display_name||'';
+    $('s-phone').value=$('s-phone').value||G5Addr.fmtPhone(profileUser.phone);
+    $('s-default').checked=!addresses.length;
+    if(!$('s-city').options.length||$('s-city').options[0].textContent==='Đang tải...')form.load().catch(()=>say(G5Addr.GEO_FAIL));
+  }
+  function closeForm(){$('ship-form').classList.add('hidden');$('ship-new').classList.remove('hidden')}
+  $('ship-new').onclick=openForm;
+  $('s-cancel').onclick=()=>{closeForm();say('')};
+  $('ship-form').onsubmit=async e=>{
+    e.preventDefault();
+    if(!G5Addr.validPhone($('s-phone').value))return say(G5Addr.PHONE_MSG);
+    const ward=form.matchWard($('s-ward').value);if(!ward)return say(G5Addr.WARD_MSG);
+    try{
+      const d=await G5.api('/profile/addresses',{method:'POST',body:{recipientName:$('s-name').value,phone:G5Addr.normPhone($('s-phone').value),
+        addressLine:$('s-line').value,ward,district:'',city:form.cityName(),isDefault:$('s-default').checked}});
+      setList(d.addresses,d.addressId);closeForm();$('ship-form').reset();
+      say(d.duplicate?'Địa chỉ này đã có trong sổ địa chỉ, đã chọn lại địa chỉ cũ.':'Đã lưu địa chỉ mới và chọn để giao hàng.',true);
+    }catch(err){say(G5.errorText(err))}
+  };
+  return {
+    needed,
+    selected:()=>selectedId,
+    update(){const on=needed();$('ship-card').classList.toggle('hidden',!on);if(on&&!loaded)load()},
+    focus(){$('ship-card').scrollIntoView({behavior:'smooth',block:'center'});if(!addresses.length)openForm()}
+  };
+})();
+Ship.update();
+</script>
+</body></html>
+
+
+

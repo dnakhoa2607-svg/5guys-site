@@ -1,0 +1,17 @@
+import express from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import env from './config.js';
+import api from './api/index.js';
+import { errorHandler, notFound } from './middleware/errors.js';
+
+const app=express();
+app.disable('x-powered-by');
+app.use(helmet());
+app.use(cors({origin:env.FRONTEND_ORIGIN.split(',').map(x=>x.trim()),methods:['GET','POST','PUT','DELETE'],allowedHeaders:['Content-Type','Authorization']}));
+app.use(express.json({limit:'32kb'}));
+app.use('/api/auth',rateLimit({windowMs:15*60*1000,limit:30,standardHeaders:true,legacyHeaders:false}));
+app.use('/api',api);
+app.use(notFound);app.use(errorHandler);
+export default app;

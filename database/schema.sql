@@ -7,7 +7,7 @@ CREATE TABLE users (
   password_hash VARCHAR(255) NOT NULL,
   display_name VARCHAR(100) NOT NULL,
   phone VARCHAR(32), status ENUM('active','locked','deleted') NOT NULL DEFAULT 'active',
-  role ENUM('customer','staff','admin') NOT NULL DEFAULT 'customer',
+  role ENUM('customer','publisher','staff','admin') NOT NULL DEFAULT 'customer',
   email_verified_at DATETIME, last_login_at DATETIME,
   created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP

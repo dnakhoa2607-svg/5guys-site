@@ -70,3 +70,18 @@ INSERT INTO product_editions(product_id,edition_name,edition_description,price,o
 SELECT id,'Standard','Phiên bản tiêu chuẩn',price,original_price,product_type
 FROM products WHERE status='active'
 ON DUPLICATE KEY UPDATE price=VALUES(price),original_price=VALUES(original_price);
+
+-- 2 Ticket ho tro mau cho trang Quan tri (chi tao neu bang support_tickets dang trong)
+INSERT INTO support_tickets(user_id, subject, message, status, priority)
+SELECT (SELECT id FROM users ORDER BY role='customer' DESC, id ASC LIMIT 1),
+       'Lỗi kích hoạt Key game số Hollow Knight: Silksong',
+       'Chào shop 5GUYS, mình vừa mua bản kỹ thuật số Hollow Knight: Silksong nhưng khi nhập mã Key 5GUYS-SILK-8829-X9A1 vào hệ thống DRM Safe thì báo lỗi chưa đồng bộ máy chủ. Nhờ Admin kiểm tra và kích hoạt lại Key giúp mình nhé!',
+       'open', 'high'
+FROM DUAL WHERE NOT EXISTS (SELECT 1 FROM support_tickets);
+
+INSERT INTO support_tickets(user_id, subject, message, status, priority)
+SELECT (SELECT id FROM users ORDER BY role='customer' DESC, id ASC LIMIT 1),
+       'Hỗ trợ đổi địa chỉ nhận đĩa PS5 Black Myth: Wukong',
+       'Shop ơi, mình có đặt mua đĩa vật lý Black Myth: Wukong (bản Blu-ray PS5 nguyên seal). Do tuần này mình chuyển chỗ làm nên muốn đổi địa chỉ nhận hàng sang Số 45 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM. Nhờ shop cập nhật giúp trước khi giao cho đơn vị vận chuyển ạ!',
+       'open', 'normal'
+FROM DUAL WHERE (SELECT COUNT(*) FROM support_tickets) < 2;

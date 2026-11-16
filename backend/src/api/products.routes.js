@@ -22,6 +22,32 @@ router.get('/', async (req, res, next) => {
     res.json({ products });
   } catch (e) { next(e); }
 });
+// Trailer + anh chup chinh thuc cho trinh xem media tren trang chi tiet.
+// Steam khong cho goi truc tiep tu trinh duyet (CORS) nen server lay ho va cache 6 gio.
+// Loi mang/Steam -> tra danh sach rong de giao dien dung anh du phong, khong lam hong trang.
+const galleryCache=new Map(), GALLERY_TTL=6*60*60*1000;
+router.get('/:idOrSlug/gallery', async (req, res, next) => {
+  try {
+    const key=req.params.idOrSlug, column=/^\d+$/.test(key)?'id':'slug';
+    const [rows]=await db.execute(`SELECT p.cover_url,(SELECT gm.media_url FROM game_media gm WHERE gm.product_id=p.id AND gm.media_type='trailer' LIMIT 1) AS trailer_url FROM products p WHERE p.${column}=? AND p.status='active'`,[column==='id'?Number(key):key]);
+    if(!rows[0]) return res.status(404).json({error:'product_not_found'});
+    const match=`${rows[0].cover_url||''} ${rows[0].trailer_url||''}`.match(/\/apps?\/(\d{3,})(?:\/|\s|$)/);
+    const appId=match?match[1]:null;
+    if(!appId) return res.json({appId:null,movies:[],screenshots:[]});
+    const hit=galleryCache.get(appId);
+    if(hit&&Date.now()-hit.at<GALLERY_TTL) return res.json(hit.data);
+    try {
+      const r=await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}`,{signal:AbortSignal.timeout(8000)});
+      const info=(await r.json())?.[appId]?.data||{};
+      const pick=(o)=>o?(o.max||o['480']||null):null;
+      const data={appId,
+        movies:(info.movies||[]).slice(0,6).map(m=>({id:m.id,name:m.name,thumbnail:m.thumbnail,mp4:pick(m.mp4),webm:pick(m.webm),hls:m.hls_h264||null})),
+        screenshots:(info.screenshots||[]).slice(0,16).map(s=>({thumb:s.path_thumbnail,full:s.path_full}))};
+      galleryCache.set(appId,{at:Date.now(),data});
+      res.json(data);
+    } catch { res.json({appId,movies:[],screenshots:[],error:'media_source_unavailable'}); }
+  } catch (e) { next(e); }
+});
 router.get('/:idOrSlug', async (req, res, next) => {
   try {
     const key=req.params.idOrSlug, column=/^\d+$/.test(key)?'id':'slug';

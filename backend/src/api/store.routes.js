@@ -7,12 +7,14 @@ import { requireAuth } from '../middleware/auth.js';
 // Phi thanh toan theo phuong thuc (giong bang trong cart.html) va ma giam gia
 const PAYMENT_FEES={visa:0.029,paypal:0.034,apple:0.02,momo:0,zalo:0,vnpay:0.005,bank:0};
 const COUPONS={SELL10:0.10};
-// Tien do server tinh, giao dien chi hien thi: giam gia -> VAT 10% -> phi thanh toan
-function computeTotals(subtotal,{paymentMethod='visa',couponCode}={}){
+// Phi van chuyen cho don co game dia (VND), giong bang trong cart.html. Don chi co game so = 0d.
+const SHIPPING_FEES={standard:30000,express:60000};
+// Tien do server tinh, giao dien chi hien thi: giam gia -> VAT 10% -> phi thanh toan -> phi van chuyen
+function computeTotals(subtotal,{paymentMethod='visa',couponCode}={},shipping=0){
   const discount=Math.round(subtotal*(COUPONS[String(couponCode||'').trim().toUpperCase()]||0));
   const tax=Math.round((subtotal-discount)*0.10);
   const fee=Math.round((subtotal-discount+tax)*(PAYMENT_FEES[paymentMethod]||0));
-  return {discount,tax,fee,total:subtotal-discount+tax+fee};
+  return {discount,tax,fee,shipping,total:subtotal-discount+tax+fee+shipping};
 }
 
 const router = Router();
@@ -26,7 +28,7 @@ router.put('/cart/items', async (req,res,next)=>{try{
 router.delete('/cart/items/:productId',async(req,res,next)=>{try{const id=z.coerce.number().int().positive().parse(req.params.productId);await db.execute('DELETE ci FROM cart_items ci JOIN carts c ON c.id=ci.cart_id WHERE c.user_id=? AND ci.product_id=?',[req.user.sub,id]);res.json({ok:true});}catch(e){next(e);}});
 
 router.post('/orders',async(req,res,next)=>{const conn=await db.getConnection();try{
-  const body=z.object({addressId:z.coerce.number().int().positive().optional(),paymentMethod:z.enum(Object.keys(PAYMENT_FEES)).default('visa'),couponCode:z.string().max(40).optional()}).default({}).parse(req.body||{});await conn.beginTransaction();
+  const body=z.object({addressId:z.coerce.number().int().positive().optional(),paymentMethod:z.enum(Object.keys(PAYMENT_FEES)).default('visa'),couponCode:z.string().max(40).optional(),shippingMethod:z.enum(Object.keys(SHIPPING_FEES)).default('standard')}).default({}).parse(req.body||{});await conn.beginTransaction();
   const [cartRows]=await conn.execute('SELECT c.id FROM carts c WHERE c.user_id=? FOR UPDATE',[req.user.sub]);if(!cartRows.length){await conn.rollback();return res.status(400).json({error:'cart_empty'});}
   const [items]=await conn.execute('SELECT ci.product_id,ci.quantity,p.title,p.product_type,p.price,p.currency FROM cart_items ci JOIN products p ON p.id=ci.product_id WHERE ci.cart_id=? AND p.status=\'active\' FOR UPDATE',[cartRows[0].id]);if(!items.length){await conn.rollback();return res.status(400).json({error:'cart_empty'});}
   let subtotal=0;for(const item of items){if(item.product_type==='physical'){const [stock]=await conn.execute('SELECT quantity_on_hand-quantity_reserved AS available FROM physical_inventory WHERE product_id=? FOR UPDATE',[item.product_id]);if(!stock.length||stock[0].available<item.quantity){await conn.rollback();return res.status(409).json({error:'insufficient_stock',productId:item.product_id});}}subtotal+=Number(item.price)*item.quantity;}
@@ -39,9 +41,9 @@ router.post('/orders',async(req,res,next)=>{const conn=await db.getConnection();
     if(!addr){await conn.rollback();return res.status(404).json({error:'address_not_found'});}
     ship={name:addr.recipient_name,phone:addr.phone,address:{addressLine:addr.address_line,ward:addr.ward,district:addr.district,city:addr.city}};
   }
-  const totals=computeTotals(subtotal,body);const number='G5-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomBytes(3).toString('hex').toUpperCase();const [created]=await conn.execute("INSERT INTO orders(order_number,user_id,status,subtotal,discount_total,tax_total,total,currency,recipient_name,recipient_phone,shipping_address) VALUES(?,?,'pending_payment',?,?,?,?,?,?,?,?)",[number,req.user.sub,subtotal,totals.discount,totals.tax,totals.total,items[0].currency,ship?ship.name:null,ship?ship.phone:null,ship?JSON.stringify(ship.address):null]);
+  const totals=computeTotals(subtotal,body,ship?SHIPPING_FEES[body.shippingMethod]:0);const number='G5-'+Date.now().toString(36).toUpperCase()+'-'+crypto.randomBytes(3).toString('hex').toUpperCase();const [created]=await conn.execute("INSERT INTO orders(order_number,user_id,status,subtotal,discount_total,tax_total,shipping_total,total,currency,recipient_name,recipient_phone,shipping_address) VALUES(?,?,'pending_payment',?,?,?,?,?,?,?,?,?)",[number,req.user.sub,subtotal,totals.discount,totals.tax,totals.shipping,totals.total,items[0].currency,ship?ship.name:null,ship?ship.phone:null,ship?JSON.stringify({...ship.address,shippingMethod:body.shippingMethod}):null]);
   for(const item of items){const [line]=await conn.execute('INSERT INTO order_items(order_id,product_id,product_title,product_type,unit_price,quantity,line_total) VALUES(?,?,?,?,?,?,?)',[created.insertId,item.product_id,item.title,item.product_type,item.price,item.quantity,Number(item.price)*item.quantity]);if(item.product_type==='physical')await conn.execute('UPDATE physical_inventory SET quantity_reserved=quantity_reserved+? WHERE product_id=?',[item.quantity,item.product_id]);}
-  await conn.execute("INSERT INTO payments(order_id,provider,status,amount,currency) VALUES(?,'unconfigured','pending',?,?)",[created.insertId,totals.total,items[0].currency]);await conn.execute('DELETE FROM cart_items WHERE cart_id=?',[cartRows[0].id]);await conn.commit();res.status(201).json({order:{id:created.insertId,orderNumber:number,status:'pending_payment',subtotal,discount:totals.discount,tax:totals.tax,fee:totals.fee,total:totals.total,currency:items[0].currency},message:'Chưa có cổng thanh toán cấu hình; đơn đang chờ thanh toán.'});
+  await conn.execute("INSERT INTO payments(order_id,provider,status,amount,currency) VALUES(?,'unconfigured','pending',?,?)",[created.insertId,totals.total,items[0].currency]);await conn.execute('DELETE FROM cart_items WHERE cart_id=?',[cartRows[0].id]);await conn.commit();res.status(201).json({order:{id:created.insertId,orderNumber:number,status:'pending_payment',subtotal,discount:totals.discount,tax:totals.tax,fee:totals.fee,shipping:totals.shipping,total:totals.total,currency:items[0].currency},message:'Chưa có cổng thanh toán cấu hình; đơn đang chờ thanh toán.'});
 }catch(e){await conn.rollback();next(e);}finally{conn.release();}});
 
 router.get('/orders',async(req,res,next)=>{try{const [rows]=await db.execute('SELECT o.id,o.order_number,o.status,o.total,o.currency,o.placed_at,o.paid_at,(SELECT r.status FROM refunds r WHERE r.order_id=o.id ORDER BY r.id DESC LIMIT 1) AS refund_status FROM orders o WHERE o.user_id=? ORDER BY placed_at DESC',[req.user.sub]);res.json({orders:rows});}catch(e){next(e);}});

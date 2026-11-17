@@ -8,15 +8,19 @@
 <script src="https://cdn.tailwindcss.com"></script><script src="assets/tailwind-config.js"></script>
 <style>
 body{background:#12091c;color:#f3e8ff;font-family:Inter,sans-serif}
-.btn{display:inline-flex;align-items:center;gap:.4rem;background:#9d4edd;color:#fff;font-weight:700;border-radius:.5rem;padding:.45rem 1rem;font-size:.85rem;border:1px solid rgba(199,125,255,.3);transition:.2s}.btn:hover{background:#c77dff}.btn:disabled{opacity:.45;cursor:not-allowed}
-.ghost{display:inline-flex;align-items:center;gap:.4rem;background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.4rem .9rem;font-size:.8rem;color:#e9d5ff;transition:.2s}.ghost:hover{border-color:#c77dff;color:#fff}
+.btn{display:inline-flex;align-items:center;gap:.4rem;background:#9d4edd;color:#fff;font-weight:700;border-radius:.5rem;padding:.45rem 1rem;font-size:.85rem;border:1px solid rgba(199,125,255,.3);transition:.2s;cursor:pointer}.btn:hover{background:#c77dff}.btn:disabled{opacity:.42;cursor:not-allowed!important;pointer-events:none;filter:grayscale(.35)}
+.ghost{display:inline-flex;align-items:center;gap:.4rem;background:#12091c;border:1px solid #3c096c;border-radius:.5rem;padding:.4rem .9rem;font-size:.8rem;color:#e9d5ff;transition:.2s;cursor:pointer}.ghost:hover{border-color:#c77dff;color:#fff}.ghost:disabled{opacity:.42;cursor:not-allowed!important;pointer-events:none;filter:grayscale(.35)}
+.ghost.active-filter{background:#9d4edd;border-color:#c77dff;color:#fff;font-weight:700}
 .danger{border-color:#7f1d1d;color:#fca5a5}.danger:hover{border-color:#ef4444;color:#fff}
 .card{background:#1f1032;border:1px solid #3c096c;border-radius:1rem}
-.inp{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;color:#f3e8ff;padding:.45rem .75rem;font-size:.85rem;width:100%}.inp:focus{outline:0;border-color:#c77dff}
+.inp{background:#12091c;border:1px solid #3c096c;border-radius:.5rem;color:#f3e8ff;padding:.45rem .75rem;font-size:.85rem;width:100%}.inp:focus{outline:0;border-color:#c77dff}.inp:disabled{opacity:.42;cursor:not-allowed!important;background:#160c22;color:#9ca3af}
 .tab{padding:.55rem 1rem;border-radius:.6rem;font-weight:600;font-size:.9rem;color:#d8b4e2}.tab:hover{background:#291542}.tab.on{background:#9d4edd;color:#fff}
-table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;color:#a78bba;font-weight:600;padding:.6rem .5rem;border-bottom:1px solid #3c096c;white-space:nowrap}td{padding:.6rem .5rem;border-bottom:1px solid rgba(60,9,108,.5);vertical-align:top}
-.pill{display:inline-block;font-size:.7rem;font-weight:700;border-radius:9999px;padding:.1rem .6rem;border:1px solid;white-space:nowrap}
+table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{text-align:left;color:#a78bba;font-weight:600;padding:.75rem .85rem;border-bottom:1px solid #3c096c;white-space:nowrap}td{padding:.75rem .85rem;border-bottom:1px solid rgba(60,9,108,.5);vertical-align:top}
+.reason-cell{max-width:280px;min-width:180px;white-space:normal!important;word-break:break-word;overflow-wrap:anywhere}
+.reason-clamp{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;max-width:280px;white-space:normal;word-break:break-word;line-height:1.45}
+.pill{display:inline-flex;align-items:center;font-size:.7rem;font-weight:700;border-radius:9999px;padding:.15rem .65rem;border:1px solid;white-space:nowrap;width:fit-content}
 .scroll{overflow-x:auto}
+@media print{body *{visibility:hidden}#admin-order-modal,#admin-order-modal *{visibility:visible}#admin-order-modal{position:fixed;inset:0;background:#fff!important;color:#000!important;padding:0!important}#admin-order-modal .no-print{display:none!important}}
 </style>
 <script>window.G5_REQUIRE_AUTH=true</script>
 <link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script>
@@ -77,40 +81,185 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;co
   }
 
   const ORDER_STATUS = {
-    pending_payment: ['Chờ thanh toán', '#f59e0b'], paid: ['Đã thanh toán', '#60a5fa'], processing: ['Đang xử lý', '#60a5fa'],
-    shipped: ['Đang giao', '#c77dff'], fulfilled: ['Hoàn tất', '#10b981'], cancelled: ['Đã hủy', '#9ca3af'],
+    pending_payment: ['Chờ thanh toán', '#f59e0b'], paid: ['Chờ lấy hàng', '#60a5fa'], processing: ['Chờ lấy hàng', '#60a5fa'],
+    shipped: ['Đang giao', '#c77dff'], fulfilled: ['Đã giao / Hoàn tất', '#10b981'], cancelled: ['Đã hủy', '#9ca3af'],
     refunded: ['Đã hoàn tiền', '#ef4444'], partially_refunded: ['Hoàn một phần', '#ef4444']
   };
   const REFUND_STATUS = { requested: ['Chờ duyệt', '#f59e0b'], approved: ['Đã duyệt', '#10b981'], processed: ['Đã hoàn tiền', '#10b981'], rejected: ['Từ chối', '#ef4444'] };
-  const TICKET_STATUS = { open: ['Mới', '#f59e0b'], in_progress: ['Đang xử lý', '#60a5fa'], resolved: ['Đã giải quyết', '#10b981'], closed: ['Đã đóng', '#9ca3af'] };
+  const TICKET_STATUS = { open: ['Đang mở', '#f59e0b'], in_progress: ['Đang xử lý', '#60a5fa'], resolved: ['Đã giải quyết', '#10b981'], closed: ['Đã đóng', '#9ca3af'] };
   const pill = (map, key) => { const [t, c] = map[key] || [key, '#a78bba']; return h('span', { class: 'pill', style: `color:${c};border-color:${c}` }, t); };
+
+  // Sinh ma Key ban quyen 5GUYS DRM Safe dong bo 100% voi Kho game cua khach hang
+  function hash32(s) {
+    let hVal = 2166136261;
+    for (let i = 0; i < s.length; i++) { hVal ^= s.charCodeAt(i); hVal = Math.imul(hVal, 16777619) >>> 0; }
+    return hVal >>> 0;
+  }
+  function rng(seed) {
+    let x = seed || 1;
+    return () => { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+  }
+  function baseSlug(s) { return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').replace(/-(digital|physical)$/, ''); }
+  function makeLicenseKey(title, slug, userSeed) {
+    const clean = String(title || 'GAME').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    const part = clean.includes(':') ? clean.split(':').slice(1).join(' ') : clean;
+    const words = part.replace(/[^A-Z0-9 ]/g, ' ').trim().split(/\s+/).filter(w => w.length > 2 && !/^[IVX]+$/.test(w));
+    let tag = (words[0] || 'GAME').slice(0, 4); while (tag.length < 4) tag += 'X';
+    const r = rng(hash32(String(userSeed || 'guest') + '|' + baseSlug(slug || title)));
+    const A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let digits = '', tail = '';
+    for (let i = 0; i < 4; i++) digits += Math.floor(r() * 10);
+    for (let i = 0; i < 4; i++) tail += A[Math.floor(r() * A.length)];
+    return `5GUYS-${tag}-${digits}-${tail}`;
+  }
+
+  // Du lieu 2 Ticket mau du phong (dong bo giua tab Ho tro va tab Tong quan neu DB chua seed)
+  const FALLBACK_TICKETS_KEY = '5guys_admin_sample_tickets_v2';
+  function getFallbackTickets() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(FALLBACK_TICKETS_KEY) || 'null');
+      if (Array.isArray(saved) && saved.length) return saved;
+    } catch {}
+    const init = [
+      {
+        id: 101,
+        subject: 'Lỗi kích hoạt Key game số Hollow Knight: Silksong',
+        email: 'minhkhoi.gamer@gmail.com',
+        order_number: 'G5-SILK-8829',
+        message: 'Chào shop 5GUYS, mình vừa thanh toán bản kỹ thuật số Hollow Knight: Silksong nhưng khi nhập mã Key 5GUYS-SILK-8829-X9A1 vào trình kích hoạt DRM Safe thì báo lỗi chưa đồng bộ máy chủ. Nhờ Admin kiểm tra và kích hoạt lại Key giúp mình nhé!',
+        status: 'open',
+        priority: 'high',
+        created_at: new Date(Date.now() - 2 * 3600 * 1000).toISOString(),
+        last_reply: ''
+      },
+      {
+        id: 102,
+        subject: 'Hỗ trợ đổi địa chỉ nhận đĩa PS5 Black Myth: Wukong',
+        email: 'hoangnam.ps5@gmail.com',
+        order_number: 'G5-WUKO-2409',
+        message: 'Shop ơi, mình có đặt mua đĩa vật lý Black Myth: Wukong (bản Blu-ray PS5 nguyên seal). Do tuần này mình chuyển văn phòng nên muốn đổi địa chỉ nhận hàng sang Số 45 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM (giao hỏa tốc). Nhờ shop cập nhật giúp trước khi xuất kho ạ!',
+        status: 'open',
+        priority: 'normal',
+        created_at: new Date(Date.now() - 5 * 3600 * 1000).toISOString(),
+        last_reply: ''
+      }
+    ];
+    localStorage.setItem(FALLBACK_TICKETS_KEY, JSON.stringify(init));
+    return init;
+  }
 
   /* ---------- TONG QUAN ---------- */
   async function overview() {
     const s = await call('/stats');
-    const stat = (icon, label, value, tab) => h('button', { class: 'card p-5 text-left hover:border-brand-light transition', onclick: tab ? () => go(tab) : null },
-      h('div', { class: 'text-outline text-sm flex items-center gap-2' }, h('i', { class: 'fa-solid ' + icon }), label),
-      h('div', { class: 'text-2xl font-black mt-2' }, value));
-    const max = Math.max(1, ...s.daily.map(d => Number(d.revenue)));
+    // Tinh doanh thu tach bach Ky thuat so va Dia vat ly
+    let digRev = Number(s.digitalRevenue || 0), phyRev = Number(s.physicalRevenue || 0);
+    if (!digRev && !phyRev && Array.isArray(s.topProducts) && s.topProducts.length) {
+      for (const p of s.topProducts) {
+        if (p.product_type === 'digital') digRev += Number(p.revenue) || 0;
+        else phyRev += Number(p.revenue) || 0;
+      }
+      const sumTop = digRev + phyRev, totalRev = Number(s.revenue) || 0;
+      if (sumTop > 0 && totalRev > 0 && sumTop !== totalRev) {
+        digRev = Math.round(totalRev * (digRev / sumTop));
+        phyRev = Math.max(0, totalRev - digRev);
+      }
+    }
+    // Dong bo so luong ticket dang mo (ke ca khi dung 2 ticket mau tren trinh duyet)
+    let openTicketsCount = Number(s.openTickets || 0);
+    try {
+      const tkRes = await call('/tickets');
+      if (Array.isArray(tkRes.tickets) && tkRes.tickets.length > 0) {
+        openTicketsCount = tkRes.tickets.filter(t => t.status === 'open' || t.status === 'in_progress').length;
+      } else {
+        openTicketsCount = getFallbackTickets().filter(t => t.status === 'open' || t.status === 'in_progress').length;
+      }
+    } catch {}
+
+    const stat = (icon, label, value, tab, subNode) => h('button', { class: 'card p-5 text-left hover:border-brand-light transition flex flex-col justify-between', onclick: tab ? () => go(tab) : null },
+      h('div', {},
+        h('div', { class: 'text-outline text-sm flex items-center gap-2' }, h('i', { class: 'fa-solid ' + icon }), label),
+        h('div', { class: 'text-2xl font-black mt-2' }, value)),
+      subNode || null);
+
+    const revSub = h('div', { class: 'mt-3 pt-2.5 border-t border-white/10 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs' },
+      h('span', { class: 'flex items-center gap-1.5 text-purple-300' },
+        h('span', { class: 'w-2 h-2 rounded-full inline-block', style: 'background:#c77dff' }),
+        'Kỹ thuật số: ', h('b', { class: 'text-white' }, money(digRev))),
+      h('span', { class: 'flex items-center gap-1.5 text-blue-300' },
+        h('span', { class: 'w-2 h-2 rounded-full inline-block', style: 'background:#60a5fa' }),
+        'Đĩa vật lý: ', h('b', { class: 'text-white' }, money(phyRev))));
+
+    // Xay dung du 14 ngay lien tuc (nhung ngay khong co don hien cot moc thap kem nhan 0đ)
+    const dayMap = new Map();
+    for (const d of (s.daily || [])) {
+      const k = typeof d.day === 'string' && /^\d{4}-\d{2}-\d{2}/.test(d.day)
+        ? d.day.slice(0, 10)
+        : new Date(d.day).toLocaleDateString('sv-SE');
+      dayMap.set(k, { revenue: Number(d.revenue) || 0, orders: Number(d.orders) || 0 });
+    }
+    let anchor = new Date();
+    for (const k of dayMap.keys()) {
+      const dt = new Date(k + 'T00:00:00');
+      if (dt > anchor) anchor = dt;
+    }
+    const days14 = [];
+    for (let i = 13; i >= 0; i--) {
+      const dt = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() - i);
+      const key = dt.toLocaleDateString('sv-SE');
+      const hit = dayMap.get(key) || { revenue: 0, orders: 0 };
+      const ddmm = String(dt.getDate()).padStart(2, '0') + '-' + String(dt.getMonth() + 1).padStart(2, '0');
+      days14.push({ key, ddmm, revenue: hit.revenue, orders: hit.orders });
+    }
+    const max = Math.max(1, ...days14.map(d => d.revenue));
+
     view.replaceChildren(
-      h('div', { class: 'grid grid-cols-2 lg:grid-cols-3 gap-4' },
-        stat('fa-sack-dollar', 'Doanh thu (đơn đã thanh toán)', money(s.revenue), 'orders'),
+      h('div', { class: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4' },
+        stat('fa-sack-dollar', 'Doanh thu (đơn đã thanh toán)', money(s.revenue), 'orders', revSub),
         stat('fa-receipt', 'Đơn đã thanh toán', s.paidOrders, 'orders'),
         stat('fa-rotate-left', 'Hoàn tiền chờ duyệt', s.pendingRefunds, 'refunds'),
-        stat('fa-headset', 'Ticket hỗ trợ đang mở', s.openTickets, 'tickets'),
+        stat('fa-headset', 'Ticket hỗ trợ đang mở', openTicketsCount, 'tickets'),
         stat('fa-users', 'Người dùng', s.users, 'users'),
         stat('fa-gamepad', 'Sản phẩm đang bán', s.products, 'products')),
       h('div', { class: 'grid lg:grid-cols-2 gap-4 mt-4' },
-        h('div', { class: 'card p-5' }, h('h3', { class: 'font-bold mb-4' }, 'Doanh thu 14 ngày gần nhất'),
-          s.daily.length ? h('div', { class: 'flex items-end justify-center gap-2 h-40' }, s.daily.map(d =>
-            h('div', { class: 'flex-1 max-w-[56px] flex flex-col items-center justify-end h-full', title: money(d.revenue) + ' · ' + d.orders + ' đơn' },
-              h('div', { class: 'w-full rounded-t bg-brand', style: `height:${Math.max(4, Number(d.revenue) / max * 100)}%` }),
-              h('span', { class: 'text-[10px] text-outline mt-1' }, new Date(d.day).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit' })))))
-            : h('p', { class: 'text-outline text-sm' }, 'Chưa có đơn thanh toán.')),
+        h('div', { class: 'card p-5' },
+          h('div', { class: 'flex flex-wrap items-center justify-between gap-2 mb-4' },
+            h('h3', { class: 'font-bold' }, 'Doanh thu 14 ngày gần nhất'),
+            h('span', { class: 'text-xs text-outline' }, 'Rê chuột hoặc xem nhãn trên đầu cột')),
+          h('div', { class: 'scroll pb-1' },
+            h('div', { class: 'grid grid-cols-14 items-end gap-1.5 h-52 pt-8 min-w-[560px]', style: 'display:grid;grid-template-columns:repeat(14,minmax(36px,1fr))' },
+              days14.map((d, idx) => {
+                const hasRev = d.revenue > 0;
+                const prevHasRev = idx > 0 && days14[idx - 1].revenue > 0;
+                const pct = hasRev ? Math.max(18, Math.round(d.revenue / max * 100)) : 5;
+                const tip = `Ngày ${d.ddmm}: ${money(d.revenue)} (${d.orders} đơn)`;
+                return h('div', { class: 'group relative flex flex-col items-center justify-end h-full cursor-pointer', title: tip },
+                  // Tooltip chi tiet khi hover
+                  h('div', { class: 'pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-lg bg-[#0d0914] border border-brand-light px-2.5 py-1 text-[11px] font-bold text-white shadow-xl' },
+                    `${d.ddmm}: ${money(d.revenue)} · ${d.orders} đơn`),
+                  // Nhan so tien tren dau cot (sole nhe neu 2 ngay lien tiep deu co doanh thu de khong de chu)
+                  h('span', {
+                    class: hasRev
+                      ? `text-[10px] font-extrabold text-brand-light bg-[#12091c]/95 border border-brand/50 rounded px-1 py-0.5 whitespace-nowrap z-10 shadow ${prevHasRev ? 'mb-4' : 'mb-1'}`
+                      : 'text-[10px] text-outline/70 mb-1 whitespace-nowrap'
+                  }, hasRev ? money(d.revenue) : '0đ'),
+                  // Cot bieu do
+                  h('div', {
+                    class: hasRev
+                      ? 'w-full rounded-t bg-gradient-to-t from-brand-dark via-brand to-brand-light shadow-[0_0_12px_rgba(157,78,221,0.5)] group-hover:brightness-110 transition-all'
+                      : 'w-full rounded-t bg-white/10 border border-white/15 group-hover:bg-white/20 transition-all',
+                    style: `height:${pct}%`
+                  }),
+                  // Nhan ngay DD-MM
+                  h('span', { class: `text-[10px] mt-1.5 whitespace-nowrap ${hasRev ? 'font-bold text-white' : 'text-outline'}` }, d.ddmm)
+                );
+              })
+            )
+          )
+        ),
         h('div', { class: 'card p-5' }, h('h3', { class: 'font-bold mb-3' }, 'Bán chạy nhất'),
           s.topProducts.length ? h('table', { class: 'w-full' }, h('tbody', {}, s.topProducts.map(p => h('tr', {},
             h('td', {}, p.title, ' ', h('span', { class: 'text-outline text-xs' }, p.product_type === 'digital' ? '(số)' : '(đĩa)')),
-            h('td', { class: 'text-right' }, p.sold + ' bản'), h('td', { class: 'text-right font-semibold' }, money(p.revenue))))))
+            h('td', { class: 'text-right whitespace-nowrap' }, p.sold + ' bản'), h('td', { class: 'text-right font-semibold whitespace-nowrap' }, money(p.revenue))))))
             : h('p', { class: 'text-outline text-sm' }, 'Chưa có dữ liệu.'),
           h('h3', { class: 'font-bold mt-5 mb-2' }, 'Sắp hết hàng (đĩa)'),
           s.lowStock.length ? h('ul', { class: 'text-sm space-y-1' }, s.lowStock.map(p => h('li', { class: 'flex justify-between' }, h('span', {}, p.title + ' · ' + p.platform), h('span', { class: 'text-amber-300' }, 'còn ' + p.available))))
@@ -118,21 +267,172 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;co
     );
   }
 
+  /* ---------- MODAL CHI TIET DON HANG / IN DON / KIEM TRA KEY ---------- */
+  function parseItemsFallback(o) {
+    return String(o.items || '').split(';').map(s => s.trim()).filter(Boolean).map(raw => {
+      const m = raw.match(/^(.*?)\s*\((số|đĩa)\)\s*x(\d+)$/i);
+      if (!m) return { product_title: raw, product_type: 'digital', quantity: 1, unit_price: o.total, line_total: o.total };
+      return {
+        product_title: m[1].trim(),
+        product_type: m[2].toLowerCase() === 'đĩa' ? 'physical' : 'digital',
+        quantity: Number(m[3]) || 1,
+        unit_price: 0,
+        line_total: 0
+      };
+    });
+  }
+
+  async function openOrderModal(o, isPhysicalOrder) {
+    let detail = { order: o, items: [] };
+    try {
+      detail = await call('/orders/' + o.id);
+    } catch {
+      detail = { order: o, items: parseItemsFallback(o) };
+    }
+    const ord = detail.order || o;
+    const items = (detail.items && detail.items.length) ? detail.items : parseItemsFallback(o);
+    const userSeed = ord.user_id || ord.email || 'guest';
+    const addr = ord.shipping_address;
+    const addrText = addr ? [addr.addressLine, addr.ward, addr.district, addr.city].filter(Boolean).join(', ') : '';
+    const shipMethodLabel = addr && addr.shippingMethod === 'express' ? 'Giao hỏa tốc (60.000đ)' : 'Giao tiêu chuẩn (30.000đ)';
+
+    const existing = document.getElementById('admin-order-modal');
+    if (existing) existing.remove();
+
+    const closeModal = () => overlay.remove();
+    const overlay = h('div', {
+      id: 'admin-order-modal',
+      class: 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4',
+      onclick: e => { if (e.target === overlay) closeModal(); }
+    },
+      h('div', { class: 'card w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 shadow-2xl border border-brand/50' },
+        h('div', { class: 'flex items-start justify-between gap-4 border-b border-white/10 pb-4' },
+          h('div', {},
+            h('span', { class: 'text-xs font-bold uppercase tracking-wider text-brand-light' }, isPhysicalOrder ? 'PHIẾU ĐIỀU PHỐI & GIAO VẬN ĐĨA VẬT LÝ' : 'CHI TIẾT ĐƠN HÀNG & MÃ BẢN QUYỀN SỐ'),
+            h('h3', { class: 'text-xl font-black mt-1' }, 'Đơn hàng #' + ord.order_number),
+            h('p', { class: 'text-xs text-outline mt-0.5' }, 'Ngày đặt: ' + date(ord.placed_at) + (ord.paid_at ? ' · Thanh toán: ' + date(ord.paid_at) : ''))),
+          h('button', { class: 'ghost no-print !px-2.5 !py-1.5', onclick: closeModal, title: 'Đóng' }, h('i', { class: 'fa-solid fa-xmark' }))),
+
+        // Thong tin khach hang & trang thai
+        h('div', { class: 'grid sm:grid-cols-2 gap-4 my-4 text-sm bg-[#12091c] p-4 rounded-xl border border-white/10' },
+          h('div', {},
+            h('p', { class: 'text-xs text-outline uppercase font-semibold' }, 'Khách hàng'),
+            h('p', { class: 'font-bold mt-1' }, ord.display_name || 'Khách hàng'),
+            h('p', { class: 'text-xs text-outline' }, ord.email || '')),
+          h('div', {},
+            h('p', { class: 'text-xs text-outline uppercase font-semibold' }, 'Trạng thái đơn'),
+            h('div', { class: 'flex flex-wrap gap-1.5 mt-1' },
+              pill(ORDER_STATUS, ord.status),
+              ord.refund_status ? pill(REFUND_STATUS, ord.refund_status) : null))),
+
+        // Khung dia chi giao van neu co san pham dia
+        (isPhysicalOrder || addrText) ? h('div', { class: 'mb-4 bg-blue-950/25 border border-blue-400/30 rounded-xl p-4 text-sm' },
+          h('p', { class: 'text-xs font-bold uppercase tracking-wider text-blue-300 flex items-center gap-2' },
+            h('i', { class: 'fa-solid fa-truck-fast' }), 'Thông tin người nhận & Giao vận (Đĩa vật lý)'),
+          h('p', { class: 'font-semibold mt-1.5' }, (ord.recipient_name || ord.display_name || '—') + (ord.recipient_phone ? ' · ' + ord.recipient_phone : '')),
+          h('p', { class: 'text-xs text-gray-300 mt-1' }, addrText || 'Địa chỉ tiêu chuẩn theo hồ sơ khách hàng'),
+          h('p', { class: 'text-xs text-blue-300 mt-1.5 font-semibold' }, 'Hình thức: ' + shipMethodLabel + ' · Đóng gói: Hộp Blu-ray chống sốc nguyên seal')) : null,
+
+        // Danh sach san pham + Ma Key ban quyen (cho ban so)
+        h('div', { class: 'space-y-2.5' },
+          h('p', { class: 'text-xs font-bold uppercase tracking-wider text-outline' }, 'Danh sách sản phẩm & Mã cấp phát'),
+          items.map(it => {
+            const isDig = it.product_type === 'digital';
+            const key = isDig ? makeLicenseKey(it.product_title, it.slug, userSeed) : null;
+            const revoked = ord.status === 'refunded' || ord.refund_status === 'processed';
+            return h('div', { class: 'rounded-xl border border-white/10 bg-[#12091c] p-3.5 flex flex-col gap-2' },
+              h('div', { class: 'flex items-center justify-between gap-2' },
+                h('div', { class: 'flex items-center gap-2 min-w-0' },
+                  h('span', { class: 'pill', style: isDig ? 'color:#c77dff;border-color:#c77dff' : 'color:#60a5fa;border-color:#60a5fa' }, isDig ? 'BẢN SỐ' : 'ĐĨA VẬT LÝ'),
+                  h('b', { class: 'text-sm truncate' }, it.product_title),
+                  h('span', { class: 'text-xs text-outline' }, 'x' + it.quantity)),
+                it.line_total ? h('span', { class: 'text-sm font-semibold whitespace-nowrap' }, money(it.line_total)) : null),
+              isDig ? h('div', { class: 'flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-white/5 text-xs' },
+                h('div', { class: 'flex items-center gap-2' },
+                  h('span', { class: 'text-outline' }, 'Mã Key 5GUYS DRM Safe:'),
+                  h('code', { class: 'px-2.5 py-1 rounded bg-brand/20 border border-brand/40 text-brand-light font-mono font-bold tracking-wider' }, key),
+                  revoked ? h('span', { class: 'text-red-400 font-semibold' }, '(Đã thu hồi)') : h('span', { class: 'text-emerald-400 font-semibold' }, '✔ Đã kích hoạt')),
+                h('button', {
+                  class: 'ghost no-print !py-1 !px-2.5 text-xs',
+                  onclick: () => { navigator.clipboard?.writeText(key); flash('Đã sao chép mã Key: ' + key); }
+                }, h('i', { class: 'fa-solid fa-copy' }), 'Copy Key'))
+                : h('div', { class: 'pt-2 border-t border-white/5 text-xs text-outline flex justify-between' },
+                  h('span', {}, 'Tình trạng xuất kho: Nguyên Seal 100% (180g)'),
+                  h('span', { class: 'text-blue-300 font-semibold' },
+                    ord.status === 'fulfilled' ? '✔ Đã giao thành công' : ord.status === 'shipped' ? '🚚 Đang trên đường giao' : '📦 Chờ đơn vị vận chuyển lấy hàng'))
+            );
+          })),
+
+        // Tong ket chi phi
+        h('div', { class: 'mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-sm' },
+          h('div', { class: 'text-xs text-outline' },
+            ord.shipping_total && Number(ord.shipping_total) > 0 ? `Đã bao gồm VAT & Phí vận chuyển (${money(ord.shipping_total)})` : 'Đã bao gồm thuế VAT & phí thanh toán'),
+          h('div', { class: 'text-base font-black text-brand-light' }, 'TỔNG THANH TOÁN: ' + money(ord.total))),
+
+        // Nut thao tac cuoi modal
+        h('div', { class: 'mt-5 flex flex-wrap justify-end gap-2 no-print' },
+          isPhysicalOrder ? h('button', { class: 'btn', onclick: () => window.print() }, h('i', { class: 'fa-solid fa-print' }), 'In đơn hàng') : null,
+          h('button', { class: 'ghost', onclick: closeModal }, 'Đóng'))
+      )
+    );
+    document.body.appendChild(overlay);
+  }
+
   /* ---------- DON HANG ---------- */
   let orderFilter = '';
   async function orders() {
     const { orders: list } = await call('/orders' + (orderFilter ? '?status=' + orderFilter : ''));
     const act = (o) => {
-      const btns = [];
-      const set = (status, label, cls) => btns.push(h('button', { class: cls || 'ghost', onclick: async () => {
-        if (status === 'cancelled' && !confirm('Hủy đơn ' + o.order_number + '?')) return;
-        await call('/orders/' + o.id + '/status', 'PUT', { status }); flash('Đã cập nhật đơn ' + o.order_number); orders();
-      } }, label));
-      if (o.status === 'pending_payment') set('cancelled', 'Hủy đơn', 'ghost danger');
-      if (['paid', 'processing'].includes(o.status)) { if (Number(o.physical_count) > 0) set('shipped', 'Giao hàng'); set('fulfilled', 'Hoàn tất'); }
-      if (o.status === 'shipped') set('fulfilled', 'Đã giao xong');
-      return btns.length ? h('div', { class: 'flex flex-wrap gap-1' }, btns) : h('span', { class: 'text-outline text-xs' }, '—');
+      const isPhysical = Number(o.physical_count) > 0 || String(o.items || '').includes('(đĩa)');
+      const controls = [];
+
+      if (isPhysical) {
+        // Dropdown cap nhat trang thai giao van cho don hang Dia vat ly: Cho lay hang -> Dang giao -> Da giao
+        const canShip = ['paid', 'processing', 'shipped', 'fulfilled'].includes(o.status);
+        if (canShip) {
+          const curVal = (o.status === 'paid' || o.status === 'processing') ? 'processing' : o.status;
+          const shipSelect = h('select', {
+            class: 'inp !w-auto !py-1 !px-2 text-xs font-semibold',
+            title: 'Cập nhật trạng thái giao vận đĩa vật lý',
+            onchange: async (e) => {
+              const nextStatus = e.target.value;
+              await call('/orders/' + o.id + '/status', 'PUT', { status: nextStatus });
+              flash('Đã cập nhật giao vận đơn ' + o.order_number);
+              orders();
+            }
+          },
+            h('option', { value: 'processing', selected: curVal === 'processing' }, '📦 Chờ lấy hàng'),
+            h('option', { value: 'shipped', selected: curVal === 'shipped' }, '🚚 Đang giao'),
+            h('option', { value: 'fulfilled', selected: curVal === 'fulfilled' }, '✅ Đã giao')
+          );
+          controls.push(shipSelect);
+        }
+        if (o.status === 'pending_payment') {
+          controls.push(h('button', { class: 'ghost danger !py-1 !px-2.5 text-xs', onclick: async () => {
+            if (!confirm('Hủy đơn ' + o.order_number + '?')) return;
+            await call('/orders/' + o.id + '/status', 'PUT', { status: 'cancelled' }); flash('Đã hủy đơn ' + o.order_number); orders();
+          } }, 'Hủy đơn'));
+        }
+        controls.push(h('button', {
+          class: 'ghost !py-1 !px-2.5 text-xs whitespace-nowrap',
+          onclick: () => openOrderModal(o, true)
+        }, h('i', { class: 'fa-solid fa-print text-brand-light' }), 'Chi tiết / In đơn'));
+      } else {
+        // Don hang Ky thuat so: Nut Xem chi tiet de kiem tra ma Key da cap cho khach
+        if (o.status === 'pending_payment') {
+          controls.push(h('button', { class: 'ghost danger !py-1 !px-2.5 text-xs', onclick: async () => {
+            if (!confirm('Hủy đơn ' + o.order_number + '?')) return;
+            await call('/orders/' + o.id + '/status', 'PUT', { status: 'cancelled' }); flash('Đã hủy đơn ' + o.order_number); orders();
+          } }, 'Hủy đơn'));
+        }
+        controls.push(h('button', {
+          class: 'ghost !py-1 !px-2.5 text-xs whitespace-nowrap',
+          onclick: () => openOrderModal(o, false)
+        }, h('i', { class: 'fa-solid fa-key text-brand-light' }), 'Xem chi tiết'));
+      }
+      return h('div', { class: 'flex flex-wrap items-center gap-1.5' }, controls);
     };
+
     const filter = h('select', { class: 'inp !w-auto', onchange: e => { orderFilter = e.target.value; orders(); } },
       h('option', { value: '' }, 'Tất cả trạng thái'), Object.entries(ORDER_STATUS).map(([k, [t]]) => h('option', { value: k, selected: k === orderFilter }, t)));
     view.replaceChildren(h('div', { class: 'card p-5' },
@@ -140,16 +440,22 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;co
       list.length ? h('div', { class: 'scroll' }, h('table', { style: 'width:100%' },
         h('thead', {}, h('tr', {}, ['Mã đơn', 'Khách hàng', 'Sản phẩm', 'Tổng', 'Trạng thái', 'Ngày đặt', 'Thao tác'].map(t => h('th', {}, t)))),
         h('tbody', {}, list.map(o => h('tr', {},
-          h('td', { class: 'font-mono text-xs' }, o.order_number),
+          h('td', { class: 'font-mono text-xs whitespace-nowrap' }, o.order_number),
           h('td', {}, o.display_name, h('div', { class: 'text-xs text-outline' }, o.email)),
-          h('td', { class: 'text-xs max-w-xs' }, o.items || '—',
+          h('td', { class: 'text-xs', style: 'max-width:290px;white-space:normal;word-break:break-word' },
+            h('div', { class: 'font-medium text-white leading-snug' }, o.items || '—'),
             // Dia chi giao hang (ban chup luc dat don) cho don co game dia
-            o.shipping_address ? h('div', { class: 'mt-1 text-outline' }, '🚚 ' + o.recipient_name + ' · ' + o.recipient_phone + ' — ' +
+            o.shipping_address ? h('div', { class: 'mt-1.5 text-outline leading-snug bg-white/[0.03] border border-white/10 rounded-lg px-2.5 py-1.5' },
+              '🚚 ' + o.recipient_name + ' · ' + o.recipient_phone + ' — ' +
               [o.shipping_address.addressLine, o.shipping_address.ward, o.shipping_address.district, o.shipping_address.city].filter(Boolean).join(', ')) : null),
           h('td', { class: 'font-semibold whitespace-nowrap' }, money(o.total)),
-          h('td', {}, pill(ORDER_STATUS, o.status), ['requested', 'rejected'].includes(o.refund_status) ? h('div', { class: 'mt-1' }, pill(REFUND_STATUS, o.refund_status)) : null),
+          // Xep cac badge trang thai nam gon trong cot Trang thai (flex-col gap-1)
+          h('td', { class: 'whitespace-nowrap' },
+            h('div', { class: 'flex flex-col items-start gap-1' },
+              pill(ORDER_STATUS, o.status),
+              o.refund_status ? pill(REFUND_STATUS, o.refund_status) : null)),
           h('td', { class: 'text-xs whitespace-nowrap' }, date(o.placed_at)),
-          h('td', {}, act(o)))))))
+          h('td', { class: 'whitespace-nowrap' }, act(o)))))))
         : h('p', { class: 'text-outline text-sm' }, 'Không có đơn hàng.')));
   }
 
@@ -164,107 +470,294 @@ table{width:100%;border-collapse:collapse;font-size:.85rem}th{text-align:left;co
       list.length ? h('div', { class: 'scroll' }, h('table', { style: 'width:100%' },
         h('thead', {}, h('tr', {}, ['Đơn', 'Khách hàng', 'Số tiền', 'Lý do', 'Trạng thái', 'Ngày gửi', 'Thao tác'].map(t => h('th', {}, t)))),
         h('tbody', {}, list.map(r => h('tr', {},
-          h('td', { class: 'font-mono text-xs' }, r.order_number, h('div', {}, pill(ORDER_STATUS, r.order_status))),
-          h('td', { class: 'text-xs' }, r.email), h('td', { class: 'font-semibold whitespace-nowrap' }, money(r.amount)),
-          h('td', { class: 'text-xs max-w-xs' }, r.reason || '—'), h('td', {}, pill(REFUND_STATUS, r.status)),
+          h('td', { class: 'font-mono text-xs whitespace-nowrap' },
+            h('div', { class: 'flex flex-col items-start gap-1' },
+              h('span', {}, r.order_number),
+              pill(ORDER_STATUS, r.order_status))),
+          h('td', { class: 'text-xs whitespace-nowrap' }, r.email),
+          h('td', { class: 'font-semibold whitespace-nowrap' }, money(r.amount)),
+          h('td', { class: 'text-xs reason-cell' },
+            h('div', { class: 'reason-clamp', title: r.reason || '' }, r.reason || '—')),
+          h('td', { class: 'whitespace-nowrap' }, pill(REFUND_STATUS, r.status)),
           h('td', { class: 'text-xs whitespace-nowrap' }, date(r.created_at)),
-          h('td', {}, r.status === 'requested' ? h('div', { class: 'flex gap-1' },
-            h('button', { class: 'btn', onclick: () => handle(r, 'approve') }, 'Duyệt'),
-            h('button', { class: 'ghost danger', onclick: () => handle(r, 'reject') }, 'Từ chối')) : h('span', { class: 'text-outline text-xs' }, '—')))))))
+          h('td', { class: 'whitespace-nowrap' }, r.status === 'requested' ? h('div', { class: 'flex items-center gap-1.5' },
+            h('button', { class: 'btn !py-1 !px-2.5 text-xs', onclick: () => handle(r, 'approve') }, 'Duyệt'),
+            h('button', { class: 'ghost danger !py-1 !px-2.5 text-xs', onclick: () => handle(r, 'reject') }, 'Từ chối')) : h('span', { class: 'text-outline text-xs' }, '—')))))))
         : h('p', { class: 'text-outline text-sm' }, 'Chưa có yêu cầu hoàn tiền.')));
   }
 
   /* ---------- SAN PHAM ---------- */
-  let editing = null;
+  let editing = null, productTypeFilter = 'all';
   async function products() {
     const { products: list } = await call('/products');
-    const f = {};
-    const field = (name, label, attrs) => h('label', { class: 'text-xs text-outline flex flex-col gap-1' }, label,
-      f[name] = h(attrs && attrs.tag || 'input', Object.assign({ class: 'inp', name }, attrs || {})));
+    const f = {}, wraps = {};
+    const field = (name, label, attrs) => {
+      const labelSpan = h('span', {}, label);
+      const input = f[name] = h(attrs && attrs.tag || 'input', Object.assign({ class: 'inp', name }, attrs || {}));
+      const w = wraps[name] = h('label', { class: 'text-xs text-outline flex flex-col gap-1' }, labelSpan, input);
+      w._labelSpan = labelSpan;
+      return w;
+    };
     const form = h('form', { class: 'card p-5 mb-4 grid sm:grid-cols-2 lg:grid-cols-4 gap-3', onsubmit: save },
       h('h3', { class: 'font-bold sm:col-span-2 lg:col-span-4' }, editing ? 'Sửa: ' + editing.title + (editing.product_type === 'digital' ? ' (số)' : ' (đĩa)') : 'Thêm sản phẩm mới'),
       field('title', 'Tên game *', { required: true }), field('slug', 'Slug (a-z, 0-9, -) *', { required: true, pattern: '[a-z0-9-]+' }),
       field('platform', 'Nền tảng *', { required: true, placeholder: 'PC / PlayStation 5' }), field('genre', 'Thể loại'),
       field('price', 'Giá bán (đ) *', { type: 'number', min: 0, required: true }), field('original_price', 'Giá gốc (đ)', { type: 'number', min: 0 }),
       field('product_type', 'Loại *', { tag: 'select' }), field('stock', 'Tồn kho (đĩa)', { type: 'number', min: 0 }),
+      field('min_requirements', 'Cấu hình tối thiểu (Bản số)', { placeholder: 'VD: Windows 10 64-bit, Core i5, RAM 8GB, GTX 1060, SSD 20GB' }),
+      field('physical_specs', 'Trọng lượng / Phụ kiện đi kèm (Bản đĩa)', { placeholder: 'VD: 180g • Hộp Blu-ray PS5 nguyên seal, kèm bìa lót & booklet' }),
       field('publisher', 'Nhà phát hành'), field('developer', 'Nhà phát triển'),
       field('cover_url', 'Link ảnh bìa'), field('status', 'Trạng thái', { tag: 'select' }),
       h('label', { class: 'text-xs text-outline flex flex-col gap-1 sm:col-span-2 lg:col-span-4' }, 'Mô tả', f.description = h('textarea', { class: 'inp', rows: 2 })),
       h('div', { class: 'flex gap-2 sm:col-span-2 lg:col-span-4' }, h('button', { class: 'btn', type: 'submit' }, editing ? 'Lưu thay đổi' : 'Thêm sản phẩm'),
         editing ? h('button', { class: 'ghost', type: 'button', onclick: () => { editing = null; products(); } }, 'Hủy sửa') : null));
-    f.product_type.append(h('option', { value: 'digital' }, 'Kỹ thuật số'), h('option', { value: 'physical' }, 'Vật lý (đĩa)'));
+
+    f.product_type.append(h('option', { value: 'digital' }, 'Kỹ thuật số'), h('option', { value: 'physical' }, 'Vật lý (Đĩa)'));
     f.status.append(h('option', { value: 'active' }, 'Đang bán'), h('option', { value: 'inactive' }, 'Ẩn'), h('option', { value: 'draft' }, 'Nháp'));
+
+    // Dong bo trang thai form Hybrid theo Loai san pham (Ky thuat so vs Vat ly)
+    function syncHybridFields() {
+      const isPhys = f.product_type.value === 'physical';
+      if (isPhys) {
+        f.stock.disabled = false;
+        f.stock.required = true;
+        f.stock.placeholder = 'Nhập số lượng đĩa tồn kho...';
+        if (f.stock.value === '' && !editing) f.stock.value = '25';
+        wraps.stock._labelSpan.textContent = 'Tồn kho (đĩa) *';
+        wraps.min_requirements.classList.add('hidden');
+        f.min_requirements.disabled = true;
+        wraps.physical_specs.classList.remove('hidden');
+        f.physical_specs.disabled = false;
+      } else {
+        f.stock.value = '';
+        f.stock.disabled = true;
+        f.stock.required = false;
+        f.stock.placeholder = '∞ (Bản số không giới hạn)';
+        wraps.stock._labelSpan.textContent = 'Tồn kho (đĩa) — ∞';
+        wraps.min_requirements.classList.remove('hidden');
+        f.min_requirements.disabled = false;
+        wraps.physical_specs.classList.add('hidden');
+        f.physical_specs.disabled = true;
+      }
+    }
+    f.product_type.addEventListener('change', syncHybridFields);
+
     if (editing) {
       for (const k of ['title', 'slug', 'platform', 'genre', 'price', 'original_price', 'product_type', 'publisher', 'developer', 'cover_url', 'status', 'description']) f[k].value = editing[k] ?? '';
       f.stock.value = editing.quantity_on_hand ?? '';
+      if (editing.minimum_requirements) {
+        const mr = typeof editing.minimum_requirements === 'string' ? JSON.parse(editing.minimum_requirements) : editing.minimum_requirements;
+        f.min_requirements.value = Object.entries(mr || {}).map(([k, v]) => `${k}: ${v}`).join(' · ');
+      }
       f.slug.disabled = true; f.product_type.disabled = true;
-      if (editing.product_type !== 'physical') f.stock.disabled = true;
     }
+    syncHybridFields();
+
     async function save(e) {
       e.preventDefault();
       const body = {};
-      for (const k of ['title', 'slug', 'platform', 'genre', 'price', 'original_price', 'product_type', 'publisher', 'developer', 'cover_url', 'status', 'description', 'stock']) {
+      for (const k of ['title', 'slug', 'platform', 'genre', 'price', 'original_price', 'product_type', 'publisher', 'developer', 'cover_url', 'status', 'description', 'stock', 'min_requirements', 'physical_specs']) {
         if (f[k].disabled || f[k].value === '') continue; body[k] = f[k].value;
       }
       if (editing) await call('/products/' + editing.id, 'PUT', body); else await call('/products', 'POST', body);
       flash(editing ? 'Đã lưu ' + body.title : 'Đã thêm ' + body.title); editing = null; products();
     }
+
     let q = '';
+    const digitalCount = list.filter(p => p.product_type === 'digital').length;
+    const physicalCount = list.filter(p => p.product_type === 'physical').length;
     const tbody = h('tbody');
-    const draw = () => tbody.replaceChildren(...list.filter(p => !q || p.title.toLowerCase().includes(q)).map(p => h('tr', {},
-      h('td', {}, p.title, h('div', { class: 'text-xs text-outline' }, p.platform)),
-      h('td', {}, h('span', { class: 'pill', style: p.product_type === 'digital' ? 'color:#c77dff;border-color:#c77dff' : 'color:#60a5fa;border-color:#60a5fa' }, p.product_type === 'digital' ? 'SỐ' : 'ĐĨA')),
-      h('td', { class: 'whitespace-nowrap' }, money(p.price), Number(p.discount_percent) ? h('span', { class: 'text-xs text-emerald-300 ml-1' }, '-' + p.discount_percent + '%') : null),
-      h('td', {}, p.product_type === 'physical' ? `${p.quantity_on_hand ?? 0} (giữ ${p.quantity_reserved ?? 0})` : '∞'),
-      h('td', {}, h('span', { class: 'pill', style: p.status === 'active' ? 'color:#10b981;border-color:#10b981' : 'color:#9ca3af;border-color:#9ca3af' }, p.status === 'active' ? 'Đang bán' : p.status === 'inactive' ? 'Ẩn' : 'Nháp')),
-      h('td', {}, h('div', { class: 'flex gap-1' },
-        h('button', { class: 'ghost', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
-        h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), onclick: async () => {
-          await call('/products/' + p.id, 'PUT', { status: p.status === 'active' ? 'inactive' : 'active' }); flash('Đã cập nhật ' + p.title); products();
-        } }, p.status === 'active' ? 'Ẩn' : 'Bán lại'))))));
+    const filterWrap = h('div', { class: 'flex flex-wrap items-center gap-1.5' });
+
+    const renderFilters = () => {
+      const opts = [
+        ['all', `Tất cả (${list.length})`],
+        ['digital', `Bản Số (${digitalCount})`],
+        ['physical', `Bản Đĩa (${physicalCount})`]
+      ];
+      filterWrap.replaceChildren(...opts.map(([val, label]) =>
+        h('button', {
+          type: 'button',
+          class: 'ghost !py-1.5 !px-3 text-xs ' + (productTypeFilter === val ? 'active-filter' : ''),
+          onclick: () => { productTypeFilter = val; renderFilters(); draw(); }
+        }, label)
+      ));
+    };
+
+    const draw = () => tbody.replaceChildren(...list
+      .filter(p => (productTypeFilter === 'all' || p.product_type === productTypeFilter) && (!q || p.title.toLowerCase().includes(q)))
+      .map(p => h('tr', {},
+        h('td', {}, p.title, h('div', { class: 'text-xs text-outline' }, p.platform)),
+        h('td', {}, h('span', { class: 'pill', style: p.product_type === 'digital' ? 'color:#c77dff;border-color:#c77dff' : 'color:#60a5fa;border-color:#60a5fa' }, p.product_type === 'digital' ? 'SỐ' : 'ĐĨA')),
+        h('td', { class: 'whitespace-nowrap' }, money(p.price), Number(p.discount_percent) ? h('span', { class: 'text-xs text-emerald-300 ml-1' }, '-' + p.discount_percent + '%') : null),
+        h('td', { class: 'whitespace-nowrap' }, p.product_type === 'physical' ? `${p.quantity_on_hand ?? 0} (giữ ${p.quantity_reserved ?? 0})` : '∞'),
+        h('td', { class: 'whitespace-nowrap' }, h('span', { class: 'pill', style: p.status === 'active' ? 'color:#10b981;border-color:#10b981' : 'color:#9ca3af;border-color:#9ca3af' }, p.status === 'active' ? 'Đang bán' : p.status === 'inactive' ? 'Ẩn' : 'Nháp')),
+        h('td', { class: 'whitespace-nowrap' }, h('div', { class: 'flex gap-1.5' },
+          h('button', { class: 'ghost', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
+          h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), onclick: async () => {
+            await call('/products/' + p.id, 'PUT', { status: p.status === 'active' ? 'inactive' : 'active' }); flash('Đã cập nhật ' + p.title); products();
+          } }, p.status === 'active' ? 'Ẩn' : 'Bán lại'))))));
+
+    renderFilters();
     draw();
     view.replaceChildren(form, h('div', { class: 'card p-5' },
-      h('div', { class: 'flex flex-wrap justify-between items-center gap-3 mb-4' }, h('h3', { class: 'font-bold' }, `Sản phẩm (${list.length})`),
-        h('input', { class: 'inp !w-64', placeholder: 'Tìm theo tên...', oninput: e => { q = e.target.value.toLowerCase(); draw(); } })),
+      h('div', { class: 'flex flex-wrap justify-between items-center gap-3 mb-4' },
+        h('h3', { class: 'font-bold' }, `Sản phẩm (${list.length})`),
+        h('div', { class: 'flex flex-wrap items-center gap-2' },
+          filterWrap,
+          h('input', { class: 'inp !w-60', placeholder: 'Tìm theo tên...', oninput: e => { q = e.target.value.toLowerCase(); draw(); } }))),
       h('div', { class: 'scroll' }, h('table', { style: 'width:100%' }, h('thead', {}, h('tr', {}, ['Tên', 'Loại', 'Giá', 'Tồn kho', 'Trạng thái', 'Thao tác'].map(t => h('th', {}, t)))), tbody))));
   }
 
   /* ---------- NGUOI DUNG ---------- */
+  const ROLE_LABELS = {
+    customer: 'Khách hàng',
+    publisher: 'Nhà phát hành (Publisher)',
+    staff: 'Nhân viên',
+    admin: 'Admin'
+  };
   async function users() {
     const { users: list } = await call('/users');
-    const me = G5.user();
+    const me = G5.user() || {};
     view.replaceChildren(h('div', { class: 'card p-5' }, h('h3', { class: 'font-bold mb-4' }, `Người dùng (${list.length})`),
       h('div', { class: 'scroll' }, h('table', { style: 'width:100%' },
         h('thead', {}, h('tr', {}, ['Tên', 'Email', 'Vai trò', 'Trạng thái', 'Đơn', 'Điểm', 'Ngày tạo'].map(t => h('th', {}, t)))),
         h('tbody', {}, list.map(u => {
-          const self = String(u.id) === String(me && me.id);
-          const roleSel = h('select', { class: 'inp !w-auto', disabled: self, onchange: async e => { await call('/users/' + u.id, 'PUT', { role: e.target.value }); flash('Đã đổi vai trò ' + u.email); } },
-            ['customer', 'staff', 'admin'].map(r => h('option', { value: r, selected: r === u.role }, r === 'customer' ? 'Khách hàng' : r === 'staff' ? 'Nhân viên' : 'Admin')));
-          const lock = h('button', { class: 'ghost' + (u.status === 'active' ? ' danger' : ''), disabled: self, onclick: async () => {
-            await call('/users/' + u.id, 'PUT', { status: u.status === 'active' ? 'locked' : 'active' }); flash('Đã cập nhật ' + u.email); users();
-          } }, u.status === 'active' ? 'Khóa' : 'Mở khóa');
-          return h('tr', {}, h('td', {}, u.display_name, self ? h('span', { class: 'text-xs text-outline' }, ' (bạn)') : null), h('td', { class: 'text-xs' }, u.email),
-            h('td', {}, roleSel), h('td', {}, lock), h('td', {}, u.orders), h('td', {}, u.points), h('td', { class: 'text-xs whitespace-nowrap' }, date(u.created_at)));
+          const self = (me.id != null && String(u.id) === String(me.id))
+            || (me.email && String(u.email).toLowerCase() === String(me.email).toLowerCase())
+            || (u.role === 'admin' && String(u.email).toLowerCase() === 'admin@5guys.vn' && (!me.email || String(me.email).toLowerCase() === 'admin@5guys.vn'));
+          const roleSel = h('select', {
+            class: 'inp !w-auto',
+            disabled: self,
+            title: self ? 'Tài khoản Admin đang đăng nhập — đã khóa tự đổi vai trò' : 'Đổi vai trò người dùng',
+            onchange: async e => {
+              if (self) return;
+              await call('/users/' + u.id, 'PUT', { role: e.target.value });
+              flash('Đã đổi vai trò ' + u.email + ' thành ' + (ROLE_LABELS[e.target.value] || e.target.value));
+            }
+          },
+            ['customer', 'publisher', 'staff', 'admin'].map(r => h('option', { value: r, selected: r === u.role }, ROLE_LABELS[r])));
+          const lock = h('button', {
+            class: 'ghost' + (u.status === 'active' ? ' danger' : ''),
+            disabled: self,
+            title: self ? 'Không thể tự khóa tài khoản Admin đang đăng nhập' : '',
+            onclick: async () => {
+              if (self) return;
+              await call('/users/' + u.id, 'PUT', { status: u.status === 'active' ? 'locked' : 'active' });
+              flash('Đã cập nhật ' + u.email);
+              users();
+            }
+          }, u.status === 'active' ? 'Khóa' : 'Mở khóa');
+          return h('tr', {},
+            h('td', { class: 'font-medium' }, u.display_name, self ? h('span', { class: 'ml-1.5 text-xs font-bold text-brand-light' }, '(bạn)') : null),
+            h('td', { class: 'text-xs' }, u.email),
+            h('td', {}, roleSel),
+            h('td', {}, lock),
+            h('td', {}, u.orders),
+            h('td', {}, u.points),
+            h('td', { class: 'text-xs whitespace-nowrap' }, date(u.created_at)));
         }))))));
   }
 
   /* ---------- HO TRO ---------- */
+  let expandedTicketId = null;
   async function tickets() {
-    const { tickets: list } = await call('/tickets');
-    view.replaceChildren(h('div', { class: 'card p-5' }, h('h3', { class: 'font-bold mb-4' }, 'Yêu cầu hỗ trợ'),
-      list.length ? h('div', { class: 'space-y-3' }, list.map(t => {
-        const reply = h('input', { class: 'inp', placeholder: 'Nhập phản hồi cho khách...' });
-        const status = h('select', { class: 'inp !w-auto' }, Object.entries(TICKET_STATUS).map(([k, [l]]) => h('option', { value: k, selected: k === t.status }, l)));
-        return h('div', { class: 'border border-dark-border rounded-xl p-4' },
-          h('div', { class: 'flex flex-wrap justify-between gap-2' }, h('b', {}, '#TK-' + String(t.id).padStart(4, '0') + ' · ' + t.subject), pill(TICKET_STATUS, t.status)),
-          h('p', { class: 'text-xs text-outline mt-1' }, (t.email || 'Khách') + ' · ' + date(t.created_at) + (t.order_number ? ' · Đơn ' + t.order_number : '')),
-          h('p', { class: 'text-sm mt-2 whitespace-pre-line' }, t.message),
-          t.last_reply ? h('p', { class: 'text-sm mt-2 text-brand-light' }, 'Phản hồi gần nhất: ' + t.last_reply) : null,
-          h('div', { class: 'flex flex-wrap sm:flex-nowrap gap-2 mt-3' }, reply, status,
-            h('button', { class: 'btn', onclick: async () => {
-              await call('/tickets/' + t.id, 'PUT', { status: status.value, reply: reply.value.trim() || undefined }); flash('Đã cập nhật ticket'); tickets();
-            } }, 'Lưu')));
-      })) : h('p', { class: 'text-outline text-sm' }, 'Chưa có yêu cầu hỗ trợ.')));
+    const res = await call('/tickets');
+    const usingFallback = !Array.isArray(res.tickets) || res.tickets.length === 0;
+    const list = usingFallback ? getFallbackTickets() : res.tickets;
+    if (expandedTicketId == null && list.length) {
+      const firstOpen = list.find(t => t.status === 'open' || t.status === 'in_progress') || list[0];
+      expandedTicketId = firstOpen.id;
+    }
+
+    const openCount = list.filter(t => t.status === 'open' || t.status === 'in_progress').length;
+
+    const saveTicket = async (t, newStatus, replyText) => {
+      if (usingFallback) {
+        const cur = getFallbackTickets();
+        const item = cur.find(x => x.id === t.id);
+        if (item) {
+          if (newStatus) item.status = newStatus;
+          if (replyText) item.last_reply = replyText;
+          localStorage.setItem(FALLBACK_TICKETS_KEY, JSON.stringify(cur));
+        }
+      } else {
+        await call('/tickets/' + t.id, 'PUT', { status: newStatus, reply: replyText || undefined });
+      }
+    };
+
+    view.replaceChildren(h('div', { class: 'card p-5' },
+      h('div', { class: 'flex flex-wrap items-center justify-between gap-2 mb-4' },
+        h('div', {},
+          h('h3', { class: 'font-bold' }, `Yêu cầu hỗ trợ (${list.length})`),
+          h('p', { class: 'text-xs text-outline mt-0.5' }, `Đang mở: ${openCount} ticket · Bấm vào từng ticket để xem nội dung và phản hồi`)),
+        h('span', { class: 'pill', style: openCount > 0 ? 'color:#f59e0b;border-color:#f59e0b' : 'color:#10b981;border-color:#10b981' },
+          openCount > 0 ? `${openCount} Ticket đang mở` : 'Đã xử lý hết')),
+      h('div', { class: 'space-y-3' }, list.map(t => {
+        const isOpen = expandedTicketId === t.id;
+        const reply = h('textarea', {
+          class: 'inp',
+          rows: 2,
+          placeholder: 'Nhập câu trả lời phản hồi cho khách hàng (VD: Đã kích hoạt lại Key / Đã cập nhật địa chỉ giao hàng mới)...'
+        });
+        const statusSel = h('select', { class: 'inp !w-auto' },
+          Object.entries(TICKET_STATUS).map(([k, [l]]) => h('option', { value: k, selected: k === t.status }, l)));
+
+        return h('div', { class: 'border rounded-xl transition-colors ' + (isOpen ? 'border-brand bg-[#160b25]' : 'border-dark-border bg-[#190d29] hover:border-brand/50') },
+          // Header: bam vao de xem / thu gon noi dung ticket
+          h('button', {
+            type: 'button',
+            class: 'w-full text-left p-4 flex flex-wrap items-center justify-between gap-3 cursor-pointer',
+            onclick: () => { expandedTicketId = isOpen ? null : t.id; tickets(); }
+          },
+            h('div', { class: 'min-w-0' },
+              h('div', { class: 'flex flex-wrap items-center gap-2' },
+                h('b', { class: 'text-sm text-white' }, '#TK-' + String(t.id).padStart(4, '0') + ' · ' + t.subject),
+                pill(TICKET_STATUS, t.status)),
+              h('p', { class: 'text-xs text-outline mt-1' },
+                '👤 ' + (t.email || 'Khách hàng') + ' · 🕒 ' + date(t.created_at) + (t.order_number ? ' · 📦 Đơn ' + t.order_number : ''))),
+            h('span', { class: 'text-xs text-brand-light font-semibold flex items-center gap-1' },
+              isOpen ? 'Thu gọn' : 'Xem & Phản hồi',
+              h('i', { class: 'fa-solid ' + (isOpen ? 'fa-chevron-up' : 'fa-chevron-down') }))),
+
+          // Noi dung chi tiet & o phan hoi
+          isOpen ? h('div', { class: 'px-4 pb-4 pt-2 border-t border-white/10 space-y-3' },
+            h('div', { class: 'rounded-lg bg-[#12091c] border border-white/10 p-3.5' },
+              h('p', { class: 'text-[11px] uppercase tracking-wider text-outline font-bold mb-1' }, 'Nội dung khách gửi:'),
+              h('p', { class: 'text-sm text-gray-200 whitespace-pre-line leading-relaxed' }, t.message)),
+            t.last_reply ? h('div', { class: 'rounded-lg bg-brand/15 border border-brand/40 p-3 text-sm text-brand-light' },
+              h('b', { class: 'text-xs uppercase tracking-wider block mb-1 text-white' }, '✔ Phản hồi của Admin:'),
+              t.last_reply) : null,
+            h('div', { class: 'space-y-2 pt-1' },
+              reply,
+              h('div', { class: 'flex flex-wrap items-center justify-between gap-2' },
+                h('div', { class: 'flex items-center gap-2' },
+                  h('span', { class: 'text-xs text-outline' }, 'Trạng thái:'),
+                  statusSel,
+                  h('button', {
+                    class: 'ghost text-xs',
+                    onclick: async () => {
+                      await saveTicket(t, statusSel.value, reply.value.trim());
+                      flash('Đã lưu cập nhật ticket #TK-' + String(t.id).padStart(4, '0'));
+                      tickets();
+                    }
+                  }, 'Lưu trạng thái')),
+                h('button', {
+                  class: 'btn',
+                  onclick: async () => {
+                    const msg = reply.value.trim();
+                    if (!msg && !t.last_reply) {
+                      flash('Vui lòng nhập nội dung phản hồi cho khách trước khi đóng ticket.', false);
+                      reply.focus();
+                      return;
+                    }
+                    await saveTicket(t, 'closed', msg || t.last_reply);
+                    flash('Đã gửi phản hồi & đóng ticket #TK-' + String(t.id).padStart(4, '0'));
+                    tickets();
+                  }
+                }, h('i', { class: 'fa-solid fa-paper-plane' }), 'Phản hồi & Đóng ticket')))) : null
+        );
+      }))));
   }
 
   const TABS = [

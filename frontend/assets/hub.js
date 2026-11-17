@@ -26,31 +26,7 @@
     // DOM Ready Setup for interactive actions
     document.addEventListener('DOMContentLoaded', function () {
       
-      // License Key Toggle & Copy
-      const licenseText = document.getElementById('license-key-text');
-      const btnToggleKey = document.getElementById('btn-toggle-key');
-      const btnCopyKey = document.getElementById('btn-copy-key');
-      let keyHidden = false;
-      const realKey = '';
-
-      if (btnToggleKey && licenseText) {
-        btnToggleKey.addEventListener('click', () => {
-          keyHidden = !keyHidden;
-          licenseText.textContent = keyHidden ? '••••-••••-••••-••••' : realKey;
-          btnToggleKey.innerHTML = `<span class="material-symbols-outlined text-base">${keyHidden ? 'visibility_off' : 'visibility'}</span>`;
-        });
-      }
-
-      if (btnCopyKey && licenseText) {
-        btnCopyKey.addEventListener('click', () => {
-          if (!realKey) { showToast('Chưa có key thật', 'Key bản quyền cần được cấp từ backend.'); return; }
-          navigator.clipboard.writeText(realKey).then(() => {
-            showToast('Đã Sao Chép Key 📋', `Mã bản quyền: ${realKey} đã được lưu vào clipboard.`);
-          }).catch(() => {
-            showToast('Key Bản Quyền', realKey);
-          });
-        });
-      }
+      // License Key Toggle & Copy: xử lý trong phần KHO GAME bên dưới (key riêng cho từng game).
 
       // Promo Gift Code Redemption
       const btnRedeem = document.getElementById('btn-redeem-code');
@@ -161,10 +137,120 @@
 
 /* ================= Phần bổ sung cho 3 trang: Kho game / Thuê cấu hình / Cộng đồng Mod ================= */
 (function () {
-  function makeKey(s) {
-    var h = 2166136261, i, c;
+  /* ---- Tiện ích sinh dữ liệu ổn định theo (tài khoản + game) ---- */
+  function hash32(s) {
+    var h = 2166136261, i;
     for (i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
-    return '';
+    return h >>> 0;
+  }
+  function rng(seed) {
+    var x = seed || 1;
+    return function () { x ^= x << 13; x >>>= 0; x ^= x >>> 17; x ^= x << 5; x >>>= 0; return x / 4294967296; };
+  }
+  function accountSeed() { var u = (window.G5 && G5.user()) || {}; return String(u.id || u.email || 'guest'); }
+  function baseSlug(slug) { return String(slug || '').replace(/-(digital|physical)$/, ''); }
+
+  // Key bản quyền dạng 5GUYS-SILK-8829-X9A1: tag lấy từ tên game, phần số/chữ sinh từ tài khoản + game
+  // nên mỗi người dùng có key riêng và key không đổi giữa các lần tải trang.
+  function makeKey(title, slug) {
+    var clean = String(title || 'GAME').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+    var part = clean.indexOf(':') !== -1 ? clean.split(':').slice(1).join(' ') : clean;
+    var words = part.replace(/[^A-Z0-9 ]/g, ' ').trim().split(/\s+/).filter(function (w) { return w.length > 2 && !/^[IVX]+$/.test(w); });
+    var tag = (words[0] || 'GAME').slice(0, 4); while (tag.length < 4) tag += 'X';
+    var r = rng(hash32(accountSeed() + '|' + baseSlug(slug || title))), digits = '', tail = '', i;
+    var A = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    for (i = 0; i < 4; i++) digits += Math.floor(r() * 10);
+    for (i = 0; i < 4; i++) tail += A[Math.floor(r() * A.length)];
+    return '5GUYS-' + tag + '-' + digits + '-' + tail;
+  }
+
+  /* ---- Dung lượng cài đặt + thời lượng chơi (T2 → CN) riêng cho từng game ---- */
+  var GAME_PROFILES = {
+    'hollow-knight':                          { size: 9,   week: [1.0, 0.5, 2.0, 0, 1.5, 3.5, 2.5] },
+    'hollow-knight-silksong':                 { size: 12,  week: [1.5, 2.5, 4.0, 2.0, 5.5, 3.0, 0.5] },
+    'black-myth-wukong':                      { size: 130, week: [0.5, 1.0, 0, 2.5, 1.5, 6.0, 4.5] },
+    'elden-ring':                             { size: 60,  week: [2.0, 1.5, 3.0, 2.5, 0.5, 4.5, 5.0] },
+    'sekiro-shadows-die-twice':               { size: 25,  week: [0, 1.5, 1.0, 2.0, 3.5, 2.0, 1.0] },
+    'dark-souls-remastered':                  { size: 8,   week: [1.0, 0, 1.5, 0.5, 2.0, 1.0, 3.0] },
+    'dark-souls-ii-scholar-of-the-first-sin': { size: 32,  week: [0.5, 2.0, 0, 1.0, 1.5, 3.0, 2.0] },
+    'dark-souls-iii':                         { size: 25,  week: [2.5, 1.0, 2.0, 0, 3.0, 4.0, 1.5] },
+    'red-dead-redemption':                    { size: 12,  week: [1.0, 1.5, 0.5, 2.0, 1.0, 2.5, 3.5] },
+    'red-dead-redemption-ii':                 { size: 150, week: [3.0, 2.0, 1.5, 4.0, 2.5, 5.0, 6.5] }
+  };
+  function gameProfile(slug, title) {
+    var p = GAME_PROFILES[baseSlug(slug)];
+    if (p) return p;
+    var r = rng(hash32(accountSeed() + '|play|' + baseSlug(slug || title))), week = [], i;
+    for (i = 0; i < 7; i++) week.push(Math.round(r() * 10) / 2); // 0 → 5h, bước 0.5h
+    return { size: 8 + Math.floor(r() * 70), week: week };
+  }
+
+  /* ---- Ổ đĩa lưu trữ giả lập ---- */
+  var DRIVES = [
+    { id: 'C', name: 'Ổ C: Kingston SSD', total: 500, free: 120, speed: '3,500 MB/s' },
+    { id: 'D', name: 'Ổ D: Samsung 990 Pro', total: 1000, free: 358, speed: '7,450 MB/s' }
+  ];
+  var DRIVE_KEY = '5guys_library_drive';
+  function currentDrive() {
+    var id = localStorage.getItem(DRIVE_KEY);
+    return DRIVES.filter(function (d) { return d.id === id; })[0] || DRIVES[1];
+  }
+
+  function renderDrive() {
+    var d = currentDrive(), used = d.total - d.free, size = current.size || 0;
+    var $ = function (id) { return document.getElementById(id); };
+    if (!$('drive-name')) return;
+    $('drive-name').textContent = d.name;
+    $('drive-usage').textContent = used + ' GB / ' + d.total + ' GB';
+    $('drive-free').textContent = 'Trống ' + d.free + ' GB';
+    $('drive-speed').textContent = 'Tốc độ đọc ngẫu nhiên: ' + d.speed;
+    var gamePct = Math.min(size, used) / d.total * 100;
+    $('drive-bar-used').style.width = ((used / d.total * 100) - gamePct) + '%';
+    $('drive-bar-game').style.width = gamePct + '%';
+    $('drive-game-size').textContent = current.title ? current.title + ' - ' + size + ' GB' : 'Chọn game để xem dung lượng';
+    $('drive-game-size').title = $('drive-game-size').textContent;
+    var menu = $('drive-menu');
+    if (menu) {
+      menu.replaceChildren();
+      DRIVES.forEach(function (drive) {
+        var on = drive.id === d.id;
+        var opt = document.createElement('button');
+        opt.type = 'button';
+        opt.setAttribute('role', 'option');
+        opt.setAttribute('aria-selected', on ? 'true' : 'false');
+        opt.dataset.drive = drive.id;
+        opt.className = 'w-full flex items-center gap-2.5 rounded-lg px-2.5 py-2 text-left text-xs transition-colors cursor-pointer ' + (on ? 'bg-brand-purple/25 text-white' : 'text-on-surface hover:bg-surface-container-high');
+        var icon = document.createElement('span');
+        icon.className = 'material-symbols-outlined text-base ' + (on ? 'text-brand-neon' : 'text-outline');
+        icon.textContent = on ? 'check_circle' : 'hard_drive';
+        var txt = document.createElement('span');
+        txt.className = 'min-w-0 flex-1';
+        var nm = document.createElement('span'); nm.className = 'block font-semibold truncate'; nm.textContent = drive.name;
+        var meta = document.createElement('span'); meta.className = 'block text-[11px] text-on-surface-variant'; meta.textContent = 'Trống ' + drive.free + ' GB / ' + drive.total + ' GB · ' + drive.speed;
+        txt.append(nm, meta);
+        opt.append(icon, txt);
+        menu.appendChild(opt);
+      });
+    }
+  }
+
+  function renderPlaytime() {
+    var bars = document.getElementById('playtime-bars'), total = document.getElementById('playtime-total');
+    if (!bars) return;
+    var days = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'], week = current.week || [0, 0, 0, 0, 0, 0, 0];
+    var max = Math.max.apply(null, week), sum = week.reduce(function (a, h) { return a + h; }, 0);
+    if (total) total.textContent = (Math.round(sum * 10) / 10).toFixed(1) + ' Giờ';
+    bars.setAttribute('aria-label', 'Thời lượng chơi ' + current.title + ' tuần này: ' + week.map(function (h, i) { return days[i] + ' ' + h.toFixed(1) + ' giờ'; }).join(', '));
+    bars.replaceChildren();
+    week.forEach(function (h, i) {
+      var ratio = max > 0 ? h / max : 0;
+      var b = document.createElement('div');
+      b.className = 'flex-1 rounded-t transition-[height] duration-500 ease-out ' + (h > 0 && h === max ? 'bg-brand-purple shadow-[0_0_8px_rgba(157,78,221,0.6)]' : ratio >= 0.6 ? 'bg-brand-neon' : ratio >= 0.35 ? 'bg-brand-purple/40' : 'bg-surface-container-high');
+      b.style.height = '0%';
+      b.title = days[i] + ': ' + h.toFixed(1) + 'h';
+      bars.appendChild(b);
+      setTimeout(function () { b.style.height = Math.max(6, ratio * 100) + '%'; }, 30);
+    });
   }
 
   /* ---------------- KHO GAME ---------------- */
@@ -186,19 +272,69 @@
     return 'games/' + encodeURIComponent(slug) + '.html';
   }
 
-  var DEMO = {
-    cyberpunk: { title: 'Cyberpunk 2077: Phantom Liberty', key: '' },
-    wukong: { title: 'Black Myth: Wukong', key: '' },
-    eldenring: { title: 'Elden Ring: Erdtree', key: '' },
-    gtav: { title: 'GTA V: Enhanced 2024', key: '' }
-  };
-  var current = { title: DEMO.cyberpunk.title, slug: 'cyberpunk-2077-phantom-liberty', cover: '', key: DEMO.cyberpunk.key };
-  var realKey = current.key;
+  var current = { title: '', slug: '', cover: '', key: '', size: 0, week: null };
+  var realKey = '', keyVisible = false;
 
-  function setKey(k) {
-    realKey = k;
-    var t = document.getElementById('license-key-text');
-    if (t) t.textContent = k || 'Key sẽ được cấp khi có backend.';
+  function renderKey() {
+    var t = document.getElementById('license-key-text'), tg = document.getElementById('btn-toggle-key');
+    if (!t) return;
+    t.textContent = keyVisible ? realKey : realKey.replace(/[A-Z0-9]/g, '*');
+    t.classList.toggle('blur-[3px]', !keyVisible);
+    t.classList.toggle('select-none', !keyVisible);
+    t.classList.toggle('select-all', keyVisible);
+    if (tg) {
+      tg.innerHTML = '<span class="material-symbols-outlined text-base">' + (keyVisible ? 'visibility_off' : 'visibility') + '</span>';
+      tg.title = keyVisible ? 'Ẩn mã' : 'Hiện mã';
+      tg.setAttribute('aria-label', keyVisible ? 'Ẩn mã bản quyền' : 'Hiện mã bản quyền');
+      tg.setAttribute('aria-pressed', keyVisible ? 'true' : 'false');
+    }
+  }
+  function setKey(k) { realKey = k; keyVisible = false; renderKey(); }
+
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) return navigator.clipboard.writeText(text);
+    return new Promise(function (resolve, reject) {
+      var ta = document.createElement('textarea');
+      ta.value = text; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy') ? resolve() : reject(new Error('copy_failed')); } catch (e) { reject(e); }
+      ta.remove();
+    });
+  }
+
+  var controlsBound = false;
+  function bindLibraryControls() {
+    if (controlsBound) return;
+    controlsBound = true;
+    var toggle = document.getElementById('btn-toggle-key'), copy = document.getElementById('btn-copy-key');
+    if (toggle) toggle.addEventListener('click', function () { if (!realKey) return; keyVisible = !keyVisible; renderKey(); });
+    if (copy) copy.addEventListener('click', function () {
+      if (!realKey) return;
+      copyText(realKey).then(function () {
+        showToast('Đã Sao Chép Key 📋', 'Mã bản quyền ' + current.title + ' đã được lưu vào clipboard.');
+      }).catch(function () { showToast('Không thể sao chép', 'Trình duyệt chặn clipboard. Hãy bấm biểu tượng con mắt để hiện mã và chép thủ công.', false); });
+    });
+
+    var driveBtn = document.getElementById('drive-toggle'), menu = document.getElementById('drive-menu'), caret = document.getElementById('drive-caret');
+    if (!driveBtn || !menu) return;
+    var setOpen = function (open) {
+      menu.classList.toggle('hidden', !open);
+      driveBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+      if (caret) caret.style.transform = open ? 'rotate(180deg)' : '';
+    };
+    driveBtn.addEventListener('click', function (e) { e.stopPropagation(); setOpen(menu.classList.contains('hidden')); });
+    menu.addEventListener('click', function (e) {
+      var opt = e.target.closest('[data-drive]');
+      if (!opt) return;
+      e.stopPropagation();
+      var changed = opt.dataset.drive !== currentDrive().id;
+      localStorage.setItem(DRIVE_KEY, opt.dataset.drive);
+      setOpen(false);
+      renderDrive();
+      if (changed) showToast('Đã Đổi Ổ Lưu Trữ 💾', 'Thư mục cài đặt game chuyển sang ' + currentDrive().name + ' (trống ' + currentDrive().free + ' GB).');
+    });
+    document.addEventListener('click', function (e) { if (!menu.classList.contains('hidden') && !e.target.closest('#library-storage-stats')) setOpen(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !menu.classList.contains('hidden')) { setOpen(false); driveBtn.focus(); } });
   }
 
   window.playSelected = async function () {
@@ -228,18 +364,19 @@
     card.classList.remove('bg-surface-container-low', 'border-outline-variant/10');
     card.classList.add('bg-surface-container', 'border-brand-purple/50', 'shadow-[0_0_15px_rgba(157,78,221,0.2)]');
     var title = card.querySelector('h3').textContent.trim();
-    var d = DEMO[card.dataset.game];
-    var resolvedTitle = d ? d.title : title;
+    var slug = card.dataset.slug || slugifyTitle(title);
+    var profile = gameProfile(slug, title);
     current = {
-      title: resolvedTitle,
-      slug: card.dataset.slug || slugifyTitle(resolvedTitle),
+      title: title,
+      slug: slug,
       cover: card.dataset.cover || '',
-      key: card.dataset.key || (d && d.key) || makeKey(title)
+      key: card.dataset.key || makeKey(title, slug),
+      size: profile.size,
+      week: profile.week
     };
     var h = document.getElementById('banner-title'); if (h) h.textContent = current.title;
     var p = document.getElementById('banner-desc');
-    if (p && card.dataset.game !== 'cyberpunk') p.textContent = 'Game đã được kích hoạt trong kho của bạn. Bấm CHƠI NGAY để mở trực tiếp "' + current.title + '" trong tab mới.';
-    if (p && card.dataset.game === 'cyberpunk') p.textContent = p.dataset.orig;
+    if (p) p.textContent = 'Game đã được kích hoạt trong kho của bạn. Bấm CHƠI NGAY để mở trực tiếp "' + current.title + '" trong tab mới.';
     var img = card.querySelector('img'), bi = document.getElementById('banner-img');
     if (bi) {
       if (current.cover) { bi.src = current.cover; bi.style.visibility = 'visible'; }
@@ -247,9 +384,8 @@
       else { bi.style.visibility = 'hidden'; }
     }
     setKey(current.key);
-    // giữ trạng thái ẩn/hiện key đang chọn
-    var tg = document.getElementById('btn-toggle-key');
-    if (tg && tg.textContent.indexOf('visibility_off') !== -1) document.getElementById('license-key-text').textContent = '••••-••••-••••-••••';
+    renderPlaytime();
+    renderDrive();
   }
 
   function initLibrary() {
@@ -327,7 +463,7 @@
       orderDetail.textContent = 'Bản quyền kỹ thuật số' + (order[1] ? ' • Mua ngày ' + String(order[1]) : '');
       var ready = document.createElement('span');
       ready.className = 'mt-1.5 inline-flex rounded bg-brand-purple/20 px-2 py-0.5 text-[10px] font-semibold text-secondary';
-      ready.textContent = 'Đã thêm vào kho';
+      ready.textContent = 'Đã thêm vào kho · ' + gameProfile(card.dataset.slug, title).size + ' GB';
       info.appendChild(head);
       info.appendChild(orderDetail);
       info.appendChild(ready);
@@ -349,31 +485,8 @@
     });
 
     // Open the first actually-owned game, not a hard-coded demo title.
+    bindLibraryControls();
     selectCard(cards[0], cards);
-
-    var copy = document.getElementById('btn-copy-key');
-    if (copy) copy.addEventListener('click', function (e) {
-      e.stopImmediatePropagation();
-      if (!realKey) { showToast('Chưa có key thật', 'Key bản quyền cần được cấp từ backend.'); return; }
-      if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(realKey).then(function () {
-          showToast('Đã Sao Chép Key 📋', 'Mã bản quyền đã được lưu vào clipboard.');
-        }).catch(function () { showToast('Key Bản Quyền', realKey); });
-      } else {
-        showToast('Key Bản Quyền', realKey);
-      }
-    }, true);
-
-    var toggle = document.getElementById('btn-toggle-key');
-    if (toggle) toggle.addEventListener('click', function (e) {
-      e.stopImmediatePropagation();
-      var keyText = document.getElementById('license-key-text');
-      if (!keyText) return;
-      var hidden = keyText.textContent.indexOf('•') === 0;
-      if (!realKey) { showToast('Chưa có key thật', 'Key bản quyền cần được cấp từ backend.'); return; }
-      keyText.textContent = hidden ? realKey : '••••-••••-••••-••••';
-      toggle.innerHTML = '<span class="material-symbols-outlined text-base">' + (hidden ? 'visibility' : 'visibility_off') + '</span>';
-    }, true);
   }
 
   /* ---------------- CỘNG ĐỒNG MOD THEO TỪNG GAME ---------------- */

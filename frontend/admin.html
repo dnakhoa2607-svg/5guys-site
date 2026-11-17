@@ -41,7 +41,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
   <div id="denied" class="hidden card p-8 text-center">
     <i class="fa-solid fa-lock text-4xl text-brand-light"></i>
     <h2 class="text-xl font-bold mt-3">Bạn không có quyền quản trị</h2>
-    <p class="text-outline mt-2 text-sm">Tài khoản cần có vai trò <b>admin</b>. Chạy file <code>database/make_admin.sql</code> với email của bạn, rồi đăng xuất và đăng nhập lại.</p>
+    <p class="text-outline mt-2 text-sm">Tài khoản cần có vai trò <b>admin</b> hoặc <b>staff</b>. Chạy file <code>database/make_admin.sql</code> với email của bạn, rồi đăng xuất và đăng nhập lại.</p>
     <a href="index.html" class="btn mt-4">Về cửa hàng</a>
   </div>
 
@@ -659,6 +659,44 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
         }))))));
   }
 
+  /* ---------- COMMUNITY GAMES ---------- */
+  async function communityGames() {
+    const { games: list } = await call('/community-games');
+    view.replaceChildren(h('div', { class: 'card p-5' },
+      h('div', { class: 'flex flex-wrap items-center justify-between gap-2 mb-4' },
+        h('div', {},
+          h('h3', { class: 'font-bold' }, `Game chờ duyệt (${list.length})`),
+          h('p', { class: 'text-xs text-outline mt-1' }, 'Chỉ game được duyệt mới xuất hiện trong Community Games.')),
+        h('a', { class: 'ghost', href: 'community-games.html', target: '_blank', rel: 'noopener' }, 'Mở trang Community Games')),
+      list.length ? h('div', { class: 'space-y-3' }, list.map(game => {
+        const note = h('textarea', {
+          class: 'inp',
+          rows: 2,
+          maxlength: 500,
+          placeholder: 'Ghi chú cho người đăng (tùy chọn)'
+        });
+        const review = async action => {
+          if (action === 'reject' && !confirm(`Từ chối game "${game.title}"?`)) return;
+          try {
+            await call('/community-games/' + game.id, 'PUT', { action, reviewNote: note.value.trim() });
+            flash(action === 'publish' ? `Đã duyệt "${game.title}".` : `Đã từ chối "${game.title}".`);
+            communityGames();
+          } catch {}
+        };
+        return h('article', { class: 'rounded-xl border border-dark-border bg-[#190d29] p-4' },
+          h('div', { class: 'flex flex-wrap items-start justify-between gap-3' },
+            h('div', { class: 'min-w-0' },
+              h('h4', { class: 'font-bold text-white' }, game.title),
+              h('p', { class: 'mt-1 text-xs text-outline' }, `Đăng bởi ${game.uploader_name || 'Tài khoản đã xóa'}${game.uploader_email ? ` · ${game.uploader_email}` : ''} · ${date(game.created_at)}`),
+              h('p', { class: 'mt-3 whitespace-pre-line text-sm text-gray-300' }, game.description || 'Không có mô tả')),
+            h('span', { class: 'pill', style: 'color:#f59e0b;border-color:#f59e0b' }, 'Chờ duyệt')),
+          h('label', { class: 'mt-3 block text-xs text-outline' }, 'Ghi chú duyệt', note),
+          h('div', { class: 'mt-3 flex flex-wrap gap-2' },
+            h('button', { class: 'btn', onclick: () => review('publish') }, h('i', { class: 'fa-solid fa-check' }), 'Duyệt & công khai'),
+            h('button', { class: 'ghost danger', onclick: () => review('reject') }, h('i', { class: 'fa-solid fa-xmark' }), 'Từ chối')));
+      })) : h('p', { class: 'text-sm text-outline' }, 'Không có game đang chờ duyệt.')));
+  }
+
   /* ---------- HO TRO ---------- */
   let expandedTicketId = null;
   async function tickets() {
@@ -763,6 +801,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
   const TABS = [
     ['overview', 'fa-chart-line', 'Tổng quan', overview], ['orders', 'fa-receipt', 'Đơn hàng', orders],
     ['refunds', 'fa-rotate-left', 'Hoàn tiền', refunds], ['products', 'fa-gamepad', 'Sản phẩm', products],
+    ['community-games', 'fa-people-group', 'Community Games', communityGames],
     ['users', 'fa-users', 'Người dùng', users], ['tickets', 'fa-headset', 'Hỗ trợ', tickets]
   ];
   function go(id) {

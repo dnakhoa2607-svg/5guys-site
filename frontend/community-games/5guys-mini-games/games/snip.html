@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cắt Dây Bom (Snip)</title>
+    <style>
+        body { background: #121212; color: #eee; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .back { position: absolute; top: 20px; left: 20px; color: #eee; text-decoration: none; font-weight: bold; background: #2a2a2a; padding: 8px 15px; border-radius: 8px; }
+        .bomb-box { background: #1f1f1f; border: 3px solid #444; border-radius: 16px; padding: 30px; width: 90%; max-width: 480px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.6); }
+        .timer { font-size: 3rem; font-family: monospace; color: #ff3b30; background: #000; padding: 10px 20px; border-radius: 8px; display: inline-block; margin-bottom: 15px; border: 2px solid #333; }
+        .clue { background: #2c2c2c; padding: 15px; border-radius: 8px; font-size: 1.15rem; color: #ffd60a; margin-bottom: 25px; min-height: 60px; display: flex; align-items: center; justify-content: center; }
+        .wires { display: flex; flex-direction: column; gap: 15px; }
+        .wire { height: 28px; border-radius: 14px; cursor: pointer; position: relative; transition: transform 0.1s; display: flex; align-items: center; justify-content: center; font-weight: bold; text-shadow: 0 1px 2px rgba(0,0,0,0.8); }
+        .wire:hover { transform: scale(1.03); filter: brightness(1.15); }
+        .status { margin-top: 20px; font-size: 1.2rem; font-weight: bold; }
+        button { margin-top: 15px; padding: 12px 25px; font-size: 1rem; font-weight: bold; background: #34c759; color: #000; border: none; border-radius: 8px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back">⬅ Trang chủ</a>
+    <h1>💣 CẮT DÂY BOM (SNIP)</h1>
+    <p id="levelText">Màn 1 / 5</p>
+
+    <div class="bomb-box">
+        <div class="timer" id="timer">05.00</div>
+        <div class="clue" id="clue">Đang tải gợi ý...</div>
+        <div class="wires" id="wires"></div>
+        <div class="status" id="status"></div>
+        <button id="restartBtn" style="display:none;" onclick="initGame()">Chơi lại từ đầu</button>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                wires: [
+                    { name: "DÂY ĐỎ", color: "#e63946" },
+                    { name: "DÂY XANH DƯƠNG", color: "#1d3557" },
+                    { name: "DÂY VÀNG", color: "#ffb703" }
+                ],
+                clue: "Cắt sợi dây KHÔNG nằm ở vị trí trên cùng và KHÔNG phải màu vàng.",
+                correct: 1
+            },
+            {
+                wires: [
+                    { name: "DÂY XANH LÁ", color: "#2a9d8f" },
+                    { name: "DÂY TÍM", color: "#8338ec" },
+                    { name: "DÂY ĐỎ", color: "#e63946" }
+                ],
+                clue: "Cắt sợi dây nằm ngay bên dưới dây Xanh Lá.",
+                correct: 1
+            },
+            {
+                wires: [
+                    { name: "DÂY CAM", color: "#fb8500" },
+                    { name: "DÂY TRẮNG", color: "#adb5bd" },
+                    { name: "DÂY XANH DƯƠNG", color: "#219ebc" }
+                ],
+                clue: "Nếu có dây Trắng, hãy cắt dây ở dưới cùng.",
+                correct: 2
+            },
+            {
+                wires: [
+                    { name: "DÂY ĐỎ", color: "#e63946" },
+                    { name: "DÂY XANH LÁ", color: "#2a9d8f" },
+                    { name: "DÂY ĐỎ", color: "#e63946" }
+                ],
+                clue: "Có nhiều hơn 1 dây Đỏ: hãy cắt dây Đỏ đầu tiên!",
+                correct: 0
+            },
+            {
+                wires: [
+                    { name: "DÂY VÀNG", color: "#ffb703" },
+                    { name: "DÂY ĐEN", color: "#343a40" },
+                    { name: "DÂY TÍM", color: "#8338ec" }
+                ],
+                clue: "Cắt dây nằm giữa dây Vàng và dây Tím.",
+                correct: 1
+            }
+        ];
+
+        let currentLevel = 0;
+        let timeLeft = 5.0;
+        let interval = null;
+        let active = false;
+
+        function initGame() {
+            currentLevel = 0;
+            document.getElementById('restartBtn').style.display = 'none';
+            document.getElementById('status').textContent = '';
+            loadLevel();
+        }
+
+        function loadLevel() {
+            clearInterval(interval);
+            active = true;
+            timeLeft = 5.0;
+            const lvl = levels[currentLevel];
+            document.getElementById('levelText').textContent = `Màn ${currentLevel + 1} / ${levels.length}`;
+            document.getElementById('clue').textContent = lvl.clue;
+
+            const wiresEl = document.getElementById('wires');
+            wiresEl.innerHTML = '';
+            lvl.wires.forEach((w, idx) => {
+                const div = document.createElement('div');
+                div.className = 'wire';
+                div.style.background = w.color;
+                div.textContent = `✂️ ${w.name}`;
+                div.onclick = () => cutWire(idx);
+                wiresEl.appendChild(div);
+            });
+
+            interval = setInterval(() => {
+                timeLeft -= 0.05;
+                if (timeLeft <= 0) {
+                    timeLeft = 0;
+                    explode("💥 BÙM! Hết giờ rồi!");
+                }
+                document.getElementById('timer').textContent = timeLeft.toFixed(2).padStart(5, '0');
+            }, 50);
+        }
+
+        function cutWire(idx) {
+            if (!active) return;
+            clearInterval(interval);
+            active = false;
+
+            if (idx === levels[currentLevel].correct) {
+                currentLevel++;
+                if (currentLevel >= levels.length) {
+                    document.getElementById('status').style.color = '#34c759';
+                    document.getElementById('status').textContent = '🎉 XUẤT SẮC! Bạn đã gỡ toàn bộ bom!';
+                    document.getElementById('restartBtn').style.display = 'inline-block';
+                } else {
+                    document.getElementById('status').style.color = '#34c759';
+                    document.getElementById('status').textContent = '✅ Chuẩn! Sang quả tiếp theo...';
+                    setTimeout(() => {
+                        document.getElementById('status').textContent = '';
+                        loadLevel();
+                    }, 700);
+                }
+            } else {
+                explode("💥 BÙM! Bạn cắt nhầm dây kích nổ!");
+            }
+        }
+
+        function explode(msg) {
+            clearInterval(interval);
+            active = false;
+            document.getElementById('status').style.color = '#ff3b30';
+            document.getElementById('status').textContent = msg;
+            document.getElementById('restartBtn').style.display = 'inline-block';
+        }
+
+        initGame();
+    </script>
+</body>
+</html>

@@ -15,6 +15,7 @@ Mở `index.html` trực tiếp bằng trình duyệt (cần Internet để tả
 | library.html | Kho game của tôi | **chỉ người đã đăng nhập**; khách bị chuyển sang login, link ẩn khỏi menu |
 | rental.html | Thuê cấu hình Cloud | xem tự do; thuê / gia hạn / nạp ví cần đăng nhập |
 | mods.html | Cộng đồng Mod theo từng game | `?game=cyberpunk|wukong|eldenring|gtav`; tải mod cần đăng nhập |
+| community-games.html | Game HTML5 cộng đồng | Chơi game đã duyệt; người dùng đăng game bằng ZIP |
 | login.html, register.html | Đăng nhập (2FA), Đăng ký | trang đăng nhập có popup **Quên mật khẩu** (chế độ demo, mã hiện trên màn hình) |
 | profile.html | Hồ sơ cá nhân | thông tin, đổi mật khẩu, sổ địa chỉ (Tỉnh/Phường từ provinces.open-api.vn v2); cần đăng nhập |
 | admin.html | Trang quản trị | chỉ admin/staff; tài khoản mặc định `admin@5guys.vn` / `Admin@12345` |
@@ -25,6 +26,7 @@ Mở `index.html` trực tiếp bằng trình duyệt (cần Internet để tả
 | assets/tailwind-config-hub.js | Cấu hình Tailwind của 3 trang mới | riêng vì trùng tên màu (outline, primary...) nhưng khác giá trị |
 | assets/hub.js | Logic của 3 trang mới | chọn game, key, mod theo game, kiểm tra đăng nhập |
 | assets/float-widgets.js | Nút nổi Hỗ trợ + AI cấu hình | dùng cho library/rental/mods (digital/physical có sẵn trong trang) |
+| assets/community-games.js | Danh sách, iframe chơi game và form đăng ZIP | kết nối API `/community-games` |
 
 ## Cách hoạt động (demo)
 - Đăng nhập (mật khẩu bất kỳ, OTP bất kỳ/nút điền sẵn) -> lưu `5guys_user` trong localStorage; navbar tự đổi giữa "Đăng nhập/Đăng ký" và menu tài khoản.
@@ -89,6 +91,11 @@ Danh sách game ở các trang, trang search, đơn hàng mẫu, đánh giá, đ
 - Mở frontend qua máy chủ tĩnh tại http://localhost:5500 (ví dụ VS Code Live Server). Không mở HTML bằng File:// vì trình duyệt sẽ chặn CORS.
 - API mặc định là http://localhost:3000/api; có thể đặt window.G5_API_BASE trước Assets/shared.js để đổi địa chỉ.
 - Đăng nhập/đăng ký API dùng backend; giỏ, đơn, thư viện và đọc điểm lấy từ API. Checkout chỉ tạo đơn chờ thanh toán. Các trang danh mục hiện vẫn còn dữ liệu mẫu trong HTML; cần API catalog để render động hoàn toàn.
+
+## Community Games
+- Mục Community Games trên menu và trang chủ mở trang `community-games.html`; 5 game trong `community-games/5guys-mini-games/` được nạp sẵn từ bộ ZIP ban đầu.
+- Tải game yêu cầu phiên đăng nhập API; game tải lên chờ admin/staff duyệt rồi mới xuất hiện và chơi được. Với database đã tồn tại, chạy `database/update_v3.sql`; migration tự tạo bảng và nạp 5 game HTML5.
+- ZIP cần có đúng một `index.html` và tuân theo giới hạn/loại file được ghi trong `backend/README.md`. Game được chạy trong iframe sandbox, tách khỏi quyền truy cập DOM và localStorage của trang chính.
 
 
 ## Catalog động và trang chi tiết

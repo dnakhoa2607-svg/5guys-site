@@ -5,6 +5,7 @@ const env = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().positive().default(3000),
   FRONTEND_ORIGIN: z.string().default('http://localhost:5500'),
+  COMMUNITY_GAMES_STORAGE: z.string().default('uploads/community-games'),
   DB_HOST: z.string().default('127.0.0.1'), DB_PORT: z.coerce.number().int().default(3306),
   DB_NAME: z.string().default('5guys_store'), DB_USER: z.string(), DB_PASSWORD: z.string(),
   JWT_SECRET: z.string().min(32), JWT_EXPIRES_IN: z.string().default('2h')

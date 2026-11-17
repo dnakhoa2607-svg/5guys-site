@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Community Games | 5GUYS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/shared.css">
+<script src="assets/shared.js"></script>
+<style>
+body{background:#12091c;color:#f3e8ff;font-family:Inter,sans-serif}
+.arcade-card{background:#1f1032;border:1px solid rgba(157,78,221,.35);transition:transform .2s,border-color .2s,box-shadow .2s}
+.arcade-card:hover{transform:translateY(-3px);border-color:#c77dff;box-shadow:0 12px 30px rgba(0,0,0,.25)}
+.field{background:#12091c;border:1px solid #3c096c;border-radius:.75rem;color:#f3e8ff;padding:.7rem .85rem;width:100%}
+.field:focus{outline:0;border-color:#c77dff}
+iframe.game-frame{display:block;width:100%;height:min(72vh,760px);min-height:420px;background:#090610;border:0}
+@media(max-width:640px){iframe.game-frame{height:65vh;min-height:360px}}
+</style>
+</head>
+<body class="min-h-screen flex flex-col">
+<script src="assets/layout.js" data-part="nav"></script>
+<main class="flex-grow max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-10 sm:py-14 space-y-10">
+  <header class="rounded-3xl border border-vault-border bg-gradient-to-br from-vault-surface to-vault-bg p-7 sm:p-10">
+    <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6">
+      <div>
+        <span class="inline-flex items-center gap-2 rounded-full bg-vault-bg border border-vault-border px-3 py-1 text-xs font-bold text-vault-primary"><i class="fa-solid fa-users"></i> 5GUYS COMMUNITY ARCADE</span>
+        <h1 class="mt-4 text-3xl sm:text-5xl font-black uppercase tracking-tight text-white">Community Games</h1>
+        <p class="mt-3 max-w-2xl text-sm sm:text-base leading-relaxed text-vault-textMuted">Chơi các game HTML5 do cộng đồng chia sẻ ngay trên trình duyệt. Bạn cũng có thể đăng game của mình bằng ZIP có trang <code class="text-vault-primary">index.html</code>.</p>
+      </div>
+      <a href="#upload-game" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-full bg-gradient-to-r from-vault-primaryDark to-vault-primary px-6 py-3 font-bold text-white shadow-purple-glow hover:scale-[1.02] transition-transform"><i class="fa-solid fa-cloud-arrow-up"></i> Đăng game</a>
+    </div>
+  </header>
+
+  <section id="player-section" class="hidden overflow-hidden rounded-2xl border border-vault-border bg-vault-surface shadow-xl">
+    <div class="flex flex-wrap items-center justify-between gap-3 border-b border-vault-border bg-vault-bg px-4 py-3">
+      <div class="min-w-0">
+        <h2 id="player-title" class="truncate font-bold text-white"></h2>
+        <p class="text-xs text-vault-textMuted">Game chạy trong khung cô lập của trình duyệt.</p>
+      </div>
+      <button id="close-player" type="button" class="rounded-full border border-vault-border px-4 py-2 text-sm font-semibold text-vault-text hover:border-vault-primary"><i class="fa-solid fa-xmark mr-1"></i> Đóng game</button>
+    </div>
+    <iframe id="game-frame" class="game-frame" title="Game HTML5" sandbox="allow-scripts allow-pointer-lock allow-presentation" allow="fullscreen" referrerpolicy="no-referrer"></iframe>
+  </section>
+
+  <section class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+    <div class="lg:col-span-2 space-y-4">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
+        <div>
+          <h2 class="text-2xl font-black uppercase text-white">Khám phá game</h2>
+          <p class="mt-1 text-sm text-vault-textMuted">Các game cộng đồng đã được duyệt và sẵn sàng chơi.</p>
+        </div>
+        <label class="sr-only" for="game-search">Tìm game</label>
+        <input id="game-search" class="field sm:max-w-xs" type="search" placeholder="Tìm game...">
+      </div>
+      <p id="catalog-message" class="hidden rounded-xl border border-vault-border bg-vault-surface p-4 text-sm text-vault-textMuted"></p>
+      <div id="game-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4"></div>
+    </div>
+
+    <aside id="upload-game" class="space-y-5">
+      <div class="rounded-2xl border border-vault-border bg-vault-surface p-5 sm:p-6">
+        <h2 class="text-xl font-black text-white"><i class="fa-solid fa-upload mr-2 text-vault-primary"></i>Đăng game HTML5</h2>
+        <p class="mt-2 text-xs leading-relaxed text-vault-textMuted">Tải ZIP tối đa 20 MB, tối đa 500 file, có đúng một file <code>index.html</code>. Game mới sẽ chờ admin/staff duyệt trước khi công khai.</p>
+        <div id="upload-login" class="mt-4 rounded-xl border border-vault-border bg-vault-bg p-4 text-sm text-vault-textMuted">
+          Vui lòng đăng nhập bằng tài khoản API để đăng game.
+          <a class="ml-1 font-bold text-vault-primary hover:text-white" href="login.html?next=community-games.html">Đăng nhập</a>
+        </div>
+        <form id="upload-form" class="hidden mt-4 space-y-3">
+          <label class="block text-xs font-semibold text-vault-textMuted">Tên game
+            <input class="field mt-1.5" name="title" type="text" maxlength="120" required placeholder="Tên game của bạn">
+          </label>
+          <label class="block text-xs font-semibold text-vault-textMuted">Mô tả
+            <textarea class="field mt-1.5 resize-y" name="description" rows="3" maxlength="1200" placeholder="Giới thiệu ngắn về game"></textarea>
+          </label>
+          <label class="block text-xs font-semibold text-vault-textMuted">File ZIP
+            <input class="field mt-1.5 text-xs" name="game" type="file" accept=".zip,application/zip" required>
+          </label>
+          <button id="upload-submit" type="submit" class="w-full rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary px-4 py-3 font-bold text-white hover:brightness-110 disabled:opacity-50"><i class="fa-solid fa-cloud-arrow-up mr-2"></i>Tải lên để duyệt</button>
+        </form>
+        <p id="upload-message" class="hidden mt-3 rounded-lg px-3 py-2 text-sm" role="status"></p>
+      </div>
+      <div id="my-games-card" class="hidden rounded-2xl border border-vault-border bg-vault-surface p-5">
+        <div class="flex items-center justify-between gap-2">
+          <h3 class="font-bold text-white">Game của tôi</h3>
+          <button id="refresh-my-games" type="button" class="text-xs font-semibold text-vault-primary hover:text-white"><i class="fa-solid fa-rotate mr-1"></i>Làm mới</button>
+        </div>
+        <div id="my-games-list" class="mt-3 space-y-2 text-sm"></div>
+      </div>
+    </aside>
+  </section>
+</main>
+<script src="assets/layout.js" data-part="footer"></script>
+<script src="assets/community-games.js"></script>
+</body>
+</html>

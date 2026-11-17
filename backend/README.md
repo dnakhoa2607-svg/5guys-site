@@ -65,3 +65,12 @@ Tài khoản admin mặc định có sẵn trong `seed.sql`: `admin@5guys.vn` / 
 - Mã dùng 1 lần; sai 5 lần thì hủy (`too_many_attempts`); mỗi email phải chờ 60 giây mới xin mã mới (`reset_cooldown`).
 - Email không tồn tại vẫn trả cùng một thông báo, để không lộ email nào đã đăng ký.
 - Không cần chạy thêm SQL nào cho bản v3.
+
+## Community Games (HTML5)
+
+- Database mới: chạy `database/schema.sql` rồi `database/seed.sql`. Database hiện có: chạy `database/update_v3.sql`; migration tạo bảng và nạp 5 game HTML5, không cần chạy lại toàn bộ seed demo.
+- Người dùng có tài khoản đang hoạt động tải ZIP qua `POST /api/community-games` (`multipart/form-data`: `title`, `description` tùy chọn, `game` là file ZIP). Game phải có đúng một `index.html`; giới hạn ZIP 20 MB, tối đa 500 file, 25 MB/file và 100 MB sau giải nén. Game mới ở trạng thái chờ duyệt.
+- `GET /api/community-games` và `GET /api/community-games/:slug` chỉ trả game đã duyệt. `GET /api/community-games/mine` cần đăng nhập; `GET /api/community-games/:slug/play/:file` chỉ phục vụ nội dung tĩnh của game đã duyệt.
+- Admin/staff xem hàng đợi tại `GET /api/admin/community-games`, duyệt/từ chối bằng `PUT /api/admin/community-games/:id` với `{ "action": "publish" | "reject", "reviewNote": "..." }`.
+- ZIP được giải nén vào `backend/uploads/community-games/` (có thể đổi bằng `COMMUNITY_GAMES_STORAGE`); thư mục này bị gitignore. Hãy sao lưu/lưu trữ bền vững thư mục này khi triển khai.
+- Game chạy trong iframe sandbox với chính sách nội dung riêng. Khi public, nên phục vụ API/nội dung tải lên từ origin tách biệt với frontend; cấu hình `FRONTEND_ORIGIN` đúng domain frontend để iframe game được phép nhúng. Không gộp dữ liệu người đăng vào bảng sản phẩm bán hàng.

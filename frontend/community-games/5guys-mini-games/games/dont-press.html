@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bấm Nút Đỏ (Don't Press)</title>
+    <style>
+        body { background: #f4f4f9; color: #222; font-family: 'Segoe UI', sans-serif; height: 100vh; margin: 0; overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; user-select: none; }
+        .back { position: absolute; top: 20px; left: 20px; color: #333; text-decoration: none; font-weight: bold; background: #e0e0e0; padding: 8px 15px; border-radius: 8px; z-index: 100; }
+        #msg { font-size: 1.8rem; font-weight: bold; margin-bottom: 40px; text-align: center; max-width: 600px; padding: 0 20px; }
+        #redBtn {
+            width: 160px; height: 160px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000);
+            border: 8px solid #800000; color: white; font-size: 1.3rem; font-weight: bold;
+            cursor: pointer; box-shadow: 0 12px 25px rgba(179, 0, 0, 0.4);
+            transition: transform 0.1s, left 0.25s ease-out, top 0.25s ease-out;
+            position: relative;
+        }
+        #redBtn:active { transform: scale(0.92); }
+        .fake-btn {
+            width: 140px; height: 140px; border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #ff4d4d, #b30000);
+            border: 6px solid #800000; color: white; font-weight: bold;
+            position: absolute; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back">⬅ Trang chủ</a>
+    <div id="msg">Tuyệt đối KHÔNG ĐƯỢC BẤM vào nút màu đỏ này!</div>
+    <button id="redBtn">ĐỪNG BẤM</button>
+
+    <script>
+        let step = 0;
+        const btn = document.getElementById('redBtn');
+        const msg = document.getElementById('msg');
+
+        const dialogues = [
+            "Ơ kìa? Đã bảo là ĐỪNG BẤM rồi mà!",
+            "Nghiêm túc đấy, dừng lại ngay!",
+            "Bạn không biết đọc chữ à? KHÔNG ĐƯỢC BẤM!",
+            "Thôi được, thử bắt được tôi xem nào!",
+            "Nhanh tay phết nhỉ... Thế còn lần này?",
+            "Tôi thu nhỏ lại cho hết bấm luôn!",
+            "Khoan đã! Nút thật ở đâu?",
+            "Á á á! Đau quá, đừng bấm nữa!",
+            "Được rồi, bạn thắng! Bấm lần cuối để nhận cúp..."
+        ];
+
+        function moveRandom() {
+            btn.style.position = 'absolute';
+            const x = Math.random() * (window.innerWidth - 200) + 20;
+            const y = Math.random() * (window.innerHeight - 200) + 60;
+            btn.style.left = x + 'px';
+            btn.style.top = y + 'px';
+        }
+
+        btn.addEventListener('mouseover', () => {
+            if (step === 3 || step === 4) {
+                moveRandom();
+            }
+        });
+
+        btn.addEventListener('click', () => {
+            if (step < dialogues.length) {
+                msg.textContent = dialogues[step];
+            }
+
+            if (step === 3 || step === 4) {
+                moveRandom();
+            } else if (step === 5) {
+                btn.style.width = '65px';
+                btn.style.height = '65px';
+                btn.style.fontSize = '0.7rem';
+                moveRandom();
+            } else if (step === 6) {
+                btn.style.width = '140px';
+                btn.style.height = '140px';
+                btn.style.fontSize = '1.1rem';
+                moveRandom();
+                // Spawn 4 fake buttons
+                for (let i = 0; i < 4; i++) {
+                    const fake = document.createElement('button');
+                    fake.className = 'fake-btn';
+                    fake.textContent = 'ĐỪNG BẤM';
+                    fake.style.left = (Math.random() * (window.innerWidth - 180) + 20) + 'px';
+                    fake.style.top = (Math.random() * (window.innerHeight - 180) + 60) + 'px';
+                    fake.onclick = () => {
+                        fake.textContent = 'LỪA ĐẤY 😜';
+                        fake.style.background = '#555';
+                    };
+                    document.body.appendChild(fake);
+                }
+            } else if (step === 7) {
+                document.querySelectorAll('.fake-btn').forEach(el => el.remove());
+                btn.style.position = 'relative';
+                btn.style.left = '0';
+                btn.style.top = '0';
+                btn.style.width = '200px';
+                btn.style.height = '200px';
+            } else if (step === 8) {
+                btn.textContent = 'NHẬN CÚP 🏆';
+                btn.style.background = 'radial-gradient(circle at 30% 30%, #2ecc71, #27ae60)';
+                btn.style.borderColor = '#1e8449';
+            } else if (step >= 9) {
+                msg.innerHTML = "🎉 CHÚC MỪNG! Bạn là người cứng đầu nhất thế giới! 🎉<br><small>F5 để chơi lại</small>";
+                btn.style.display = 'none';
+            }
+            step++;
+        });
+    </script>
+</body>
+</html>

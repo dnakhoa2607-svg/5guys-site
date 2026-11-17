@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ném Giấy Vào Sọt (Wind Toss)</title>
+    <style>
+        body { background: #dfe6e9; color: #2d3436; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; user-select: none; }
+        .back { position: absolute; top: 20px; left: 20px; color: #2d3436; text-decoration: none; font-weight: bold; background: #b2bec3; padding: 8px 15px; border-radius: 8px; }
+        canvas { background: #ffffff; border: 3px solid #636e72; border-radius: 12px; cursor: grab; box-shadow: 0 8px 20px rgba(0,0,0,0.1); }
+        canvas:active { cursor: grabbing; }
+        .hud { display: flex; gap: 30px; font-size: 1.2rem; font-weight: bold; margin-bottom: 10px; }
+        #msg { margin-top: 10px; font-weight: bold; color: #0984e3; height: 25px; }
+    </style>
+</head>
+<body>
+    <a href="../index.html" class="back">⬅ Trang chủ</a>
+    <h1>🗑️ NÉM GIẤY VÀO SỌT</h1>
+    <div class="hud">
+        <span id="streak">Chuỗi trúng: 0 / 5</span>
+        <span id="windDisplay">Gió: 0</span>
+    </div>
+    <canvas id="canvas" width="500" height="520"></canvas>
+    <div id="msg">Kéo thả cục giấy từ dưới lên để ném!</div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const streakEl = document.getElementById('streak');
+        const windEl = document.getElementById('windDisplay');
+        const msgEl = document.getElementById('msg');
+
+        let streak = 0;
+        let wind = 0;
+        let ball, isDragging = false, dragStart = null, dragCurrent = null;
+        const bin = { x: 210, y: 170, w: 80, h: 75 };
+
+        function resetBall() {
+            wind = parseFloat(((Math.random() - 0.5) * 0.45).toFixed(2));
+            const dir = wind > 0 ? `➡️ +${Math.round(wind * 100)}` : (wind < 0 ? `⬅️ ${Math.round(wind * 100)}` : '0');
+            windEl.textContent = `Gió: ${dir}`;
+
+            ball = {
+                x: 250,
+                y: 450,
+                r: 18,
+                vx: 0,
+                vy: 0,
+                vz: 0,
+                z: 1,
+                thrown: false
+            };
+        }
+
+        canvas.addEventListener('mousedown', (e) => {
+            if (ball.thrown) return;
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            if (Math.hypot(mx - ball.x, my - ball.y) < 45) {
+                isDragging = true;
+                dragStart = { x: mx, y: my };
+                dragCurrent = { x: mx, y: my };
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            dragCurrent = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (!isDragging) return;
+            isDragging = false;
+            const dx = dragCurrent.x - dragStart.x;
+            const dy = dragCurrent.y - dragStart.y;
+            if (dy < -25) {
+                ball.thrown = true;
+                ball.vx = dx * 0.08;
+                ball.vy = dy * 0.095;
+                ball.vz = -0.012;
+            }
+        });
+
+        function update() {
+            if (ball.thrown) {
+                ball.vx += wind * 0.25;
+                ball.vy += 0.35; // gravity
+                ball.x += ball.vx;
+                ball.y += ball.vy;
+                ball.z = Math.max(0.55, ball.z + ball.vz);
+
+                // Check landing near bin
+                if (ball.vy > 0 && ball.y >= bin.y && ball.y <= bin.y + 45) {
+                    if (ball.x > bin.x + 10 && ball.x < bin.x + bin.w - 10) {
+                        streak++;
+                        streakEl.textContent = `Chuỗi trúng: ${streak} / 5`;
+                        if (streak >= 5) {
+                            msgEl.style.color = '#00b894';
+                            msgEl.textContent = '🏆 ĐỈNH CAO VĂN PHÒNG! Trúng 5 lần liên tiếp!';
+                            streak = 0;
+                        } else {
+                            msgEl.style.color = '#0984e3';
+                            msgEl.textContent = '🎯 Vào sọt! Tiếp tục nào!';
+                        }
+                        resetBall();
+                        return;
+                    }
+                }
+
+                if (ball.y > canvas.height + 30 || ball.x < -30 || ball.x > canvas.width + 30) {
+                    streak = 0;
+                    streakEl.textContent = `Chuỗi trúng: 0 / 5`;
+                    msgEl.style.color = '#d63031';
+                    msgEl.textContent = '❌ Hụt rồi! Chú ý hướng gió nhé!';
+                    resetBall();
+                }
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Floor perspective line
+            ctx.fillStyle = '#f1f2f6';
+            ctx.fillRect(0, 210, canvas.width, 310);
+
+            // Trash bin
+            ctx.fillStyle = '#636e72';
+            ctx.beginPath();
+            ctx.moveTo(bin.x, bin.y);
+            ctx.lineTo(bin.x + bin.w, bin.y);
+            ctx.lineTo(bin.x + bin.w - 10, bin.y + bin.h);
+            ctx.lineTo(bin.x + 10, bin.y + bin.h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Bin rim
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(bin.x - 3, bin.y - 5, bin.w + 6, 10);
+
+            // Aim line
+            if (isDragging && dragStart && dragCurrent) {
+                ctx.strokeStyle = '#0984e3';
+                ctx.setLineDash([6, 6]);
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(ball.x, ball.y);
+                ctx.lineTo(ball.x + (dragCurrent.x - dragStart.x), ball.y + (dragCurrent.y - dragStart.y));
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Paper ball
+            ctx.fillStyle = '#ffeaa7';
+            ctx.strokeStyle = '#fdcb6e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.r * ball.z, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        }
+
+        function loop() {
+            update();
+            draw();
+            requestAnimationFrame(loop);
+        }
+
+        resetBall();
+        loop();
+    </script>
+</body>
+</html>

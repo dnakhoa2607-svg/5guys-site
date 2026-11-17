@@ -85,3 +85,10 @@ SELECT (SELECT id FROM users ORDER BY role='customer' DESC, id ASC LIMIT 1),
        'Shop ơi, mình có đặt mua đĩa vật lý Black Myth: Wukong (bản Blu-ray PS5 nguyên seal). Do tuần này mình chuyển chỗ làm nên muốn đổi địa chỉ nhận hàng sang Số 45 Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP.HCM. Nhờ shop cập nhật giúp trước khi giao cho đơn vị vận chuyển ạ!',
        'open', 'normal'
 FROM DUAL WHERE (SELECT COUNT(*) FROM support_tickets) < 2;
+
+INSERT IGNORE INTO community_games(slug,title,description,source,entry_file,status) VALUES
+  ('rut-dao-dung-luc','Rút Dao Đúng Lúc','Game phản xạ 5–10 giây mỗi ván.','bundled','community-games/5guys-mini-games/games/duel.html','published'),
+  ('bam-nut-do','Bấm Nút Đỏ','Game troll tương tác, hoàn thành trong khoảng 2–3 phút.','bundled','community-games/5guys-mini-games/games/dont-press.html','published'),
+  ('cat-day-bom','Cắt Dây Bom','Game giải đố logic, khoảng 5 giây mỗi màn.','bundled','community-games/5guys-mini-games/games/snip.html','published'),
+  ('do-xe-bao-tap','Đỗ Xe Bão Táp','Game căn thời gian một nút bấm, khoảng 3 giây mỗi màn.','bundled','community-games/5guys-mini-games/games/park.html','published'),
+  ('nem-giay-vao-sot','Ném Giấy Vào Sọt','Game vật lý căn hướng gió, chơi dưới một phút.','bundled','community-games/5guys-mini-games/games/wind-toss.html','published');

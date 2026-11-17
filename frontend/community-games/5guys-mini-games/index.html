@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>5Guys Arcade - Bộ 5 Game Siêu Tốc</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        h1 { font-size: 2.5rem; margin-bottom: 10px; color: #e94560; text-shadow: 0 2px 10px rgba(233, 69, 96, 0.4); text-align: center; }
+        p.subtitle { color: #a2a8d3; margin-bottom: 30px; text-align: center; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            max-width: 1000px;
+            width: 100%;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            text-align: center;
+            transition: transform 0.2s, background 0.2s, border-color 0.2s;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.1);
+            border-color: #e94560;
+        }
+        .icon { font-size: 3rem; margin-bottom: 15px; }
+        .title { font-size: 1.3rem; font-weight: bold; margin-bottom: 10px; color: #fff; }
+        .desc { font-size: 0.9rem; color: #ccc; margin-bottom: 20px; line-height: 1.4; }
+        .badge {
+            display: inline-block;
+            background: #e94560;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            align-self: center;
+        }
+        footer { margin-top: 40px; font-size: 0.85rem; color: #666; }
+    </style>
+</head>
+<body>
+    <h1>🎮 5GUYS ARCADE</h1>
+    <p class="subtitle">Bộ 5 Mini-Game Siêu Tốc • Chơi Xong Lẹ • Chạy Trực Tiếp Trên Trình Duyệt</p>
+
+    <div class="grid">
+        <a href="games/duel.html" class="card">
+            <div>
+                <div class="icon">🤠</div>
+                <div class="title">1. Rút Dao Đúng Lúc</div>
+                <div class="desc">Chờ tín hiệu BẮN! và bấm phím nhanh hơn đối thủ trong tích tắc.</div>
+            </div>
+            <span class="badge">5–10 giây / ván</span>
+        </a>
+
+        <a href="games/dont-press.html" class="card">
+            <div>
+                <div class="icon">🔴</div>
+                <div class="title">2. Bấm Nút Đỏ</div>
+                <div class="desc">Đã bảo đừng bấm rồi mà! Chiếc nút biết chạy trốn và lừa người chơi.</div>
+            </div>
+            <span class="badge">2–3 phút phá đảo</span>
+        </a>
+
+        <a href="games/snip.html" class="card">
+            <div>
+                <div class="icon">💣</div>
+                <div class="title">3. Cắt Dây Bom</div>
+                <div class="desc">Đọc gợi ý logic siêu ngắn và cắt đúng sợi dây trước khi hết 5 giây!</div>
+            </div>
+            <span class="badge">5 giây / màn</span>
+        </a>
+
+        <a href="games/park.html" class="card">
+            <div>
+                <div class="icon">🚗</div>
+                <div class="title">4. Đỗ Xe Bão Táp</div>
+                <div class="desc">Xe mất phanh! Chỉ được bấm 1 lần duy nhất để drift lọt vào ô đỗ.</div>
+            </div>
+            <span class="badge">3 giây / màn</span>
+        </a>
+
+        <a href="games/wind-toss.html" class="card">
+            <div>
+                <div class="icon">🗑️</div>
+                <div class="title">5. Ném Giấy Vào Sọt</div>
+                <div class="desc">Căn hướng gió đổi liên tục để ném trúng 5 cục giấy liên tiếp vào thùng rác.</div>
+            </div>
+            <span class="badge">Dưới 1 phút</span>
+        </a>
+    </div>
+
+    <footer>Mở file index.html bằng bất kỳ trình duyệt nào (Chrome, Edge, Safari...) để chơi.</footer>
+</body>
+</html>

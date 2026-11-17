@@ -408,58 +408,10 @@
         }
         .strength-text span:first-child { color: #4ade80; font-weight: 700; }
         
-        /* Social Logins */
-        .divider {
-            display: flex;
-            align-items: center;
-            text-align: center;
-            margin: 24px 0 18px 0;
-            color: #64748b;
-            font-size: 11.5px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-        .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid rgba(157,78,221,0.25); }
-        .divider::before { margin-right: 14px; }
-        .divider::after { margin-left: 14px; }
-        
-        .social-buttons {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 12px;
-            width: 100%;
-        }
-        .btn-social {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 8px;
-            padding: 11px 12px;
-            min-height: 44px;
-            border-radius: 9999px;
-            border: 1.5px solid rgba(157,78,221,0.3);
-            background: rgba(26,11,46,0.45);
-            color: #ffffff;
-            font-size: 13.5px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.25s;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-        .btn-social:hover {
-            background: rgba(42,22,69,0.9);
-            border-color: #c77dff;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 20px rgba(157,78,221,0.25);
-        }
-        .btn-social.discord:hover i { color: #5865F2; }
-        .btn-social.steam:hover i { color: #ffffff; }
-        .btn-social i { font-size: 15px; transition: color 0.3s; }
-        
         .switch-auth {
-            margin-top: 24px;
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px solid rgba(157,78,221,0.18);
             text-align: center;
             font-size: 13px;
             color: #a8b2d1;
@@ -645,7 +597,11 @@
         #strength-bars.lv-3 .strength-bar.active { background: #a3e635; box-shadow: 0 0 8px #a3e635; }
         #strength-bars.lv-4 .strength-bar.active { background: #4ade80; box-shadow: 0 0 8px #4ade80; }
     </style>
-<link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script></head>
+<link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script>
+<!-- Google Authenticator (TOTP RFC 6238) + ve ma QR -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.2.2/otpauth.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
 <body class="auth-page">
 <div class="ambient-glow-wrapper">
 <div class="ambient-glow-1"></div>
@@ -736,53 +692,128 @@
 <i class="fa-solid fa-fingerprint"></i> THIẾT LẬP TÀI KHOẢN
                 </button>
 </form>
-<div class="divider">Xác thực nhanh</div>
-<div class="social-buttons">
-<a class="btn-social discord" href="#"><i class="fa-brands fa-discord"></i> Discord</a>
-<a class="btn-social steam" href="#"><i class="fa-brands fa-steam"></i> Steam</a>
-</div>
 <div class="switch-auth">
                 Đã có 5GUYS ID? <a class="" href="login.html">Đăng nhập</a>
 </div>
 </div>
 </div>
-<!-- 2FA Modal -->
+<!-- ================= 2FA MODAL: THIET LAP GOOGLE AUTHENTICATOR ================= -->
+<div class="modal-overlay" id="modal-2fa" onclick="handleOverlayClick(event)" role="dialog" aria-modal="true" aria-labelledby="twofa-title">
+<div class="modal-container" style="max-height:92vh;overflow-y:auto;text-align:center;">
+<button class="modal-close-btn" type="button" onclick="close2FAModal()" aria-label="Đóng"><i class="fa-solid fa-xmark"></i></button>
+<!-- Buoc quet QR + nhap ma -->
+<div id="modal-form-content">
+<div class="modal-header-icon"><i class="fa-solid fa-shield-halved"></i></div>
+<h2 id="twofa-title" class="font-display" style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 6px 0;">THIẾT LẬP GOOGLE AUTHENTICATOR</h2>
+<p style="font-size:13px;color:#cfc2d4;line-height:1.55;margin:0 0 14px 0;">
+    Mở <b style="color:#fff">Google Authenticator</b> trên điện thoại → bấm <b style="color:#fff">+</b> → <b style="color:#fff">Quét mã QR</b> cho tài khoản <b id="twofa-email" style="color:#c77dff;word-break:break-all"></b>.
+</p>
+<div style="background:#ffffff;padding:12px;border-radius:18px;width:fit-content;margin:0 auto;box-shadow:0 0 28px rgba(199,125,255,0.4);">
+<div id="totp-qr" aria-label="Mã QR Google Authenticator"></div>
+</div>
+<p style="font-size:11.5px;color:#a8b2d1;margin:12px 0 0 0;">Không quét được? Nhập tay khóa bí mật:</p>
+<div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-top:6px;flex-wrap:wrap;">
+<code id="totp-secret-text" style="font-family:'Inter',monospace;font-weight:800;color:#c77dff;letter-spacing:2px;font-size:14px;background:rgba(18,9,28,0.85);border:1px solid rgba(157,78,221,0.4);padding:6px 12px;border-radius:10px;word-break:break-all;"></code>
+<button type="button" onclick="copySecret()" title="Sao chép khóa" aria-label="Sao chép khóa bí mật" style="background:rgba(157,78,221,0.15);border:1px solid rgba(199,125,255,0.45);color:#c77dff;width:34px;height:34px;border-radius:10px;cursor:pointer;"><i class="fa-solid fa-copy"></i></button>
+</div>
+<button type="button" class="demo-code-pill" id="demo-code-pill" onclick="fillDemoOtp()" title="Chế độ demo: điền mã 6 số hợp lệ của chu kỳ 30 giây hiện tại">
+<i class="fa-solid fa-bolt" style="color:#c77dff"></i> Điền nhanh mã hiện tại: <code id="demo-code">------</code>
+</button>
+<div class="otp-inputs">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Chữ số 1">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 2">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 3">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 4">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 5">
+<input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 6">
+</div>
+<p id="otp-error-msg" role="alert" style="display:none;color:#f87171;font-size:13px;font-weight:700;margin:-4px 0 12px 0;"><i class="fa-solid fa-circle-exclamation"></i> <span id="otp-error-text">Mã Google Authenticator không chính xác!</span></p>
+<p style="font-size:12px;color:#a8b2d1;margin:0 0 16px 0;">Mã đổi sau: <b id="timer-count" style="color:#c77dff">30 giây</b> · Chu kỳ TOTP 30 giây</p>
+<button class="btn-submit" id="btn-verify-otp" type="button" onclick="verifyOTP()">
+<i class="fa-solid fa-lock-open"></i> Xác nhận &amp; Kích hoạt tài khoản
+</button>
+</div>
+<!-- Buoc thanh cong -->
+<div class="success-overlay-content" id="modal-success-content">
+<div class="modal-header-icon" style="color:#4ade80;border-color:#4ade80;box-shadow:0 0 25px rgba(74,222,128,0.45);"><i class="fa-solid fa-circle-check"></i></div>
+<h2 class="font-display" style="font-size:21px;font-weight:800;color:#ffffff;margin:0 0 8px 0;">TẠO 5GUYS ID THÀNH CÔNG</h2>
+<p style="font-size:13px;color:#cfc2d4;line-height:1.55;margin:0;">Chào <b id="success-username" style="color:#c77dff"></b>! Google Authenticator đã được liên kết. Đang chuyển sang trang đăng nhập…</p>
+</div>
+</div>
+</div>
 
 <script>
+  // ===== Dang ky + thiet lap Google Authenticator (TOTP) =====
+  // Luong: dien form -> sinh khoa Base32 -> quet QR -> nhap ma 6 so -> kiem tra -> moi goi /auth/register
+  const TOTP_STORE_KEY = 'g5_totp_secrets';
   const modal = document.getElementById('modal-2fa');
   const otpInputs = document.querySelectorAll('.otp-box');
   const modalFormContent = document.getElementById('modal-form-content');
   const modalSuccessContent = document.getElementById('modal-success-content');
   const otpErrorMsg = document.getElementById('otp-error-msg');
-  let countdownTimer;
+  let countdownTimer = null;
+  let pendingReg = null;   // { displayName, email, password, secret, totp }
+  let verifying = false;
+
+  function showOtpError(text) {
+    document.getElementById('otp-error-text').textContent = text || 'Mã Google Authenticator không chính xác!';
+    otpErrorMsg.style.display = 'block';
+  }
+  function hideOtpError() { otpErrorMsg.style.display = 'none'; }
+
+  async function handleRegister(e) {
+    e.preventDefault();
+    if (typeof OTPAuth === 'undefined' || typeof QRCode === 'undefined') {
+      alert('Không tải được thư viện Google Authenticator. Hãy kiểm tra kết nối mạng rồi tải lại trang.');
+      return;
+    }
+    const displayName = document.getElementById('input-username').value.trim();
+    const email = document.getElementById('input-email').value.trim().toLowerCase();
+    const password = document.getElementById('reg-password').value;
+    if (password.length < 10) { alert('Mật khẩu tối thiểu 10 ký tự.'); return; }
+
+    // 1. Sinh khoa bi mat Base32 rieng cho email nay (chua goi API dang ky)
+    const secret = new OTPAuth.Secret({ size: 10 }).base32;
+    const totp = new OTPAuth.TOTP({
+      issuer: '5GUYS', label: email, algorithm: 'SHA1', digits: 6, period: 30,
+      secret: OTPAuth.Secret.fromBase32(secret)
+    });
+    pendingReg = { displayName, email, password, secret, totp };
+    open2FAModal();
+  }
 
   function open2FAModal() {
-    modal.classList.add('active');
+    if (!pendingReg) return;
+    // 2. Ve ma QR chuan otpauth://totp/5GUYS:${email}?secret=${secret}&issuer=5GUYS
+    const uri = `otpauth://totp/5GUYS:${encodeURIComponent(pendingReg.email)}?secret=${pendingReg.secret}&issuer=5GUYS`;
+    const qr = document.getElementById('totp-qr');
+    qr.innerHTML = '';
+    new QRCode(qr, { text: uri, width: 180, height: 180, colorDark: '#12091c', colorLight: '#ffffff', correctLevel: QRCode.CorrectLevel.M });
+    document.getElementById('totp-secret-text').textContent = pendingReg.secret;
+    document.getElementById('twofa-email').textContent = pendingReg.email;
+
     modalFormContent.style.display = 'block';
     modalSuccessContent.style.display = 'none';
-    otpErrorMsg.style.display = 'none';
+    hideOtpError();
     clearOtpInputs();
-    startCountdown(119);
-    setTimeout(() => {
-      if (otpInputs[0]) otpInputs[0].focus();
-    }, 150);
+    resetVerifyBtn();
+    modal.classList.add('active');
+    startCountdown();
+    setTimeout(() => { if (otpInputs[0]) otpInputs[0].focus(); }, 150);
   }
 
   function close2FAModal() {
     modal.classList.remove('active');
     clearInterval(countdownTimer);
+    pendingReg = null;
   }
 
   function handleOverlayClick(e) {
-    if (e.target === modal) {
-      close2FAModal();
-    }
+    if (e.target === modal) close2FAModal();
   }
 
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && modal.classList.contains('active')) {
-      close2FAModal();
-    }
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && modal.classList.contains('active')) close2FAModal();
   });
 
   // OTP Inputs auto navigation and paste support
@@ -790,130 +821,107 @@
     input.addEventListener('input', (e) => {
       const val = e.target.value.replace(/[^0-9]/g, '');
       e.target.value = val ? val[0] : '';
-      otpErrorMsg.style.display = 'none';
-
-      if (e.target.value && idx < otpInputs.length - 1) {
-        otpInputs[idx + 1].focus();
-      }
-
-      // Auto submit if all filled
-      checkAutoSubmit();
+      hideOtpError();
+      if (e.target.value && idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
     });
-
     input.addEventListener('keydown', (e) => {
-      if (e.key === 'Backspace' && !e.target.value && idx > 0) {
-        otpInputs[idx - 1].focus();
-      }
-      if (e.key === 'ArrowLeft' && idx > 0) {
-        otpInputs[idx - 1].focus();
-      }
-      if (e.key === 'ArrowRight' && idx < otpInputs.length - 1) {
-        otpInputs[idx + 1].focus();
-      }
-      if (e.key === 'Enter') {
-        verifyOTP();
-      }
+      if (e.key === 'Backspace' && !e.target.value && idx > 0) otpInputs[idx - 1].focus();
+      if (e.key === 'ArrowLeft' && idx > 0) otpInputs[idx - 1].focus();
+      if (e.key === 'ArrowRight' && idx < otpInputs.length - 1) otpInputs[idx + 1].focus();
+      if (e.key === 'Enter') verifyOTP();
     });
-
     input.addEventListener('paste', (e) => {
       e.preventDefault();
       const pasteData = (e.clipboardData || window.clipboardData).getData('text').trim().replace(/[^0-9]/g, '');
       if (pasteData) {
         const chars = pasteData.slice(0, 6).split('');
-        chars.forEach((char, i) => {
-          if (otpInputs[i]) otpInputs[i].value = char;
-        });
-        const nextIdx = Math.min(chars.length, 5);
-        otpInputs[nextIdx].focus();
-        checkAutoSubmit();
+        chars.forEach((char, i) => { if (otpInputs[i]) otpInputs[i].value = char; });
+        otpInputs[Math.min(chars.length, 5)].focus();
       }
     });
   });
 
-  function clearOtpInputs() {
-    otpInputs.forEach(i => i.value = '');
+  function clearOtpInputs() { otpInputs.forEach(i => i.value = ''); }
+  function getEnteredOtp() { let code = ''; otpInputs.forEach(i => code += i.value); return code; }
+  function resetVerifyBtn() {
+    const btn = document.getElementById('btn-verify-otp');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Xác nhận &amp; Kích hoạt tài khoản';
   }
 
-  function fillDemoOtp(code) {
-    const chars = code.split('');
-    chars.forEach((c, idx) => {
-      if (otpInputs[idx]) otpInputs[idx].value = c;
-    });
+  // 3. Nut .demo-code-pill: lay ma 6 so hop le cua chu ky 30 giay hien tai (totp.generate())
+  function fillDemoOtp() {
+    if (!pendingReg) return;
+    const code = pendingReg.totp.generate();
+    code.split('').forEach((c, idx) => { if (otpInputs[idx]) otpInputs[idx].value = c; });
     if (otpInputs[5]) otpInputs[5].focus();
-    otpErrorMsg.style.display = 'none';
-    verifyOTP();
+    hideOtpError();
   }
 
-  function getEnteredOtp() {
-    let code = '';
-    otpInputs.forEach(i => code += i.value);
-    return code;
+  function copySecret() {
+    if (!pendingReg) return;
+    const done = () => { const el = document.getElementById('totp-secret-text'); const old = el.style.color; el.style.color = '#4ade80'; setTimeout(() => el.style.color = old, 900); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(pendingReg.secret).then(done).catch(() => {});
+    else { const r = document.createRange(); r.selectNodeContents(document.getElementById('totp-secret-text')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); }
   }
 
-  function checkAutoSubmit() {
+  // 4. Kiem tra nghiem ngat bang totp.validate({ token: code, window: 1 }) roi moi goi G5.api("/auth/register")
+  async function verifyOTP() {
+    if (verifying || !pendingReg) return;
     const code = getEnteredOtp();
-    if (code.length === 6) {
-      verifyOTP();
-    }
-  }
-
-  function verifyOTP() {
-    const code = getEnteredOtp();
-    if (code.length < 6) {
-      otpErrorMsg.style.display = 'block';
+    if (!/^\d{6}$/.test(code)) {
+      showOtpError('Mã Google Authenticator không chính xác!');
       return;
     }
-    otpErrorMsg.style.display = 'none';
 
-    // Show button loading state
+    const delta = pendingReg.totp.validate({ token: code, window: 1 });
+    if (delta === null) {
+      showOtpError('Mã Google Authenticator không chính xác!');
+      return;
+    }
+    hideOtpError();
+
+    verifying = true;
     const btn = document.getElementById('btn-verify-otp');
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang giải mã & xác thực...';
+    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tạo tài khoản...';
     btn.disabled = true;
 
-    setTimeout(() => {
-      btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Xác nhận &amp; Kích hoạt tài khoản';
-      btn.disabled = false;
-      showSuccess();
-    }, 700);
+    const reg = pendingReg;
+    let store = {};
+    try { store = JSON.parse(localStorage.getItem(TOTP_STORE_KEY) || '{}') || {}; } catch (err) { store = {}; }
+    const previous = Object.prototype.hasOwnProperty.call(store, reg.email) ? store[reg.email] : undefined;
+    store[reg.email] = reg.secret;
+    localStorage.setItem(TOTP_STORE_KEY, JSON.stringify(store));
+
+    try {
+      await G5.api('/auth/register', { method: 'POST', body: { displayName: reg.displayName, email: reg.email, password: reg.password } });
+      clearInterval(countdownTimer);
+      document.getElementById('success-username').textContent = reg.displayName;
+      modalFormContent.style.display = 'none';
+      modalSuccessContent.style.display = 'block';
+      pendingReg = null;
+      setTimeout(() => { location.href = 'login.html?email=' + encodeURIComponent(reg.email); }, 1500);
+    } catch (err) {
+      if (previous === undefined) delete store[reg.email]; else store[reg.email] = previous;
+      localStorage.setItem(TOTP_STORE_KEY, JSON.stringify(store));
+      showOtpError(G5.errorText(err));
+      resetVerifyBtn();
+    } finally {
+      verifying = false;
+    }
   }
 
-  function showSuccess() {
-    const usernameInput = document.getElementById('input-username');
-    const uName = (usernameInput && usernameInput.value) ? usernameInput.value : 'KhoaDao2008';
-    document.getElementById('success-username').innerText = uName;
-    modalFormContent.style.display = 'none';
-    modalSuccessContent.style.display = 'block';
+  // Dong ho + ma demo chay theo dung nhip 30 giay cua TOTP
+  function startCountdown() {
     clearInterval(countdownTimer);
-  }
-
-  function resendOtp() {
-    clearOtpInputs();
-    startCountdown(119);
-    otpErrorMsg.style.display = 'none';
-    alert('Mã 2FA mới đã được gửi lại thành công! (Mã thử nghiệm: 849201)');
-    otpInputs[0].focus();
-  }
-
-  function startCountdown(seconds) {
-    clearInterval(countdownTimer);
-    let rem = seconds;
     const timerEl = document.getElementById('timer-count');
-    countdownTimer = setInterval(() => {
-      rem--;
-      if (rem < 0) {
-        clearInterval(countdownTimer);
-        timerEl.innerText = '00:00 (Hết hạn)';
-        return;
-      }
-      const m = Math.floor(rem / 60).toString().padStart(2, '0');
-      const s = (rem % 60).toString().padStart(2, '0');
-      timerEl.innerText = `${m}:${s}`;
-    }, 1000);
-  }
-
-  function redirectToStore() {
-    close2FAModal();
-    alert('Khởi tạo & Xác thực 5GUYS ID thành công! Chuyển hướng đến Storefront.');
+    const demoEl = document.getElementById('demo-code');
+    const tick = () => {
+      timerEl.textContent = (30 - (Math.floor(Date.now() / 1000) % 30)) + ' giây';
+      if (pendingReg) demoEl.textContent = pendingReg.totp.generate();
+    };
+    tick();
+    countdownTimer = setInterval(tick, 1000);
   }
 </script>
 
@@ -965,7 +973,6 @@
   render();
 })();
 </script>
-<script>async function handleRegister(e){e.preventDefault();const f=e.currentTarget;const b=f.querySelector("button[type=submit]");if(b)b.disabled=true;try{await G5.api("/auth/register",{method:"POST",body:{displayName:document.getElementById("input-username").value.trim(),email:document.getElementById("input-email").value.trim(),password:document.getElementById("reg-password").value}});alert("Tạo tài khoản thành công. Hãy đăng nhập.");location.href="login.html"}catch(err){alert(G5.errorText(err))}finally{if(b)b.disabled=false}}</script>
 <script>
 // Hien thi thu, ngay, gio luc nguoi dung truy cap trang (tu cap nhat moi 30 giay)
 (function () {

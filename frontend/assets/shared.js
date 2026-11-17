@@ -265,9 +265,28 @@
         authentication_required: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
         invalid_or_expired_token: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
         forbidden: 'Bạn không có quyền thực hiện thao tác này.',
+        not_found: 'Không tìm thấy tài nguyên hoặc API yêu cầu.',
+        internal_server_error: 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.',
         refund_already_requested: 'Đơn này đã có yêu cầu hoàn tiền.',
+        refund_not_found: 'Không tìm thấy yêu cầu hoàn tiền.',
+        refund_already_handled: 'Yêu cầu hoàn tiền này đã được xử lý trước đó.',
         order_not_refundable: 'Đơn này chưa thanh toán nên không thể hoàn tiền.',
+        order_not_found: 'Không tìm thấy đơn hàng.',
+        order_not_payable: 'Đơn hàng này không ở trạng thái chờ thanh toán.',
+        invalid_transition: 'Không thể chuyển sang trạng thái đơn hàng này.',
         product_not_found: 'Không tìm thấy sản phẩm.',
+        library_game_not_found: 'Không tìm thấy game này trong Kho game của bạn.',
+        product_unavailable: 'Sản phẩm hiện không khả dụng hoặc chưa được mở bán.',
+        stock_below_reserved: 'Số lượng tồn kho mới không được nhỏ hơn số lượng đang giữ chỗ.',
+        gift_recipient_not_found: 'Không tìm thấy tài khoản người nhận với email này trên 5GUYS.',
+        recipient_already_owns: 'Người nhận đã sở hữu tựa game kỹ thuật số này trong kho rồi.',
+        cannot_gift_self: 'Bạn không thể tự tặng quà cho chính tài khoản của mình.',
+        gift_email_required: 'Vui lòng nhập email tài khoản 5GUYS của người nhận quà.',
+        review_not_found: 'Không tìm thấy đánh giá.',
+        mod_not_found: 'Không tìm thấy bản mod này.',
+        ticket_not_found: 'Không tìm thấy ticket hỗ trợ.',
+        user_not_found: 'Không tìm thấy tài khoản người dùng.',
+        cannot_change_self: 'Không thể tự thay đổi vai trò hoặc khóa tài khoản của chính mình.',
         wrong_password: 'Mật khẩu hiện tại không đúng.',
         address_not_found: 'Không tìm thấy địa chỉ.',
         too_many_addresses: 'Tối đa 10 địa chỉ giao hàng.',
@@ -280,6 +299,7 @@
       })[code] || ('Có lỗi xảy ra: ' + (code || 'không rõ'));
     },
     isAdmin: function () { var u = G5.user(); return !!(u && (u.role === 'admin' || u.role === 'staff')); },
+    isPublisher: function () { var u = G5.user(); return !!(u && (u.role === 'publisher' || u.role === 'admin')); },
     notify: function (message) {
       if (typeof window.showToast === 'function') { window.showToast('Thông báo', message, false); return; }
       // Thong bao nho goc phai duoi, tu an sau 3.5 giay (khong chan trang nhu alert)
@@ -344,20 +364,33 @@
     document.querySelectorAll('[data-logout]').forEach(function (el) {
       el.addEventListener('click', function (e) { e.preventDefault(); G5.logout(); location.href = 'index.html'; });
     });
+    if (G5.isAdmin()) {
+      document.querySelectorAll('a[data-nav][href="mods.html"]').forEach(function (lastNav) {
+        var parent = lastNav.parentElement;
+        if (parent && !parent.querySelector('a[data-nav][href="admin.html"]')) {
+          var adm = lastNav.cloneNode(false);
+          adm.setAttribute('href', 'admin.html');
+          adm.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị';
+          lastNav.insertAdjacentElement('afterend', adm);
+        }
+      });
+    }
+    if (G5.isPublisher()) {
+      document.querySelectorAll('a[data-nav][href="mods.html"]').forEach(function (lastNav) {
+        var parent = lastNav.parentElement;
+        if (parent && !parent.querySelector('a[data-nav][href="publisher.html"]')) {
+          var pub = lastNav.cloneNode(false);
+          pub.setAttribute('href', 'publisher.html');
+          pub.innerHTML = '<i class="fa-solid fa-code-branch"></i> Nhà phát hành';
+          lastNav.insertAdjacentElement('afterend', pub);
+        }
+      });
+    }
     // Đánh dấu mục menu của trang hiện tại
     var cur = location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('a[data-nav]').forEach(function (a) {
       if (a.getAttribute('href').split('#')[0] === cur) a.classList.add('is-current');
     });
-    if (G5.isAdmin()) {
-      var lastNav = document.querySelector('a[data-nav][href="mods.html"]');
-      if (lastNav && !document.querySelector('a[data-nav][href="admin.html"]')) {
-        var adm = lastNav.cloneNode(false);
-        adm.setAttribute('href', 'admin.html');
-        adm.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị';
-        lastNav.insertAdjacentElement('afterend', adm);
-      }
-    }
     G5.refresh();
     if (apiMode) { G5.syncCart().catch(function () { G5.notify('Không thể tải giỏ hàng từ API.'); }); G5.syncOrders().catch(function () { G5.notify('Không thể tải đơn hàng từ API.'); }); }
   });

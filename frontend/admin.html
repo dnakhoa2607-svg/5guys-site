@@ -563,9 +563,48 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
       flash(editing ? 'Đã lưu ' + body.title : 'Đã thêm ' + body.title); editing = null; products();
     }
 
+    function openRejectModal(p) {
+      const existing = document.getElementById('admin-reject-modal');
+      if (existing) existing.remove();
+      const reasonInput = h('textarea', {
+        class: 'inp mt-2',
+        rows: 3,
+        maxlength: 500,
+        placeholder: 'Nhập lý do từ chối để Nhà phát hành chỉnh sửa lại (VD: Ảnh bìa chưa đúng chuẩn, thiếu thông số cấu hình)...'
+      });
+      const closeModal = () => overlay.remove();
+      const submitReject = async (e) => {
+        e.preventDefault();
+        const reason = reasonInput.value.trim();
+        await call('/products/' + p.id + '/approval', 'PUT', { action: 'reject', reason: reason || undefined });
+        closeModal();
+        flash('Đã từ chối sản phẩm "' + p.title + '"');
+        products();
+      };
+      const overlay = h('div', {
+        id: 'admin-reject-modal',
+        class: 'fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4',
+        onclick: e => { if (e.target === overlay) closeModal(); }
+      },
+        h('form', { class: 'card w-full max-w-md p-6 border border-red-500/40 shadow-2xl', onsubmit: submitReject },
+          h('div', { class: 'flex items-start justify-between gap-3' },
+            h('div', {},
+              h('span', { class: 'text-xs font-bold uppercase tracking-wider text-red-400' }, 'Từ chối kiểm duyệt game'),
+              h('h3', { class: 'text-lg font-black mt-1' }, p.title)),
+            h('button', { type: 'button', class: 'ghost !px-2.5 !py-1', onclick: closeModal }, h('i', { class: 'fa-solid fa-xmark' }))),
+          h('label', { class: 'block text-xs text-outline mt-4' }, 'Lý do từ chối (tối đa 500 ký tự)', reasonInput),
+          h('div', { class: 'flex justify-end gap-2 mt-4' },
+            h('button', { type: 'button', class: 'ghost', onclick: closeModal }, 'Hủy'),
+            h('button', { type: 'submit', class: 'btn !bg-red-600 hover:!bg-red-500 !border-red-400/40' }, h('i', { class: 'fa-solid fa-ban' }), 'Xác nhận từ chối')))
+      );
+      document.body.appendChild(overlay);
+      reasonInput.focus();
+    }
+
     let q = '';
     const digitalCount = list.filter(p => p.product_type === 'digital').length;
     const physicalCount = list.filter(p => p.product_type === 'physical').length;
+    const draftCount = list.filter(p => p.status === 'draft').length;
     const tbody = h('tbody');
     const filterWrap = h('div', { class: 'flex flex-wrap items-center gap-1.5' });
 
@@ -573,30 +612,55 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
       const opts = [
         ['all', `Tất cả (${list.length})`],
         ['digital', `Bản Số (${digitalCount})`],
-        ['physical', `Bản Đĩa (${physicalCount})`]
+        ['physical', `Bản Đĩa (${physicalCount})`],
+        ['draft', `Chờ duyệt (${draftCount})`]
       ];
       filterWrap.replaceChildren(...opts.map(([val, label]) =>
         h('button', {
           type: 'button',
-          class: 'ghost !py-1.5 !px-3 text-xs ' + (productTypeFilter === val ? 'active-filter' : ''),
+          class: 'ghost !py-1.5 !px-3 text-xs ' + (productTypeFilter === val ? 'active-filter' : (val === 'draft' && draftCount > 0 ? '!border-amber-500/60 !text-amber-300' : '')),
           onclick: () => { productTypeFilter = val; renderFilters(); draw(); }
         }, label)
       ));
     };
 
     const draw = () => tbody.replaceChildren(...list
-      .filter(p => (productTypeFilter === 'all' || p.product_type === productTypeFilter) && (!q || p.title.toLowerCase().includes(q)))
+      .filter(p => (productTypeFilter === 'all' || (productTypeFilter === 'draft' ? p.status === 'draft' : p.product_type === productTypeFilter)) && (!q || p.title.toLowerCase().includes(q)))
       .map(p => h('tr', {},
-        h('td', {}, p.title, h('div', { class: 'text-xs text-outline' }, p.platform)),
+        h('td', {},
+          p.title,
+          h('div', { class: 'text-xs text-outline' }, p.platform + (p.publisher_name ? ' · Studio: ' + p.publisher_name : '')),
+          p.status === 'inactive' && p.rejection_reason ? h('div', { class: 'text-xs text-red-300 mt-1 max-w-xs whitespace-normal' }, 'Lý do từ chối: ' + p.rejection_reason) : null),
         h('td', {}, h('span', { class: 'pill', style: p.product_type === 'digital' ? 'color:#c77dff;border-color:#c77dff' : 'color:#60a5fa;border-color:#60a5fa' }, p.product_type === 'digital' ? 'SỐ' : 'ĐĨA')),
         h('td', { class: 'whitespace-nowrap' }, money(p.price), Number(p.discount_percent) ? h('span', { class: 'text-xs text-emerald-300 ml-1' }, '-' + p.discount_percent + '%') : null),
         h('td', { class: 'whitespace-nowrap' }, p.product_type === 'physical' ? `${p.quantity_on_hand ?? 0} (giữ ${p.quantity_reserved ?? 0})` : '∞'),
-        h('td', { class: 'whitespace-nowrap' }, h('span', { class: 'pill', style: p.status === 'active' ? 'color:#10b981;border-color:#10b981' : 'color:#9ca3af;border-color:#9ca3af' }, p.status === 'active' ? 'Đang bán' : p.status === 'inactive' ? 'Ẩn' : 'Nháp')),
-        h('td', { class: 'whitespace-nowrap' }, h('div', { class: 'flex gap-1.5' },
-          h('button', { class: 'ghost', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
-          h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), onclick: async () => {
-            await call('/products/' + p.id, 'PUT', { status: p.status === 'active' ? 'inactive' : 'active' }); flash('Đã cập nhật ' + p.title); products();
-          } }, p.status === 'active' ? 'Ẩn' : 'Bán lại'))))));
+        h('td', { class: 'whitespace-nowrap' },
+          p.status === 'draft'
+            ? h('span', { class: 'pill', style: 'color:#fbbf24;border-color:#f59e0b;background:rgba(245,158,11,0.16)' }, h('i', { class: 'fa-solid fa-clock mr-1' }), 'Chờ duyệt')
+            : p.status === 'active'
+              ? h('span', { class: 'pill', style: 'color:#10b981;border-color:#10b981' }, 'Đang bán')
+              : h('span', { class: 'pill', style: p.rejection_reason ? 'color:#f87171;border-color:#ef4444' : 'color:#9ca3af;border-color:#9ca3af' }, p.rejection_reason ? 'Từ chối' : 'Ẩn')),
+        h('td', { class: 'whitespace-nowrap' }, h('div', { class: 'flex flex-wrap gap-1.5' },
+          p.status === 'draft' ? [
+            h('button', {
+              class: 'btn !py-1 !px-2.5 text-xs !bg-emerald-600 hover:!bg-emerald-500 !border-emerald-400/40',
+              onclick: async () => {
+                await call('/products/' + p.id + '/approval', 'PUT', { action: 'approve' });
+                flash('Đã duyệt "' + p.title + '" lên kệ bán!');
+                products();
+              }
+            }, h('i', { class: 'fa-solid fa-check' }), 'Duyệt lên kệ'),
+            h('button', {
+              class: 'ghost danger !py-1 !px-2.5 text-xs',
+              onclick: () => openRejectModal(p)
+            }, h('i', { class: 'fa-solid fa-xmark' }), 'Từ chối'),
+            h('button', { class: 'ghost !py-1 !px-2.5 text-xs', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa')
+          ] : [
+            h('button', { class: 'ghost', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
+            h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), onclick: async () => {
+              await call('/products/' + p.id, 'PUT', { status: p.status === 'active' ? 'inactive' : 'active' }); flash('Đã cập nhật ' + p.title); products();
+            } }, p.status === 'active' ? 'Ẩn' : 'Bán lại')
+          ])))));
 
     renderFilters();
     draw();

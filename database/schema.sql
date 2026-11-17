@@ -182,3 +182,24 @@ CREATE TABLE support_messages (
   message TEXT NOT NULL, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY(ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE, FOREIGN KEY(sender_user_id) REFERENCES users(id)
 ) ENGINE=InnoDB;
+
+CREATE TABLE community_games (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  slug VARCHAR(180) NOT NULL UNIQUE,
+  title VARCHAR(120) NOT NULL,
+  description VARCHAR(1200) NOT NULL DEFAULT '',
+  source ENUM('bundled','uploaded') NOT NULL,
+  storage_key CHAR(36) UNIQUE,
+  entry_file VARCHAR(500) NOT NULL,
+  uploader_user_id BIGINT UNSIGNED,
+  status ENUM('pending','published','rejected','removed') NOT NULL DEFAULT 'pending',
+  review_note VARCHAR(500),
+  reviewed_by BIGINT UNSIGNED,
+  reviewed_at DATETIME,
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY(uploader_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  FOREIGN KEY(reviewed_by) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX(status,created_at), INDEX(uploader_user_id,status),
+  CHECK((source='bundled' AND storage_key IS NULL) OR (source='uploaded' AND storage_key IS NOT NULL))
+) ENGINE=InnoDB;

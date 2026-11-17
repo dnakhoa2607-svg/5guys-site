@@ -12,7 +12,7 @@
   function api(path, options) {
     options = options || {};
     options.headers = Object.assign({}, options.headers || {}, apiToken ? { Authorization: 'Bearer ' + apiToken } : {});
-    if (options.body && typeof options.body !== 'string') { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(options.body); }
+    if (options.body && typeof options.body !== 'string' && !(options.body instanceof FormData)) { options.headers['Content-Type'] = 'application/json'; options.body = JSON.stringify(options.body); }
     return fetch(API_BASE + path, options).then(function (r) { return r.json().catch(function () { return {}; }).then(function (data) { if (!r.ok) throw new Error(data.error || 'api_error'); return data; }); });
   }
 
@@ -130,6 +130,7 @@
     },
     user: function () { return rd(K.user, null); },
     api: api,
+    apiBase: API_BASE,
     isApiMode: function () { return apiMode; },
     setApiSession: function (token, user) { apiToken = token; apiMode = true; localStorage.setItem('5guys_api_token', token); wr(K.user, { id: user.id, email: user.email, name: user.displayName || user.name, role: user.role || 'customer' }); document.documentElement.classList.add('is-auth'); },
     login: function (u) { wr(K.user, u); },

@@ -406,6 +406,40 @@ router.put('/users/:id', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
+/* ===================== COMMUNITY GAMES ===================== */
+router.get('/community-games', async (req, res, next) => {
+  try {
+    const [games] = await db.execute(
+      `SELECT g.id,g.slug,g.title,g.description,g.status,g.created_at,
+              u.display_name AS uploader_name,u.email AS uploader_email
+       FROM community_games g LEFT JOIN users u ON u.id=g.uploader_user_id
+       WHERE g.status='pending' ORDER BY g.created_at ASC LIMIT 200`
+    );
+    res.json({ games });
+  } catch (e) { next(e); }
+});
+
+router.put('/community-games/:id', async (req, res, next) => {
+  try {
+    const id = idParam.parse(req.params.id);
+    const data = z.object({
+      action: z.enum(['publish', 'reject']),
+      reviewNote: z.string().trim().max(500).optional().default('')
+    }).parse(req.body);
+    const status = data.action === 'publish' ? 'published' : 'rejected';
+    const [result] = await db.execute(
+      `UPDATE community_games SET status=?,review_note=?,reviewed_by=?,reviewed_at=UTC_TIMESTAMP()
+       WHERE id=? AND status='pending'`,
+      [status, data.reviewNote || null, req.user.sub, id]
+    );
+    if (!result.affectedRows) {
+      const [[game]] = await db.execute('SELECT id FROM community_games WHERE id=?', [id]);
+      return res.status(game ? 409 : 404).json({ error: game ? 'game_already_reviewed' : 'game_not_found' });
+    }
+    res.json({ ok: true, status });
+  } catch (e) { next(e); }
+});
+
 /* ===================== HO TRO KHACH HANG ===================== */
 router.get('/tickets', async (req, res, next) => {
   try {

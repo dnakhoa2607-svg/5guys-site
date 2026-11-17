@@ -359,6 +359,10 @@ router.put('/products/:id', async (req, res, next) => {
         [merged.title, merged.description, merged.publisher, merged.developer, merged.platform, merged.genre, merged.cover_url,
          merged.price, original, discountOf(merged.price, original), merged.status, id]
       );
+      await conn.execute(
+        "UPDATE product_editions SET price=?, original_price=? WHERE product_id=? AND edition_name='Standard'",
+        [merged.price, original, id]
+      );
       if (cur.product_type === 'physical' && p.stock !== undefined) {
         const [[inv]] = await conn.execute('SELECT quantity_reserved FROM physical_inventory WHERE product_id=? FOR UPDATE', [id]);
         if (inv && p.stock < inv.quantity_reserved) throw new HttpError(409, 'stock_below_reserved');

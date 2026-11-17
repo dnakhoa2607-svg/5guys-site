@@ -264,7 +264,11 @@
 
   /* ---------------- KHO GAME ---------------- */
   var GAME_LAUNCHERS = {
-    'neon-viper': 'games/neon-viper.html'
+    'neon-viper': 'games/neon-viper.html',
+    'black-myth-wukong': 'games/black-myth.html',
+    'black-myth': 'games/black-myth.html',
+    'hollow-knight': 'games/hollow-knight.html',
+    'hollow-knight-silksong': 'games/hollow-knight.html'
   };
 
   function slugifyTitle(title) {

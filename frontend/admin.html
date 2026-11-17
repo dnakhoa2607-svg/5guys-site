@@ -556,8 +556,11 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
     async function save(e) {
       e.preventDefault();
       const body = {};
+      const clearableInEdit = new Set(['genre', 'publisher', 'developer', 'cover_url', 'description']);
       for (const k of ['title', 'slug', 'platform', 'genre', 'price', 'original_price', 'product_type', 'publisher', 'developer', 'cover_url', 'status', 'description', 'stock', 'min_requirements', 'physical_specs']) {
-        if (f[k].disabled || f[k].value === '') continue; body[k] = f[k].value;
+        if (f[k].disabled) continue;
+        if (f[k].value === '' && !(editing && clearableInEdit.has(k))) continue;
+        body[k] = f[k].value;
       }
       if (editing) await call('/products/' + editing.id, 'PUT', body); else await call('/products', 'POST', body);
       flash(editing ? 'Đã lưu ' + body.title : 'Đã thêm ' + body.title); editing = null; products();
@@ -669,7 +672,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
         h('h3', { class: 'font-bold' }, `Sản phẩm (${list.length})`),
         h('div', { class: 'flex flex-wrap items-center gap-2' },
           filterWrap,
-          h('input', { class: 'inp !w-60', placeholder: 'Tìm theo tên...', oninput: e => { q = e.target.value.toLowerCase(); draw(); } }))),
+          h('input', { class: 'inp w-full sm:!w-60', placeholder: 'Tìm theo tên...', oninput: e => { q = e.target.value.toLowerCase(); draw(); } }))),
       h('div', { class: 'scroll' }, h('table', { style: 'width:100%' }, h('thead', {}, h('tr', {}, ['Tên', 'Loại', 'Giá', 'Tồn kho', 'Trạng thái', 'Thao tác'].map(t => h('th', {}, t)))), tbody))));
   }
 

@@ -1,5 +1,25 @@
 # Thay đổi bản v2
 
+## Rà soát QA, Tăng cường Bảo mật (XSS, 2FA, Double-Submit) & Tối ưu Hiệu năng (`frontend/login.html`, `frontend/register.html`, `frontend/assets/shared.js`, `frontend/cart.html`, `frontend/support.html`, `frontend/orders.html`, `frontend/loyalty.html`, `frontend/index.html`, `frontend/admin.html`, `frontend/publisher.html`, `frontend/assets/hub.js`, `frontend/assets/catalog.js`, `backend/src/api/store.routes.js`, `backend/src/api/admin.routes.js`, `database/seed.sql`, `database/update_v2.sql`, `backend/src/db.js`)
+- **Chính sách Xác thực 2 Bước (2FA) & Đặc cách duy nhất `admin@5guys.com` (`frontend/login.html`, `database/seed.sql`, `database/update_v2.sql`, `backend/src/db.js`):**
+  - Cập nhật `handleSignInSubmit()` trong `frontend/login.html`: **Chỉ duy nhất** tài khoản `admin@5guys.com` được phép bỏ qua xác thực 2 bước (`normalizedEmail === 'admin@5guys.com'`) và đăng nhập thẳng sau khi xác thực mật khẩu. Tất cả các tài khoản khác (kể cả `admin@5guys.vn` hay bất kỳ tài khoản được tạo thêm / đăng nhập) đều bắt buộc phải qua bước xác thực mã 6 số Google Authenticator (TOTP).
+  - Bổ sung seed an toàn `INSERT IGNORE` cho tài khoản `admin@5guys.com` trong `database/seed.sql`, `database/update_v2.sql` và `ensureSchemaReady()` (`backend/src/db.js`).
+- **Chống DOM XSS trên toàn hệ thống (`frontend/assets/shared.js`, `frontend/support.html`, `frontend/index.html`, `frontend/cart.html`, `frontend/loyalty.html`):**
+  - Thêm hàm tiện ích dùng chung `G5.esc(str)` trong `frontend/assets/shared.js` để mã hóa các ký tự HTML đặc biệt (`&`, `<`, `>`, `"`, `'`).
+  - Bọc `esc()` cho nội dung tin nhắn chat trong `frontend/support.html`, tên sản phẩm trong `frontend/cart.html`, mô tả lịch sử điểm trong `frontend/loyalty.html`, và sửa hàm `escapeHtml()` kèm mã đơn tra cứu trong `frontend/index.html`.
+- **Chống Double-Submit & Race Condition (`frontend/login.html`, `frontend/cart.html`, `frontend/support.html`, `frontend/orders.html`, `frontend/assets/shared.js`):**
+  - Loại bỏ event listener `click` gắn trùng trên `#btn-login-submit` ở `frontend/login.html`; thêm cờ `isSubmittingLogin` và khóa nút đăng nhập kèm trạng thái `"ĐANG XÁC THỰC..."` trong suốt quá trình gọi `POST /api/auth/login`.
+  - Khóa nút bấm (`disabled = true` trong khối `try...finally`) khi bấm Thanh toán (`#pay` ở `frontend/cart.html`), Gửi ticket hỗ trợ (`#ts` ở `frontend/support.html`) và Gửi yêu cầu hoàn tiền (`#sb` ở `frontend/orders.html`).
+  - Trong `frontend/cart.html` và `G5.setCart` / `G5.add` (`frontend/assets/shared.js`): Khóa tăng số lượng `> 1` đối với sản phẩm `digital` (khớp 100% với quy tắc Backend) và cập nhật đồng bộ `5guys_api_cart_cache` ngay lập tức trước khi gọi chuỗi `DELETE`/`PUT /api/cart/items` để triệt tiêu race condition khi bấm `+`/`-` liên tục.
+- **Tối ưu N+1 HTTP Requests & Đồng bộ Dữ liệu Quản trị (`backend/src/api/store.routes.js`, `backend/src/api/admin.routes.js`, `frontend/assets/shared.js`, `frontend/admin.html`):**
+  - Cập nhật `GET /api/orders` (`backend/src/api/store.routes.js`) trả về kèm danh sách `items` và thông tin giao hàng trong 1 truy vấn gộp; cập nhật `G5.syncOrders()` (`frontend/assets/shared.js`) đọc trực tiếp `o.items` thay vì bắn `1 + N` requests mỗi lần chuyển trang.
+  - Cho phép Admin xóa trắng các trường văn bản tùy chọn (`genre`, `publisher`, `developer`, `cover_url`, `description`) khi sửa sản phẩm trong `frontend/admin.html`, đồng thời cập nhật đồng bộ giá phiên bản `'Standard'` trong bảng `product_editions` tại `PUT /api/admin/products/:id` (`backend/src/api/admin.routes.js`).
+- **Sửa lỗi Điều hướng, Launcher Kho Game & UI/UX (`frontend/assets/hub.js`, `frontend/login.html`, `frontend/register.html`, `frontend/loyalty.html`, `frontend/assets/catalog.js`, `frontend/admin.html`, `frontend/publisher.html`):**
+  - Bổ sung ánh xạ `'black-myth-wukong': 'games/black-myth.html'` và `'hollow-knight': 'games/hollow-knight.html'` vào `GAME_LAUNCHERS` trong `frontend/assets/hub.js`, khắc phục lỗi 404 khi bấm **Chơi Ngay** trong Kho game.
+  - Mở rộng Regex kiểm tra tham số chuyển hướng `?next=` trên `frontend/login.html` và `frontend/register.html` (kèm `G5.promptLogin` trong `shared.js`) để giữ nguyên query string hợp lệ (VD: `detail.html?slug=elden-ring`, `mods.html?game=elden-ring`).
+  - Cập nhật `frontend/loyalty.html` tự động tính và hiển thị đúng hạng hiện tại (`Bronze` / `Silver` / `Gold`), phần trăm thanh tiến trình và huy hiệu `"CỦA BẠN"`.
+  - Bổ sung nút `"Thử tải lại"` khi lỗi mạng ở `frontend/assets/catalog.js` và tối ưu chiều rộng ô tìm kiếm (`w-full sm:!w-60`, `w-full sm:!w-52`) trên màn hình nhỏ 320px tại `frontend/admin.html` và `frontend/publisher.html`.
+
 ## Hệ thống Tự động Cập nhật Bản vá & DLC trong Kho Game (`frontend/library.html`, `frontend/assets/hub.js`, `backend/src/api/store.routes.js`, `database/update_v2.sql`)
 - **Mở rộng Database & Tự động Seed dữ liệu Bản vá (`database/update_v2.sql`, `backend/src/db.js`, `backend/src/api/store.routes.js`):**
   - Thêm các cột `game_library.installed_version` (mặc định `'1.0.0'`) và `game_library.dlc_installed` (mặc định `FALSE`) vào `database/update_v2.sql` và `ensureSchemaReady()` trong `backend/src/db.js`.
@@ -71,7 +91,7 @@
   - Bổ sung nút `.demo-code-pill` tự động lấy mã 6 số hợp lệ của chu kỳ 30 giây hiện tại (`totp.generate()`).
   - Kiểm tra nghiêm ngặt mã 6 số bằng `totp.validate({ token: code, window: 1 })`: nếu sai hiện lỗi đỏ `#otp-error-msg` ("Mã Google Authenticator không chính xác!") và chặn tạo tài khoản; nếu đúng mới lưu cặp `email -> secret` vào `localStorage` (`g5_totp_secrets`), gọi `G5.api("/auth/register")` và chuyển hướng sang `login.html`.
 - **Kiểm tra mã Google Authenticator (TOTP) thật trên `frontend/login.html`:**
-  - **Đặc cách tài khoản dùng chung `admin@5guys.vn`:** Bỏ qua bước xác thực 2 lớp (2FA), tự động lưu phiên `G5.setApiSession` và chuyển hướng vào trang chủ ngay sau khi nhập đúng mật khẩu để thuận tiện truy cập nhanh.
+  - **Đặc cách duy nhất tài khoản `admin@5guys.com`:** Bỏ qua bước xác thực 2 lớp (2FA), tự động lưu phiên `G5.setApiSession` và chuyển hướng vào trang chủ ngay sau khi nhập đúng mật khẩu để thuận tiện truy cập nhanh; mọi tài khoản khác đều bắt buộc qua 2FA.
   - Với các tài khoản khác trong `handleSignInSubmit`: Khi `G5.api('/auth/login')` thành công, chỉ lưu tạm `result.token` và `result.user` vào `pendingSession` (chưa gọi `G5.setApiSession` trước khi vượt qua bước 2FA) rồi mở `#modal-2fa`.
   - Tra cứu `secret` theo email từ `g5_totp_secrets`; nếu tài khoản có sẵn từ trước chưa có trong `g5_totp_secrets`, tự động gán Secret Base32 cố định `JBSWY3DPEHPK3PXP` và cung cấp nút *"Hiện mã QR Google Authenticator"* ngay trong modal.
   - Đồng hồ `#timer-count` đếm ngược theo nhịp 30 giây thực tế của thuật toán TOTP (`30 - (Math.floor(Date.now() / 1000) % 30)`); nút `#btn-autofill-otp` tính động mã 6 số thực tế bằng `totp.generate()`.

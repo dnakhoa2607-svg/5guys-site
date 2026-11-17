@@ -745,13 +745,21 @@ button, input, select, textarea { font-family: inherit; }
     let pendingSession = null;
     let currentTotp = null;
     let currentSecret = '';
+    let isSubmittingLogin = false;
     const TOTP_STORE_KEY = 'g5_totp_secrets';
-    const FALLBACK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP'; // Tai khoan co san chua thiet lap 2FA (vd: admin@5guys.vn)
+    const FALLBACK_TOTP_SECRET = 'JBSWY3DPEHPK3PXP'; // Tai khoan co san chua thiet lap 2FA rieng
+
+    function resolveSafeNextUrl() {
+        var nx = new URLSearchParams(location.search).get('next');
+        return (nx && /^[\w-]+\.html(\?[a-zA-Z0-9_=&%-]*)?(#[\w-]*)?$/.test(nx)) ? nx : 'index.html';
+    }
 
     function handleSignInSubmit(e) {
         if (e && e.preventDefault) e.preventDefault();
+        if (isSubmittingLogin) return;
         const emailInput = document.getElementById('email-input');
         const passwordInput = document.getElementById('password-input');
+        const loginBtn = document.getElementById('btn-login-submit');
         
         const email = emailInput ? emailInput.value.trim() : '';
         const password = passwordInput ? passwordInput.value.trim() : '';
@@ -761,29 +769,43 @@ button, input, select, textarea { font-family: inherit; }
             return;
         }
         const normalizedEmail = email.toLowerCase();
-        const isBypass2FA = normalizedEmail === 'admin@5guys.vn';
+        // Chi duy nhat tai khoan admin@5guys.com duoc bo qua xac thuc 2 buoc (2FA)
+        const isBypass2FA = normalizedEmail === 'admin@5guys.com';
 
         if (!isBypass2FA && typeof OTPAuth === 'undefined') {
             alert('Không tải được thư viện Google Authenticator. Hãy kiểm tra kết nối mạng rồi tải lại trang.');
             return;
         }
 
+        isSubmittingLogin = true;
+        const originalBtnHtml = loginBtn ? loginBtn.innerHTML : '';
+        if (loginBtn) {
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> ĐANG XÁC THỰC...';
+        }
+
         G5.api('/auth/login', { method: 'POST', body: { email: email, password: password } })
             .then(function (result) {
-                // Dac cach tai khoan chung admin@5guys.vn: dang nhap thang khong can qua buoc 2FA
+                // Chi duy nhat tai khoan admin@5guys.com: dang nhap thang khong can qua buoc 2FA
                 if (isBypass2FA) {
                     G5.setApiSession(result.token, result.user);
-                    showToast('Đăng nhập nhanh tài khoản Admin thành công!');
+                    showToast('Đăng nhập nhanh tài khoản Admin (admin@5guys.com) thành công!');
                     setTimeout(() => {
-                        var nx = new URLSearchParams(location.search).get('next');
-                        window.location.href = (nx && /^[\w-]+\.html$/.test(nx)) ? nx : 'index.html';
+                        window.location.href = resolveSafeNextUrl();
                     }, 500);
                     return;
                 }
                 pendingSession = { token: result.token, user: result.user, email: normalizedEmail };
                 open2FAModal();
             })
-            .catch(function (error) { alert(G5.errorText(error)); });
+            .catch(function (error) { alert(G5.errorText(error)); })
+            .finally(function () {
+                isSubmittingLogin = false;
+                if (loginBtn) {
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = originalBtnHtml;
+                }
+            });
     }
 
     function readTotpSecrets() {
@@ -984,29 +1006,24 @@ button, input, select, textarea { font-family: inherit; }
         showToast('Xác thực 2FA thành công! Chào mừng trở lại.');
 
         setTimeout(() => {
-            var nx = new URLSearchParams(location.search).get('next');
-            window.location.href = (nx && /^[\w-]+\.html$/.test(nx)) ? nx : 'index.html';
+            window.location.href = resolveSafeNextUrl();
         }, 900);
     }
 
-    // Dien san email khi chuyen sang tu trang dang ky (login.html?email=...)
+    // Dien san email khi chuyen sang tu trang dang ky (login.html?email=...) va giu nguyen ?next=
     (function () {
-        const em = new URLSearchParams(location.search).get('email');
+        const params = new URLSearchParams(location.search);
+        const em = params.get('email');
         const inp = document.getElementById('email-input');
         if (em && inp && !inp.value) { inp.value = em; const pw = document.getElementById('password-input'); if (pw) pw.focus(); }
-    })();
-    otpInputs.forEach(inp => inp.addEventListener('input', hide2FAError));
-
-    // Direct event listener binding
-    document.addEventListener('DOMContentLoaded', () => {
-        const loginBtn = document.getElementById('btn-login-submit');
-        if (loginBtn) {
-            loginBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                handleSignInSubmit(e);
+        const nx = params.get('next');
+        if (nx && /^[\w-]+\.html(\?[a-zA-Z0-9_=&%-]*)?(#[\w-]*)?$/.test(nx)) {
+            document.querySelectorAll('a[href="register.html"]').forEach(a => {
+                a.href = 'register.html?next=' + encodeURIComponent(nx);
             });
         }
-    });
+    })();
+    otpInputs.forEach(inp => inp.addEventListener('input', hide2FAError));
 
     // Close on ESC
     document.addEventListener('keydown', (e) => {

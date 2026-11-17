@@ -900,7 +900,9 @@
       modalFormContent.style.display = 'none';
       modalSuccessContent.style.display = 'block';
       pendingReg = null;
-      setTimeout(() => { location.href = 'login.html?email=' + encodeURIComponent(reg.email); }, 1500);
+      const nx = new URLSearchParams(location.search).get('next');
+      const nextParam = (nx && /^[\w-]+\.html(\?[a-zA-Z0-9_=&%-]*)?(#[\w-]*)?$/.test(nx)) ? '&next=' + encodeURIComponent(nx) : '';
+      setTimeout(() => { location.href = 'login.html?email=' + encodeURIComponent(reg.email) + nextParam; }, 1500);
     } catch (err) {
       if (previous === undefined) delete store[reg.email]; else store[reg.email] = previous;
       localStorage.setItem(TOTP_STORE_KEY, JSON.stringify(store));

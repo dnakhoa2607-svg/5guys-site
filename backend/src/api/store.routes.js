@@ -293,9 +293,26 @@ router.post('/orders', async (req, res, next) => {
 router.get('/orders', async (req, res, next) => {
   try {
     const [rows] = await db.execute(
-      'SELECT o.id,o.order_number,o.status,o.total,o.currency,o.placed_at,o.paid_at,o.recipient_user_id,o.gift_email,o.gift_message,(SELECT r.status FROM refunds r WHERE r.order_id=o.id ORDER BY r.id DESC LIMIT 1) AS refund_status FROM orders o WHERE o.user_id=? ORDER BY placed_at DESC',
+      'SELECT o.id,o.order_number,o.status,o.total,o.currency,o.placed_at,o.paid_at,o.recipient_name,o.recipient_phone,o.shipping_address,o.recipient_user_id,o.gift_email,o.gift_message,(SELECT r.status FROM refunds r WHERE r.order_id=o.id ORDER BY r.id DESC LIMIT 1) AS refund_status FROM orders o WHERE o.user_id=? ORDER BY placed_at DESC',
       [req.user.sub]
     );
+    if (rows.length > 0) {
+      const orderIds = rows.map((r) => r.id);
+      const placeholders = orderIds.map(() => '?').join(',');
+      const [itemRows] = await db.execute(
+        `SELECT order_id,product_id,product_title,product_type,unit_price,quantity,line_total FROM order_items WHERE order_id IN (${placeholders}) ORDER BY id ASC`,
+        orderIds
+      );
+      const itemsByOrder = new Map();
+      for (const it of itemRows) {
+        const list = itemsByOrder.get(it.order_id) || [];
+        list.push(it);
+        itemsByOrder.set(it.order_id, list);
+      }
+      for (const r of rows) {
+        r.items = itemsByOrder.get(r.id) || [];
+      }
+    }
     res.json({ orders: rows });
   } catch (e) {
     next(e);

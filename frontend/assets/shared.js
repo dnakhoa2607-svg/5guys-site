@@ -85,6 +85,11 @@
 
   var G5 = window.G5 = {
     RATE: RATE,
+    esc: function (s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c];
+      });
+    },
     /* ---- Tài khoản ---- */
     requireLogin: function (msg) {
       if (G5.user()) return true;
@@ -93,7 +98,7 @@
     },
     /* Popup yêu cầu đăng nhập / đăng ký (dùng cho khách chưa đăng nhập) */
     promptLogin: function (msg) {
-      var page = location.pathname.split('/').pop() || 'index.html';
+      var page = (location.pathname.split('/').pop() || 'index.html') + (location.search || '');
       var next = encodeURIComponent(page);
       var el = document.getElementById('g5-login-modal');
       if (!el) {
@@ -143,15 +148,21 @@
     },
     setCart: function (c) {
       if (!G5.user()) return;
+      var next = (Array.isArray(c) ? c : []).map(function (x) {
+        var copy = Array.isArray(x) ? x.slice() : [];
+        copy[3] = copy[1] === 'digital' ? 1 : Math.max(1, Number(copy[3]) || 1);
+        return copy;
+      });
       if (apiMode) {
-        var old = G5.getCart(), next = Array.isArray(c) ? c : [];
-        Promise.all(old.filter(function (x) { return !next.some(function (y) { return y[4] === x[4]; }); }).map(function (x) { return api('/cart/items/' + x[4], { method: 'DELETE' }); }))
+        var old = G5.getCart().map(function (x) { return Array.isArray(x) ? x.slice() : []; });
+        wr('5guys_api_cart_cache', next);
+        G5.refresh();
+        Promise.all(old.filter(function (x) { return x[4] && !next.some(function (y) { return y[4] === x[4]; }); }).map(function (x) { return api('/cart/items/' + x[4], { method: 'DELETE' }); }))
         .then(function () { return Promise.all(next.filter(function (x) { var before = old.find(function (y) { return y[4] === x[4]; }); return x[4] && (!before || before[3] !== x[3]); }).map(function (x) { return api('/cart/items', { method: 'PUT', body: { productId: x[4], quantity: x[3] } }); })); })
-          .then(function () { wr('5guys_api_cart_cache', next); G5.refresh(); })
           .catch(function () { G5.notify('Không thể cập nhật giỏ hàng qua API.'); });
         return;
       }
-      wr(K.cartPrefix + accountKey(), Array.isArray(c) ? c : []);
+      wr(K.cartPrefix + accountKey(), next);
       G5.refresh();
     },
     add: function (name, kind, usd, qty, productId) {
@@ -168,13 +179,14 @@
             });
           });
         return findId.then(function (id) {
-          return api('/cart/items', { method: 'PUT', body: { productId: id, quantity: (qty || 1) } });
+          return api('/cart/items', { method: 'PUT', body: { productId: id, quantity: kind === 'digital' ? 1 : (qty || 1) } });
         }).then(function () { playCoin(); G5.syncCart(); G5.notify('Đã thêm "' + name + '" (' + (kind === 'digital' ? 'bản số' : 'bản đĩa') + ') vào giỏ hàng.'); })
           .catch(function (err) { G5.notify(G5.errorText(err)); });
       }
-      var c = G5.getCart(), i;
+      var c = G5.getCart(), i, itemKind = kind || 'digital';
       for (i = 0; i < c.length; i++) if (c[i][0] === name) break;
-      if (i < c.length) c[i][3] += (qty || 1); else c.push([name, kind || 'digital', usd || 0, qty || 1]);
+      if (i < c.length) c[i][3] = itemKind === 'digital' ? 1 : (c[i][3] + (qty || 1));
+      else c.push([name, itemKind, usd || 0, itemKind === 'digital' ? 1 : (qty || 1)]);
       G5.setCart(c);
       playCoin();
       return Promise.resolve(c);
@@ -249,8 +261,21 @@
     },
     syncOrders: function () {
       if (!apiMode) return Promise.resolve(G5.getOrders());
-      return api('/orders').then(function (data) { return Promise.all((data.orders || []).map(function (o) { return api('/orders/' + o.id).then(function (detail) { var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0; var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : ''; var od = detail.order || {}, sa = od.shipping_address || null, ship = sa ? (od.recipient_name + ' · ' + od.recipient_phone + ' — ' + [sa.addressLine, sa.ward, sa.district, sa.city].filter(Boolean).join(', ')) : '';
-          return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage, label, o.id, item.product_type === 'physical' ? ship : '']; }); }); })); }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
+      return api('/orders').then(function (data) {
+        return Promise.all((data.orders || []).map(function (o) {
+          var getDetail = Array.isArray(o.items)
+            ? Promise.resolve({ order: o, items: o.items })
+            : api('/orders/' + o.id);
+          return getDetail.then(function (detail) {
+            var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0;
+            var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : '';
+            var od = detail.order || o || {}, sa = od.shipping_address || null;
+            if (typeof sa === 'string') { try { sa = JSON.parse(sa); } catch (e) { sa = null; } }
+            var ship = sa ? (od.recipient_name + ' · ' + od.recipient_phone + ' — ' + [sa.addressLine, sa.ward, sa.district, sa.city].filter(Boolean).join(', ')) : '';
+            return (detail.items || []).map(function (item) { return [o.order_number, new Date(o.placed_at).toLocaleDateString('vi-VN'), item.product_title, item.product_type, Number(item.line_total) / RATE, stage, label, o.id, item.product_type === 'physical' ? ship : '']; });
+          });
+        }));
+      }).then(function (groups) { var rows = groups.flat(); wr('5guys_api_orders_cache', rows); return rows; });
     },
     getLibrary: function () { return apiMode ? api('/library').then(function (data) { return data.games || []; }) : Promise.resolve(null); },
     errorText: function (err) {
@@ -294,6 +319,7 @@
         reset_cooldown: 'Vui lòng đợi 1 phút trước khi yêu cầu mã mới.',
         invalid_or_expired_code: 'Mã xác nhận không đúng hoặc đã hết hạn.',
         too_many_attempts: 'Nhập sai mã quá 5 lần. Vui lòng yêu cầu mã mới.',
+        too_many_requests: 'Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút.',
         invalid_phone: 'Số điện thoại phải gồm 10 số, bắt đầu bằng 03, 05, 07, 08 hoặc 09.',
         'Failed to fetch': 'Không kết nối được API. Hãy kiểm tra backend đang chạy (npm run dev).'
       })[code] || ('Có lỗi xảy ra: ' + (code || 'không rõ'));
@@ -350,7 +376,7 @@
   var u = G5.user();
   document.documentElement.classList.toggle('is-auth', !!u);
   if (window.G5_REQUIRE_AUTH && !u) {
-    location.replace('login.html?next=' + encodeURIComponent(location.pathname.split('/').pop() || 'index.html'));
+    location.replace('login.html?next=' + encodeURIComponent((location.pathname.split('/').pop() || 'index.html') + (location.search || '')));
   }
 
   document.addEventListener('DOMContentLoaded', function () {

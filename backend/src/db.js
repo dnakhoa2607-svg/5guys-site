@@ -8,6 +8,13 @@ const pool = mysql.createPool({
 });
 
 pool.on('connection', (conn) => { conn.query("SET time_zone = '+00:00'"); });
+const rawGetConnection = pool.getConnection.bind(pool);
+pool.getConnection = async (...args) => {
+  const conn = await rawGetConnection(...args);
+  conn.execute = conn.query.bind(conn);
+  return conn;
+};
+pool.execute = pool.query.bind(pool);
 
 let schemaReadyPromise = null;
 

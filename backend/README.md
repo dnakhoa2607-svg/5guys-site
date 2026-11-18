@@ -1,67 +1,156 @@
-# 5GUYS Node.js API
+# 5GUYS Node.js API (`backend/`)
 
-Node.js 20+, Express, MySQL 8.0+. API routes and their logic live in `src/api` (one file per area).
+REST API viết bằng **Node.js `>= 20` (ES Modules)**, **Express `4.21`**, **Zod `4.6`**, **JWT**, **Bcryptjs** và **MySQL2 `3.12`** phục vụ nền tảng phân phối game **5GUYS Vault**.
 
-## Start locally
+---
 
-1. Create the database: `mysql -u root -p < database/schema.sql`; optional demo catalog: `mysql -u root -p 5guys_store < database/seed.sql`.
-   To load the latest demo catalog or format variants into an existing database, run the seed command again; existing physical stock counts are preserved.
-2. Create a restricted MySQL user for the API and grant it access only to `5guys_store`.
-3. Copy `.env.example` to `.env`, set database credentials and a random JWT secret of at least 32 characters.
-4. Run `npm install`, then `npm run dev` from `backend`.
-5. API health: `GET http://localhost:3000/api/health`.
+## 1. Cấu trúc Mã nguồn Backend
 
-## API
+| Thành phần | Chức năng chính |
+| :--- | :--- |
+| `src/server.js` | Kiểm tra kết nối MySQL, chạy `ensureSchemaReady()` và mở HTTP server trên `PORT` (`3000`) |
+| `src/app.js` | Cấu hình `helmet()`, ẩn `x-powered-by`, `cors()`, `express.json({ limit: '32kb' })`, `rateLimit` `/api/auth` & error handlers |
+| `src/config.js` | Nạp và kiểm tra biến môi trường `.env` bằng `zod` |
+| `src/db.js` | Pool kết nối MySQL2 (`utc`, `decimalNumbers: true`), `inTransaction()` và `ensureSchemaReady()` |
+| `src/middleware/auth.js` | `requireAuth` (xác thực JWT) và `requireRole(...roles)` (truy vấn trực tiếp `users.role` & `users.status` từ MySQL) |
+| `src/middleware/errors.js` | Chuẩn hóa lỗi `404 not_found`, `400 invalid_request` (Zod), `409 already_exists` (`ER_DUP_ENTRY`), `500` |
+| `src/ai/advisor.js` | Trích xuất 3 nhóm dữ liệu (Phần cứng / Sở thích / Ngân sách), hỏi làm rõ và gợi ý game fallback nội bộ |
+| `src/api/index.js` | Router tổng `/api` + `GET /api/health` |
 
-- `POST /api/auth/register`, `POST /api/auth/login`, `GET /api/auth/me`
-- `GET /api/products/:idOrSlug` also returns sibling digital/physical formats for the same game when both are sold.
-- `GET /api/products`, `GET /api/products/:idOrSlug` (includes detail sections: media, requirements, editions, approved reviews)
-- Auth required: `GET /api/cart`, `PUT /api/cart/items`, `DELETE /api/cart/items/:productId`
-- Auth required: `POST /api/orders` (creates pending order in an InnoDB transaction; no payment is taken), `GET /api/orders`, `GET /api/orders/:id`
-- Auth required: `GET /api/library`, `GET /api/loyalty`
+---
 
-All customer queries are scoped to the authenticated user. Passwords use bcrypt; tokens are signed JWTs; SQL is parameterized; public routes have rate limits. Checkout intentionally creates a pending-payment order. A real payment provider, webhook signature verification, physical shipping workflow, mail verification, emailing password-reset codes (currently demo mode), and encryption-key management for digital license delivery need separate production setup. Never put real licenses or production secrets in seed data or Git.
+## 2. Biến Môi trường (`backend/.env`)
 
-## Cập nhật v2 (Admin, thanh toán mô phỏng, hoàn tiền, đánh giá, hỗ trợ)
+Sao chép từ `backend/.env.example`:
 
-- `POST /api/orders` nhận `{ paymentMethod, couponCode, addressId }`; server tự tính giảm giá, VAT 10%, phí thanh toán và tổng tiền.
-  - Giỏ có game đĩa thì **bắt buộc** `addressId` (id trong sổ địa chỉ của chính người dùng), thiếu trả `address_required`, không phải của mình trả `address_not_found`. Giỏ chỉ có game số thì không cần.
-  - Server lưu **bản chụp** địa chỉ vào đơn (`recipient_name`, `recipient_phone`, `shipping_address`), nên sửa/xóa địa chỉ trong hồ sơ không làm đổi đơn cũ. `GET /api/orders/:id` và `GET /api/admin/orders` trả kèm 3 trường này.
-- `POST /api/orders/:id/pay` thanh toán mô phỏng (chỉ khi `NODE_ENV=development`): game số vào thư viện, đĩa trừ tồn kho, cộng điểm.
-- `POST /api/orders/:id/refund` khách gửi yêu cầu hoàn tiền.
-- `POST /api/products/:id/reviews` viết đánh giá (đánh dấu "đã mua" nếu có đơn đã thanh toán).
-- `POST|GET /api/support/tickets` gửi và xem ticket hỗ trợ.
-- `/api/admin/*` (vai trò admin/staff, kiểm tra trong database): `stats`, `orders`, `orders/:id/status`, `refunds`, `refunds/:id`, `products`, `users`, `tickets`.
-- Database cũ cần chạy `database/update_v2.sql` một lần. Nâng quyền admin bằng `database/make_admin.sql`.
+| Biến | Mặc định / Định dạng | Mô tả |
+| :--- | :--- | :--- |
+| `NODE_ENV` | `development` | Chế độ chạy (`development` / `test` / `production`). Khi là `production`, endpoint thanh toán mô phỏng trả `404` và ẩn `demoCode` quên mật khẩu |
+| `PORT` | `3000` | Cổng lắng nghe của API server |
+| `FRONTEND_ORIGIN` | `http://127.0.0.1:5500,http://localhost:5500` | Danh sách origin được phép gọi API qua CORS (phân tách bằng dấu phẩy) |
+| `DB_HOST`, `DB_PORT`, `DB_NAME` | `127.0.0.1`, `3306`, `5guys_store` | Thông tin máy chủ MySQL |
+| `DB_USER`, `DB_PASSWORD` | `5guys_api`, *(bắt buộc)* | Tài khoản MySQL dùng cho API |
+| `JWT_SECRET` | *(bắt buộc, `>= 32` ký tự)* | Khóa bí mật ký JSON Web Token |
+| `JWT_EXPIRES_IN` | `2h` | Thời hạn hiệu lực của mỗi access token |
+| `GEMINI_API_KEY` | *(tùy chọn)* | API Key Google Gemini cho trợ lý `PC2GAMES AI`; nếu trống sẽ tự dùng bộ luật fallback trong `advisor.js` |
+| `GEMINI_MODEL` | `gemini-3.5-flash` | Model Gemini chính (tự fallback sang `gemini-3.5-flash-lite` khi quá tải) |
 
-## Cập nhật v3 (Hồ sơ cá nhân, quên mật khẩu)
+---
 
-Tài khoản admin mặc định có sẵn trong `seed.sql`: `admin@5guys.vn` / `Admin@12345`.
+## 3. Khởi chạy Cục bộ
 
-### Hồ sơ cá nhân (`src/api/profile.routes.js`, mọi route cần đăng nhập)
+1. Tạo cơ sở dữ liệu và nạp dữ liệu mẫu (chi tiết xem [database/README.md](../database/README.md)):
+   ```sh
+   mysql -u root -p < database/schema.sql
+   mysql -u root -p 5guys_store < database/seed.sql
+   mysql -u root -p 5guys_store < database/update_v2.sql
+   ```
+2. Tạo user MySQL cho API với quyền tối thiểu (`SELECT, INSERT, UPDATE, DELETE` trên `5guys_store.*`).
+3. Sao chép `backend/.env.example` thành `backend/.env`, điền `DB_PASSWORD` và `JWT_SECRET` (`>= 32` ký tự).
+4. Cài đặt dependencies và khởi động API:
+   ```sh
+   cd backend
+   npm install
+   npm run dev
+   ```
+5. Kiểm tra sức khỏe server: `GET http://localhost:3000/api/health` → `{ "status": "ok" }`.
 
-| Phương thức | Đường dẫn | Chức năng |
-|---|---|---|
-| GET | `/api/profile` | Thông tin người dùng, thống kê (đơn, game, điểm, hạng), danh sách địa chỉ |
-| PUT | `/api/profile` | Sửa `{ displayName, phone }` |
-| PUT | `/api/profile/password` | Đổi mật khẩu `{ currentPassword, newPassword }` |
-| POST | `/api/profile/addresses` | Thêm địa chỉ (tối đa 10). Trả `addressId`; nếu trùng hệt địa chỉ đã có (không phân biệt hoa/thường, khoảng trắng) thì dùng lại địa chỉ cũ, `duplicate: true` |
-| PUT | `/api/profile/addresses/:id` | Sửa địa chỉ / đặt mặc định |
-| DELETE | `/api/profile/addresses/:id` | Xóa địa chỉ |
-| PUT / DELETE | `/api/profile/avatar` | Đổi / xóa ảnh đại diện (JPEG ≤ 300KB, lưu ở `backend/uploads/avatars/`). Giao diện chọn ảnh trên `profile.html` **chưa làm** |
+---
 
-- Số điện thoại: đúng 10 số, đầu 03/05/07/08/09, chấp nhận `+84`; lưu dạng `0xxxxxxxxx`. Sai trả `invalid_phone`.
-- Mật khẩu mới tối thiểu 10 ký tự; sai mật khẩu hiện tại trả `wrong_password`.
-- Địa chỉ dùng bảng `user_addresses` có sẵn; tên Tỉnh/Phường lấy từ API công khai provinces.open-api.vn v2 ở phía frontend.
+## 4. Tự động Đồng bộ Schema & Seed (`ensureSchemaReady`)
 
-### Quên mật khẩu (`src/api/auth.routes.js`, chế độ demo)
+Khi khởi động ở `src/server.js` (và được đảm bảo trước các route liên quan), hàm `ensureSchemaReady()` trong `src/db.js` tự động kiểm tra qua `INFORMATION_SCHEMA.COLUMNS` và `INFORMATION_SCHEMA.TABLE_CONSTRAINTS` để:
+- Cập nhật `users.role` bổ sung giá trị `'publisher'`.
+- Bổ sung các cột `products.publisher_user_id`, `products.rejection_reason`, khóa ngoại `fk_products_publisher`, cùng `reviews.publisher_reply` và `reviews.publisher_replied_at`.
+- Tạo bảng `game_patches` (Module 4) và `game_mods` (Module 3) nếu chưa tồn tại.
+- Bổ sung các cột tặng quà trên `orders` (`recipient_user_id`, `gift_email`, `gift_message`, `fk_orders_recipient`).
+- Bổ sung `game_library.installed_version` (`'1.0.0'`) và `game_library.dlc_installed` (`FALSE`).
+- Chèn an toàn (`INSERT IGNORE`) tài khoản admin `admin@5guys.com` / `Admin@12345`.
 
-| Phương thức | Đường dẫn | Body | Chức năng |
-|---|---|---|---|
-| POST | `/api/auth/forgot-password` | `{ email }` | Tạo mã 6 số, hiệu lực 15 phút. Khi `NODE_ENV` khác `production` trả mã trong `demoCode` và in ra console |
-| POST | `/api/auth/reset-password` | `{ email, code, newPassword }` | Kiểm tra mã rồi đặt mật khẩu mới |
+Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nếu bảng đang rỗng:
+- `ensurePatchesSeeded()` (`store.routes.js`): Seed bản Patch `v1.2.0` và gói DLC mẫu cho các game số đang bán vào `game_patches`.
+- `ensureModsReady()` (`mods.routes.js`): Seed 10 bản Mod mẫu cho 5 tựa game phổ biến vào `game_mods`.
+- `ensureAdminReady()` (`admin.routes.js`): Seed 2 ticket hỗ trợ mẫu vào `support_tickets`.
 
-- Không gửi email. Mã lưu trong bộ nhớ server (chỉ lưu bản băm SHA-256), khởi động lại server là mất.
-- Mã dùng 1 lần; sai 5 lần thì hủy (`too_many_attempts`); mỗi email phải chờ 60 giây mới xin mã mới (`reset_cooldown`).
-- Email không tồn tại vẫn trả cùng một thông báo, để không lộ email nào đã đăng ký.
-- Không cần chạy thêm SQL nào cho bản v3.
+> **Lưu ý quyền MySQL:** Nếu tài khoản `5guys_api` chỉ được cấp `SELECT, INSERT, UPDATE, DELETE`, bạn cần chạy `database/update_v2.sql` trước bằng tài khoản `root` để mọi cột/bảng đã tồn tại sẵn, khi đó `ensureSchemaReady()` sẽ không cần thực thi `ALTER` hay `CREATE`.
+
+---
+
+## 5. Danh sách Đầy đủ REST API Endpoints
+
+### 5.1. Xác thực & Quên mật khẩu (`auth.routes.js` — Giới hạn 30 req / 15 phút)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `POST` | `/api/auth/register` | Đăng ký tài khoản mới (`Bcrypt` cost 12, tạo sẵn `loyalty_accounts`), trả `user` + `token` |
+| `POST` | `/api/auth/login` | Đăng nhập xác thực mật khẩu, cập nhật `last_login_at`, trả `user` + `token` |
+| `GET` | `/api/auth/me` | *(Auth)* Trả thông tin người dùng đang đăng nhập |
+| `POST` | `/api/auth/forgot-password` | *(Demo)* Sinh mã OTP 6 số (hiệu lực 15p, cooldown 60s, lưu băm SHA-256 trong RAM) |
+| `POST` | `/api/auth/reset-password` | Kiểm tra OTP bằng `crypto.timingSafeEqual()`, sai 5 lần hủy mã (`too_many_attempts`), đặt mật khẩu mới |
+
+### 5.2. Sản phẩm, Media & Đánh giá (`products.routes.js`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/products` | Lọc/tìm kiếm catalog (`q`, `type`, `platform`, `genre`, `limit`, `offset`), gộp biến thể Số/Đĩa theo tựa game |
+| `GET` | `/api/products/reviews` | Lấy top 50 đánh giá đã duyệt kèm `helpful_count` từ `review_votes` và `publisher_reply` cho `reviews.html` |
+| `GET` | `/api/products/:idOrSlug/gallery` | Reverse proxy lấy trailer & screenshots từ Steam (`galleryCache` TTL 6 giờ, tránh CORS) |
+| `GET` | `/api/products/:idOrSlug` | Chi tiết sản phẩm kèm `formats`, `media`, `requirements`, `editions` và `reviews` (gồm `helpful_count`, `publisher_reply`) |
+| `POST` | `/api/products/:id/reviews` | *(Auth)* Đăng/cập nhật đánh giá 1–5 sao, tự gắn `verified_purchase` nếu đã mua, cập nhật `products.rating` |
+| `POST` | `/api/products/reviews/:reviewId/vote` | *(Auth)* Toggle bình chọn đánh giá hữu ích trong `review_votes`, trả `{ ok, helpfulCount, voted }` |
+
+### 5.3. Giỏ hàng, Đơn hàng, Tặng quà, Kho game & Loyalty (`store.routes.js`, `payments.routes.js` — Yêu cầu `requireAuth`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/cart` | Lấy sản phẩm trong giỏ hàng của người dùng |
+| `PUT` | `/api/cart/items` | Thêm/cập nhật số lượng sản phẩm (`digital` tự khóa `1`; `physical` kiểm tra tồn kho khả dụng) |
+| `DELETE` | `/api/cart/items/:productId` | Xóa 1 sản phẩm khỏi giỏ hàng |
+| `POST` | `/api/orders` | Tạo đơn trong Transaction: kiểm tồn kho vật lý, kiểm trùng sở hữu số (cho mình hoặc người nhận quà), tính `computeTotals` phía server (coupon `SELL10`, VAT 10%, phí cổng thanh toán, ship `30.000đ`/`60.000đ`), chụp `shipping_address`, hỗ trợ `{ isGift, giftEmail, giftMessage }` |
+| `GET` | `/api/orders` | Lấy danh sách đơn hàng của người dùng kèm sẵn mảng `items` (tránh N+1 HTTP requests), `shipping_address`, `gift_email` và `refund_status` mới nhất |
+| `GET` | `/api/orders/:id` | Lấy chi tiết 1 đơn hàng và danh sách `order_items` |
+| `POST` | `/api/orders/:id/pay` | *(Demo, khóa khi `NODE_ENV=production`)* Thanh toán mô phỏng: cấp game số vào `game_library` của `recipient_user_id || req.user.sub`, trừ tồn kho đĩa + tạo `order_fulfillments`, lưu `provider_reference` vào `payments`, cộng điểm Loyalty cho người mua |
+| `POST` | `/api/orders/:id/refund` | Khách gửi yêu cầu hoàn tiền (`requested`) cho đơn đã thanh toán |
+| `GET` | `/api/library` | Trả danh sách game số trong `game_library` kèm `installed_version`, `dlc_installed` và danh sách `patches` từ `game_patches` |
+| `POST` | `/api/library/:productId/update` | Cập nhật `installed_version` và `dlc_installed` cho game sở hữu trong `game_library` |
+| `GET` | `/api/loyalty` | Lấy số dư điểm, hạng thành viên và 100 biến động điểm gần nhất |
+
+### 5.4. Cộng đồng Mod Động (`mods.routes.js`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/mods?slug=` | Lấy danh sách bản Mod (`status = 'published'`) theo game số (hoặc tối đa 100 mod toàn sàn nếu không truyền `slug`) |
+| `POST` | `/api/mods` | *(Auth)* Đăng tải bản Mod mới cho một tựa game số trong `game_mods` |
+| `POST` | `/api/mods/:id/download` | *(Auth)* Tăng `downloads_count` an toàn trong Transaction (`FOR UPDATE`) và trả metadata bản Mod |
+
+### 5.5. Cổng Nhà phát hành (`publisher.routes.js` — Yêu cầu `publisher` hoặc `admin`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/publisher/dashboard` | Trả thống kê `stats`, danh sách game của Studio, danh sách review và lịch sử `game_patches` |
+| `POST` | `/api/publisher/products` | Tạo game mới trong Transaction với `status = 'draft'` (chờ Admin duyệt), kèm `physical_inventory` hoặc `game_requirements` và bản `'Standard'` trong `product_editions` |
+| `PUT` | `/api/publisher/products/:id/pricing` | Cập nhật giá bán, giá gốc, tự tính `discount_percent` và đồng bộ `product_editions` `'Standard'` |
+| `POST` | `/api/publisher/products/:id/patches` | Phát hành bản vá hoặc DLC mới vào `game_patches` |
+| `PUT` | `/api/publisher/reviews/:reviewId/reply` | Gửi phản hồi chính thức của Nhà phát hành cho đánh giá về game của Studio |
+
+### 5.6. Quản trị Hệ thống (`admin.routes.js` — Yêu cầu `admin` hoặc `staff`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` | `/api/admin/stats` | Thống kê doanh thu tổng, tách doanh thu Số / Vật lý, đơn theo trạng thái, doanh thu 14 ngày liên tục, top sản phẩm & cảnh báo tồn kho thấp |
+| `GET` / `GET` | `/api/admin/orders`, `/api/admin/orders/:id` | Danh sách đơn hàng (tối đa 200) và chi tiết đơn để điều phối giao vận / in phiếu / xem Key |
+| `PUT` | `/api/admin/orders/:id/status` | Chuyển trạng thái đơn (`processing`, `shipped`, `fulfilled`, `cancelled`) kèm hoàn giữ chỗ khi hủy |
+| `GET` / `PUT` | `/api/admin/refunds`, `/api/admin/refunds/:id` | Duyệt/từ chối hoàn tiền trong Transaction: thu hồi `game_library`, hoàn tồn kho đĩa (nếu chưa giao) và thu hồi điểm Loyalty |
+| `GET` / `POST` / `PUT` | `/api/admin/products`, `/api/admin/products/:id` | Quản lý toàn bộ catalog (ưu tiên game `draft` lên đầu); đồng bộ giá `product_editions` `'Standard'` và xóa `rejection_reason` khi chuyển `active` |
+| `PUT` | `/api/admin/products/:id/approval` | Phê duyệt (`approve` → `active`) hoặc từ chối (`reject` → `inactive` + lưu `rejection_reason`) game từ Publisher |
+| `GET` / `PUT` | `/api/admin/users`, `/api/admin/users/:id` | Danh sách tài khoản và phân quyền (`customer`/`publisher`/`staff`/`admin`, khóa/mở khóa; chỉ `admin` được sửa và chặn tự sửa chính mình) |
+| `GET` / `PUT` | `/api/admin/tickets`, `/api/admin/tickets/:id` | Xem danh sách ticket hỗ trợ (tối đa 200), gửi phản hồi và cập nhật trạng thái |
+
+### 5.7. Hồ sơ, Hỗ trợ & PC2GAMES AI (`profile.routes.js`, `support.routes.js`, `ai.routes.js`)
+| Phương thức | Đường dẫn | Mô tả |
+| :--- | :--- | :--- |
+| `GET` / `PUT` | `/api/profile`, `/api/profile`, `/api/profile/password` | *(Auth)* Xem hồ sơ + thống kê, cập nhật `displayName` + `phone` chuẩn VN 10 số, đổi mật khẩu |
+| `POST` / `PUT` / `DELETE` | `/api/profile/addresses`, `/api/profile/addresses/:id` | *(Auth)* Thêm (tối đa 10, tự chống trùng lặp), sửa/đặt mặc định và xóa địa chỉ giao hàng |
+| `POST` / `GET` | `/api/support/tickets` | *(Auth)* Khách hàng tạo mới hoặc xem 50 phiếu hỗ trợ gần nhất kèm phản hồi mới nhất |
+| `POST` | `/api/ai/advisor` | *(Rate limit 15 req / 1 phút)* Tư vấn cấu hình game theo phần cứng + catalog active (Gemini API hoặc fallback `advisor.js`) |
+
+---
+
+## 6. Bảo mật & Giới hạn Phạm vi Demo
+
+- **Các lớp bảo mật đã cài đặt:** `Bcrypt` (cost 12) + `JWT` có thời hạn `2h`; `requireRole` đối chiếu DB thời gian thực; `Helmet` security headers; `CORS` theo danh sách origin; `express.json({ limit: '32kb' })`; `Express Rate Limit`; xác thực schema đầu vào bằng `Zod`; `100%` truy vấn SQL tham số hóa (`Prepared Statements`).
+- **Phạm vi mô phỏng học thuật:** Cổng thanh toán thật + xác minh chữ ký webhook, gửi email xác thực khi quên mật khẩu và cấp key DRM thật từ nhà phát hành gốc cần tích hợp thêm hạ tầng khi triển khai production. Không đưa thông tin bí mật thật hoặc file `.env` lên Git.

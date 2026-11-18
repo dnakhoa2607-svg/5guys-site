@@ -60,12 +60,11 @@
             const typingId = 'typing-' + Date.now();
             appendTypingIndicator(typingId);
             
-            const ask = window.G5 && G5.askAi ? G5.askAi(text) : Promise.reject();
-            ask.catch(() => getAiResponse(text.toLowerCase())).then(reply => {
-                const typingEl = document.getElementById(typingId);
-                if (typingEl) typingEl.remove();
+            setTimeout(() => {
+                document.getElementById(typingId).remove();
+                const reply = getAiResponse(text.toLowerCase());
                 appendMessage('bot', reply);
-            });
+            }, 1200);
         }
 
         function appendMessage(sender, text) {

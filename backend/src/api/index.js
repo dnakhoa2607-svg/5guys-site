@@ -8,7 +8,6 @@ import publisher from './publisher.routes.js';
 import mods from './mods.routes.js';
 import support from './support.routes.js';
 import profile from './profile.routes.js';
-import ai from './ai.routes.js';
 
 const api = Router();
 api.get('/health', (req,res)=>res.json({status:'ok'}));
@@ -19,7 +18,6 @@ api.use('/publisher',publisher);
 api.use('/mods',mods);
 api.use('/support',support);
 api.use('/profile',profile);
-api.use('/ai',ai);
 api.use('/orders',payments);
 api.use('/',store);
 export default api;

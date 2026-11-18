@@ -21,7 +21,7 @@
 
 | Tầng | Công nghệ & Thành phần | Quy mô thực tế |
 | :--- | :--- | :--- |
-| **Frontend** | HTML5, Tailwind CSS CDN, Font Awesome 6.4.0, Google Fonts (`Inter`), Vanilla JS ES5/ES6, `otpauth` 9.2.2, `qrcodejs` 1.0.0 | **19 trang HTML** + **3 mini-game HTML5** (`frontend/games/`) + **11 asset JS/CSS** (`frontend/assets/`) |
+| **Frontend** | HTML5, Tailwind CSS CDN, Font Awesome 6.4.0, Google Fonts (`Inter`), Vanilla JS ES5/ES6, `otpauth` 9.2.2, `qrcodejs` 1.0.0 | **20 trang HTML** + **3 mini-game HTML5** (`frontend/games/`) + **11 asset JS/CSS** (`frontend/assets/`) |
 | **Backend** | Node.js `>= 20` (ES Modules), Express `4.21`, MySQL2 `3.12`, Zod `4.6`, JWT, Bcryptjs (cost 12), Helmet, CORS, Express Rate Limit | **11 module route** (`backend/src/api/`), middleware bảo mật & bộ phân tích AI (`backend/src/ai/advisor.js`) |
 | **Database** | MySQL `8.0+` (Engine `InnoDB`, charset `utf8mb4`, `DECIMAL(12,2)`, thời gian `UTC`) | **31 bảng** (29 bảng gốc trong `schema.sql` + 2 bảng mở rộng v2 trong `update_v2.sql`) |
 
@@ -63,7 +63,7 @@
 ├── frontend/
 │   ├── assets/                    # shared.js, layout.js, catalog.js, detail.js, hub.js, search.js, address.js...
 │   ├── games/                     # 3 mini-game HTML5 (black-myth.html, hollow-knight.html, neon-viper.html)
-│   ├── *.html                     # 19 trang giao diện đầy đủ (storefront, vault, publisher, admin, privacy...)
+│   ├── *.html                     # 20 trang giao diện đầy đủ (storefront, vault, publisher, admin, privacy, terms...)
 │   └── README.md
 ├── CHANGELOG-v2.md                # Lịch sử chi tiết các nâng cấp bản v2
 └── README.md
@@ -77,7 +77,7 @@
 - **Đăng ký, Đăng nhập & Khôi phục mật khẩu:** Mật khẩu băm một chiều bằng `Bcrypt` (cost factor `12`), xác thực phiên bằng `JWT` (`2h`), kiểm tra vai trò trực tiếp từ DB qua `requireRole`. Chức năng Quên mật khẩu (`login.html`) sinh mã OTP 6 số băm `SHA-256`, so sánh bằng `crypto.timingSafeEqual()`, hiệu lực 15 phút, sai tối đa 5 lần và cooldown 60 giây.
 - **Xác thực 2 bước (2FA TOTP chuẩn RFC 6238):** Tích hợp thư viện `otpauth` (9.2.2) và `qrcodejs` (1.0.0) với chu kỳ 30 giây của Google Authenticator. Khi đăng ký (`register.html`), hệ thống tạo khóa bí mật Base32 và mã QR để người dùng quét; khi đăng nhập (`login.html`), chỉ lưu phiên sau khi vượt qua bước kiểm tra TOTP hợp lệ (đã gỡ bỏ các nút điền nhanh OTP demo).
 - **Hồ sơ cá nhân & Sổ địa chỉ (`profile.html`):** Cập nhật tên hiển thị, số điện thoại Việt Nam chuẩn hóa 10 số (`03/05/07/08/09`), đổi mật khẩu, quản lý tối đa 10 địa chỉ giao hàng kết nối API địa giới hành chính 34 Tỉnh/Thành & Phường/Xã (`provinces.open-api.vn` v2).
-- **Trang Chính sách Bảo mật & An toàn Dữ liệu (`privacy.html`):** Bố cục 2 cột (Sticky Sidebar Mục lục 3/12 cột + Nội dung 9/12 cột), trình bày đầy đủ 3 cam kết cốt lõi (chuẩn PCI-DSS SAQ-A, Bcrypt/2FA, không bán dữ liệu) và 7 điều khoản pháp lý – kỹ thuật; gắn liên kết đồng bộ tại Footer (`frontend/assets/layout.js`), trang Đăng ký (`register.html`) và trang Giỏ hàng (`cart.html`).
+- **Trang Chính sách Bảo mật (`privacy.html`) & Điều khoản Dịch vụ (`terms.html`):** Bố cục 2 cột (Sticky Sidebar Mục lục 3/12 cột + Nội dung 9/12 cột), trình bày đầy đủ cam kết PCI-DSS SAQ-A, Bcrypt/2FA, 7 điều khoản Bảo mật, 6 điều khoản Dịch vụ Hybrid, Bảng quy định giao nhận/hoàn tiền và thông tin Nhóm 5Guys 26C01; tích hợp checkbox đồng ý bắt buộc tại `register.html` (`#agree-terms`) cùng liên kết đồng bộ tại Footer (`frontend/assets/layout.js`) và `cart.html`.
 
 ### 2.2. Mua sắm Hybrid, Thanh toán & Tặng quà (Gifting)
 - **Catalog, Tìm kiếm & Chi tiết sản phẩm:** Trang chủ (`index.html`), Game Số (`digital.html`), Game Đĩa (`physical.html`) và Tìm kiếm (`search.html`) tải dữ liệu động từ `GET /api/products`, lọc đa tiêu chí theo thể loại, nền tảng, thanh trượt giá VND và định dạng. Trang chi tiết (`detail.html`) hỗ trợ chuyển đổi phiên bản Số/Đĩa cùng tựa game, hiển thị **Đặc tả bản vật lý** và **Trình xem Trailer & Ảnh chụp (Modal Gallery)** thông qua proxy `/api/products/:idOrSlug/gallery` có cache 6 giờ.

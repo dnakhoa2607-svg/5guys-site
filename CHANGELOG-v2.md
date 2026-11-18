@@ -1,5 +1,15 @@
 # Thay đổi bản v2
 
+## Trang Điều khoản Dịch vụ, Checkbox Bắt buộc Đăng ký & Liên kết Toàn trang (`frontend/terms.html`, `frontend/assets/layout.js`, `frontend/register.html`, `frontend/cart.html`)
+- **Tạo mới `frontend/terms.html`:**
+  - Đồng bộ 100% kiến trúc giao diện Cyberpunk Vault của `frontend/privacy.html` (Tailwind CDN, FontAwesome 6.4.0, Google Fonts `Inter`, `assets/shared.css`, `assets/tailwind-config.js`, `assets/shared.js`, `assets/layout.js` `nav` + `footer`).
+  - Header Banner gồm huy hiệu `"Hiệu lực: Tháng 11/2026 • Phiên bản v2.0 • 5GUYS Vault"`, tiêu đề lớn `"ĐIỀU KHOẢN DỊCH VỤ & QUY ĐỊNH SỬ DỤNG"`, thông tin pháp lý tham chiếu (Bộ luật Dân sự 91/2015/QH13, Luật GDĐT 20/2023/QH15, Nghị định 52/2013 & 85/2021, Luật SHTT 50/2005, Luật BVQLNTD 19/2023) và 3 thẻ tóm tắt nhanh (Quyền lợi Người dùng, Minh bạch Giao dịch Hybrid, Bảo hộ Sở hữu Trí tuệ).
+  - Bố cục 2 cột (Sticky TOC 3/12 cột `#terms-toc` với `scroll-behavior: smooth` và `IntersectionObserver` + Main Content 9/12 cột) trình bày trọn vẹn 100% **Điều 1 đến Điều 6**, Bảng 5.5 Tóm tắt Quy định Giao nhận/Vận chuyển/Hoàn tiền và Thông tin liên hệ Ban Quản trị Nhóm 5Guys 26C01 - HCMUS.
+- **Checkbox bắt buộc & đồng bộ liên kết (`frontend/register.html`, `frontend/assets/layout.js`, `frontend/cart.html`):**
+  - `frontend/register.html`: Thay dòng ghi chú bằng checkbox bắt buộc `#agree-terms` (kèm `#terms-error-msg`, liên kết tới `terms.html` & `privacy.html`), kiểm tra bắt buộc trong `handleRegister()` và tự ẩn thông báo lỗi khi tick chọn.
+  - `frontend/assets/layout.js`: Đổi đường dẫn `Điều khoản dịch vụ` trong `L.footer` từ `href="support.html"` sang `href="terms.html"`.
+  - `frontend/cart.html`: Bổ sung cả liên kết `Điều khoản dịch vụ` (`terms.html`) và `Chính sách bảo mật giao dịch` (`privacy.html`) ngay bên dưới nút `THANH TOÁN`.
+
 ## Gỡ bỏ nút Điền nhanh mã xác thực 2FA (`frontend/login.html`, `frontend/register.html`)
 - **`frontend/login.html`:** Gỡ bỏ nút `#btn-autofill-otp` (*Tự động điền mã*), hàm `autofillOTP()` và đoạn cập nhật mã tự động trong `startCountdown()` ở modal xác thực 2 bước (2FA); giữ nguyên nút **Hiện mã QR Google Authenticator** (`#btn-show-qr`), đồng hồ đếm ngược 30 giây, cơ chế xác thực TOTP và đặc cách duy nhất tài khoản `admin@5guys.com`.
 - **`frontend/register.html`:** Gỡ bỏ nút `#demo-code-pill` (*Điền nhanh mã hiện tại*), CSS `.demo-code-pill`, hàm `fillDemoOtp()` và đoạn cập nhật `#demo-code` trong `startCountdown()`; giữ nguyên mã QR quét Google Authenticator, sao chép khóa bí mật, đồng hồ 30 giây và kiểm tra OTP 6 số.

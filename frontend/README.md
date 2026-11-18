@@ -6,9 +6,9 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 
 ---
 
-## 1. Danh sách 19 Trang Giao diện & 3 Mini-Game
+## 1. Danh sách 20 Trang Giao diện & 3 Mini-Game
 
-### 1.1. 19 trang HTML chính (`frontend/*.html`)
+### 1.1. 20 trang HTML chính (`frontend/*.html`)
 
 | File | Trang | Quyền truy cập & Chức năng chính |
 | :--- | :--- | :--- |
@@ -17,7 +17,7 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 | `physical.html` | Game Vật lý & Băng đĩa | Danh mục đĩa PS4/PS5/Xbox/Switch (`type=physical`) kèm trạng thái tồn kho khả dụng |
 | `detail.html` | Chi tiết sản phẩm (`?slug=`) | Chuyển đổi định dạng Số/Đĩa cùng game, Đặc tả bản vật lý, Modal Gallery (Trailer & ảnh), cấu hình, đánh giá + bình chọn Hữu ích + phản hồi từ Nhà phát hành |
 | `search.html` | Tìm kiếm & Lọc đa tiêu chí | Hỗ trợ `?q=`, lọc theo thể loại, nền tảng, thanh trượt giá VND, định dạng và phân trang |
-| `cart.html` | Giỏ hàng & Thanh toán | Khóa SL game số = 1, tặng quà (`#gift-toggle` + email + lời chúc), sổ địa chỉ & chọn gói ship (Tiêu chuẩn `30.000đ` / Hỏa tốc `60.000đ`), tính VAT + phí kênh thanh toán, liên kết tới `privacy.html` |
+| `cart.html` | Giỏ hàng & Thanh toán | Khóa SL game số = 1, tặng quà (`#gift-toggle` + email + lời chúc), sổ địa chỉ & chọn gói ship (Tiêu chuẩn `30.000đ` / Hỏa tốc `60.000đ`), tính VAT + phí kênh thanh toán, liên kết tới `terms.html` & `privacy.html` |
 | `orders.html` | Quản lý Đơn hàng | *(Cần đăng nhập)* Theo dõi tiến trình xử lý/giao vận, địa chỉ giao hàng và gửi yêu cầu hoàn tiền |
 | `library.html` | Kho game (Launcher mô phỏng) | *(Cần đăng nhập)* Mã bản quyền `5GUYS-XXXX-0000-XXXX` (ẩn/hiện & copy), đổi ổ đĩa `Kingston SSD` / `Samsung 990 Pro`, biểu đồ giờ chơi T2–CN, khởi chạy mini-game HTML5, **Auto-Patcher & mở khóa DLC** theo tốc độ NVMe |
 | `mods.html` | Cộng đồng Mod Động | Duyệt Mod theo tựa game số từ MySQL (`?game=`), đăng tải bản Mod mới (cần đăng nhập), tải manifest `.json` và tăng lượt tải thật |
@@ -27,10 +27,11 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 | `profile.html` | Hồ sơ cá nhân | *(Cần đăng nhập)* Cập nhật GamerTag, SĐT chuẩn VN 10 số, đổi mật khẩu, quản lý tối đa 10 địa chỉ hành chính qua `provinces.open-api.vn` |
 | `support.html` | Chăm sóc khách hàng | Chat trực tiếp, FAQ, gửi và theo dõi lịch sử Support Ticket |
 | `login.html` | Đăng nhập & 2FA TOTP | Xác thực mật khẩu, popup Quên mật khẩu (demo OTP), kiểm tra mã **2FA TOTP 6 số** (đặc cách duy nhất `admin@5guys.com` không qua 2FA) |
-| `register.html` | Đăng ký & Thiết lập 2FA | Sinh khóa Base32 & vẽ QR Google Authenticator (`otpauth` + `qrcodejs`), kiểm tra mã 6 số rồi gọi API tạo tài khoản; kèm dòng đồng ý `privacy.html` |
+| `register.html` | Đăng ký & Thiết lập 2FA | Sinh khóa Base32 & vẽ QR Google Authenticator (`otpauth` + `qrcodejs`), checkbox bắt buộc đồng ý `terms.html` & `privacy.html`, kiểm tra mã 6 số rồi gọi API tạo tài khoản |
 | `publisher.html` | Cổng Nhà phát hành | *(Role `publisher`/`admin`)* Thống kê doanh thu Studio, đăng game mới (`draft`), cài đặt giá/giảm giá, phát hành Patch/DLC, trả lời đánh giá |
 | `admin.html` | Bảng Quản trị | *(Role `admin`/`staff`)* 6 tab: Tổng quan (biểu đồ 14 ngày, doanh thu Số/Đĩa), Đơn hàng (điều phối ship, in phiếu, xem Key), Hoàn tiền, Sản phẩm + **Duyệt/Từ chối game**, Người dùng, Hỗ trợ |
 | `privacy.html` | Chính sách Bảo mật | Trang 2 cột (Sticky Mục lục 3/12 cột + Nội dung 9/12 cột) trình bày 3 cam kết cốt lõi & 7 điều khoản pháp lý – kỹ thuật (PCI-DSS SAQ-A, Bcrypt, 2FA, LocalStorage, quyền người dùng & thông tin Nhóm 5Guys 26C01) |
+| `terms.html` | Điều khoản Dịch vụ | Trang 2 cột (Sticky Mục lục 3/12 cột + Nội dung 9/12 cột) trình bày 3 thẻ tóm tắt, căn cứ pháp lý, trọn vẹn 6 điều khoản dịch vụ Hybrid & Bảng quy định giao nhận / vận chuyển / hoàn tiền |
 
 ### 1.2. Mini-Game HTML5 chơi trực tiếp (`frontend/games/`)
 - `frontend/games/black-myth.html` (ánh xạ từ slug `black-myth-wukong`)
@@ -43,7 +44,7 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 
 | File | Vai trò |
 | :--- | :--- |
-| `assets/layout.js` | **Master Layout:** Chèn Navbar (`data-part="nav"`) và Footer (`data-part="footer"`, đã trỏ mục *Chính sách bảo mật* tới `privacy.html`) đồng nhất cho các trang |
+| `assets/layout.js` | **Master Layout:** Chèn Navbar (`data-part="nav"`) và Footer (`data-part="footer"`, trỏ *Điều khoản dịch vụ* tới `terms.html` & *Chính sách bảo mật* tới `privacy.html`) đồng nhất cho các trang |
 | `assets/shared.js` | Lớp lõi `window.G5`: gọi API (`G5.api`), quản lý phiên JWT, bộ đệm giỏ hàng/đơn hàng, bảng dịch mã lỗi `G5.errorText`, `G5.isAdmin()`, `G5.isPublisher()`, hàm chống XSS `G5.esc()`, tự động gắn link *Quản trị* / *Nhà phát hành* lên menu, `G5.askAi()`, âm thanh Web Audio 8-bit & Konami Easter Egg |
 | `assets/shared.css` | Quy tắc responsive thống nhất (chống tràn ngang mobile 320px+, đồng nhất nút chat/CSKH, hỗ trợ `prefers-reduced-motion`) |
 | `assets/tailwind-config.js` | Cấu hình token màu Cyberpunk dùng cho phần lớn trang storefront & account |

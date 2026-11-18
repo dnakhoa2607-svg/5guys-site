@@ -1,0 +1,936 @@
+<!doctype html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cổng Nhà phát hành | 5GUYS</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind-config.js"></script>
+  <style>
+    body { background: #12091c; color: #f3e8ff; font-family: Inter, sans-serif; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
+      background: #9d4edd; color: #fff; font-weight: 700; border-radius: .6rem;
+      padding: .55rem 1.1rem; font-size: .875rem; border: 1px solid rgba(199,125,255,.35);
+      box-shadow: 0 0 18px -4px rgba(157,78,221,.45); transition: .2s; cursor: pointer;
+    }
+    .btn:hover { background: #c77dff; }
+    .btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
+    .ghost {
+      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+      background: #12091c; border: 1px solid #3c096c; border-radius: .6rem;
+      padding: .45rem .9rem; font-size: .82rem; font-weight: 600; color: #e9d5ff;
+      transition: .2s; cursor: pointer;
+    }
+    .ghost:hover { border-color: #c77dff; color: #fff; }
+    .ghost.active-pill { background: #9d4edd; border-color: #c77dff; color: #fff; }
+    .studio-card {
+      background: #2a1645; border: 1px solid #3c096c; border-radius: 1rem; min-width: 0;
+    }
+    .inp {
+      background: #12091c; border: 1px solid #3c096c; border-radius: .6rem;
+      color: #f3e8ff; padding: .55rem .8rem; font-size: .875rem; width: 100%;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .inp:focus { outline: 0; border-color: #c77dff; box-shadow: 0 0 0 2px rgba(199,125,255,.22); }
+    .inp:disabled { opacity: .45; cursor: not-allowed; background: #160c22; color: #9ca3af; }
+    select.inp option { background: #12091c; color: #f3e8ff; }
+    .pill {
+      display: inline-flex; align-items: center; gap: .3rem;
+      font-size: .72rem; font-weight: 700; border-radius: 9999px;
+      padding: .18rem .65rem; border: 1px solid; white-space: nowrap;
+    }
+    .mono { font-variant-numeric: tabular-nums; }
+  </style>
+  <script>window.G5_REQUIRE_AUTH = true;</script>
+  <link rel="stylesheet" href="assets/shared.css">
+  <script src="assets/shared.js"></script>
+</head>
+<body class="antialiased flex flex-col min-h-screen bg-dark-bg text-white">
+  <script src="assets/layout.js" data-part="nav"></script>
+
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+    <!-- Denied / Unauthorized state -->
+    <section id="pub-denied" class="hidden studio-card p-8 sm:p-10 text-center max-w-xl mx-auto my-8">
+      <div class="w-16 h-16 mx-auto rounded-2xl bg-brand/15 border border-brand/40 grid place-items-center text-brand-light text-2xl">
+        <i class="fa-solid fa-code-branch"></i>
+      </div>
+      <h1 class="text-2xl font-black mt-4">Cổng Nhà phát hành (Publisher Studio)</h1>
+      <p class="text-sm text-outline mt-2 leading-relaxed">
+        Khu vực này chỉ dành cho tài khoản có vai trò <b>Nhà phát hành (publisher)</b> hoặc <b>Quản trị (admin)</b> đã kết nối API backend.
+      </p>
+      <div class="mt-6 flex flex-wrap justify-center gap-3">
+        <a href="index.html" class="btn"><i class="fa-solid fa-store"></i> Về cửa hàng</a>
+        <a href="login.html?next=publisher.html" class="ghost"><i class="fa-solid fa-right-to-bracket"></i> Đăng nhập tài khoản khác</a>
+      </div>
+    </section>
+
+    <!-- Loading -->
+    <section id="pub-loading" class="py-20 text-center text-outline">
+      <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-light"></i>
+      <p class="mt-3 text-sm">Đang tải dữ liệu Studio...</p>
+    </section>
+
+    <!-- Studio App -->
+    <div id="pub-app" class="hidden space-y-8">
+      <!-- Header & Quick Nav -->
+      <header class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-dark-border pb-6">
+        <div>
+          <span class="chip dg"><i class="fa-solid fa-code-branch mr-1.5"></i>5GUYS PUBLISHER STUDIO</span>
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight mt-3">Không gian Nhà phát hành</h1>
+          <p class="text-sm text-outline mt-1.5">
+            Đăng game mới chờ kiểm duyệt, cài đặt giá &amp; khuyến mãi, phát hành bản vá/DLC và phản hồi đánh giá người chơi.
+          </p>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <a href="#sec-games" class="ghost"><i class="fa-solid fa-gamepad text-brand-light"></i> Kho game</a>
+          <a href="#sec-submit" class="ghost"><i class="fa-solid fa-cloud-arrow-up text-brand-light"></i> Đăng game mới</a>
+          <a href="#sec-patches" class="ghost"><i class="fa-solid fa-puzzle-piece text-brand-light"></i> Bản vá &amp; DLC</a>
+          <a href="#sec-reviews" class="ghost"><i class="fa-solid fa-comments text-brand-light"></i> Đánh giá</a>
+          <button id="btn-refresh" type="button" class="btn !py-2 !px-3.5 text-xs">
+            <i class="fa-solid fa-rotate"></i> Làm mới
+          </button>
+        </div>
+      </header>
+
+      <!-- Flash banner -->
+      <div id="pub-flash" class="hidden px-4 py-3 rounded-xl text-sm font-semibold border"></div>
+
+      <!-- 4 Studio Stat Cards -->
+      <section aria-label="Thống kê Studio" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="studio-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-outline text-sm">
+            <span>Tổng game đã đăng</span>
+            <span class="w-9 h-9 rounded-xl bg-brand/15 border border-brand/30 grid place-items-center text-brand-light">
+              <i class="fa-solid fa-gamepad"></i>
+            </span>
+          </div>
+          <p id="stat-total" class="mono text-3xl font-black text-white mt-3">0</p>
+          <p id="stat-total-sub" class="text-xs text-outline mt-1">0 đang bán</p>
+        </div>
+
+        <div class="studio-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-outline text-sm">
+            <span>Đang chờ duyệt (Draft)</span>
+            <span class="w-9 h-9 rounded-xl bg-amber-500/15 border border-amber-500/30 grid place-items-center text-amber-300">
+              <i class="fa-solid fa-hourglass-half"></i>
+            </span>
+          </div>
+          <p id="stat-draft" class="mono text-3xl font-black text-amber-300 mt-3">0</p>
+          <p id="stat-draft-sub" class="text-xs text-outline mt-1">Đang chờ Admin lên kệ</p>
+        </div>
+
+        <div class="studio-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-outline text-sm">
+            <span>Tổng bản bán ra</span>
+            <span class="w-9 h-9 rounded-xl bg-blue-500/15 border border-blue-500/30 grid place-items-center text-blue-300">
+              <i class="fa-solid fa-bag-shopping"></i>
+            </span>
+          </div>
+          <p id="stat-sold" class="mono text-3xl font-black text-blue-300 mt-3">0</p>
+          <p class="text-xs text-outline mt-1">Đơn đã thanh toán / hoàn tất</p>
+        </div>
+
+        <div class="studio-card p-5 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-outline text-sm">
+            <span>Tổng doanh thu</span>
+            <span class="w-9 h-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 grid place-items-center text-emerald-300">
+              <i class="fa-solid fa-sack-dollar"></i>
+            </span>
+          </div>
+          <p id="stat-revenue" class="mono text-3xl font-black text-emerald-300 mt-3">0đ</p>
+          <p class="text-xs text-outline mt-1">Tính theo VNĐ trên 5GUYS</p>
+        </div>
+      </section>
+
+      <!-- KHU VUC 1: DANH SACH GAME & CAI DAT GIA / GIAM GIA -->
+      <section id="sec-games" class="studio-card p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 class="text-xl font-bold border-l-4 border-brand pl-3">Danh sách Game của Studio &amp; Cài đặt Giá</h2>
+            <p class="text-xs text-outline mt-1">Theo dõi trạng thái phê duyệt, lý do từ chối (nếu có), tồn kho đĩa và điều chỉnh giá khuyến mãi.</p>
+          </div>
+          <div class="flex flex-wrap items-center gap-2">
+            <div id="games-filter-wrap" class="flex flex-wrap gap-1.5"></div>
+            <input id="games-search" type="search" class="inp w-full sm:!w-52 text-xs" placeholder="Tìm theo tên game...">
+          </div>
+        </div>
+        <div id="games-list" class="space-y-3"></div>
+      </section>
+
+      <!-- KHU VUC 2 & 3: DANG TAI GAME MOI & PHAT HANH PATCH / DLC -->
+      <div class="grid lg:grid-cols-12 gap-6 items-start">
+        <!-- Form Dang tai Game moi -->
+        <section id="sec-submit" class="lg:col-span-7 studio-card p-5 sm:p-6">
+          <div class="flex items-center justify-between gap-3 mb-4">
+            <div>
+              <h2 class="text-xl font-bold border-l-4 border-brand pl-3">Đăng tải Game mới</h2>
+              <p class="text-xs text-outline mt-1">Game gửi lên sẽ ở trạng thái <b>Chờ duyệt (draft)</b> cho đến khi Admin phê duyệt lên kệ.</p>
+            </div>
+            <span class="pill" style="color:#fbbf24;border-color:#f59e0b;background:rgba(245,158,11,0.14)">
+              <i class="fa-solid fa-shield-halved"></i> Kiểm duyệt trước khi bán
+            </span>
+          </div>
+
+          <form id="form-new-game" class="grid sm:grid-cols-2 gap-3.5">
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Tên game *
+              <input id="ng-title" class="inp" maxlength="200" required placeholder="VD: Cyber Odyssey 2099">
+            </label>
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Slug (a-z, 0-9, dấu gạch ngang) *
+              <input id="ng-slug" class="inp font-mono" maxlength="180" required pattern="[a-z0-9-]+" placeholder="vd: cyber-odyssey-2099">
+            </label>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Định dạng phát hành *
+              <select id="ng-type" class="inp">
+                <option value="digital">Kỹ thuật số (Digital Key)</option>
+                <option value="physical">Vật lý (Đĩa Blu-ray / Hộp)</option>
+              </select>
+            </label>
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Nền tảng *
+              <input id="ng-platform" class="inp" maxlength="80" required placeholder="VD: PC / PlayStation 5" value="PC">
+            </label>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Thể loại
+              <input id="ng-genre" class="inp" maxlength="80" placeholder="VD: Hành động, RPG, Souls-like">
+            </label>
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Ngày phát hành
+              <input id="ng-release" type="date" class="inp">
+            </label>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Nhà phát hành (hiển thị)
+              <input id="ng-publisher" class="inp" maxlength="150" placeholder="Tên Studio / Nhà phát hành">
+            </label>
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Nhà phát triển
+              <input id="ng-developer" class="inp" maxlength="150" placeholder="Đội ngũ phát triển">
+            </label>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Giá bán (VNĐ) *
+              <input id="ng-price" type="number" min="0" step="1000" class="inp" required placeholder="590000">
+            </label>
+            <label class="text-xs text-outline flex flex-col gap-1">
+              <span class="flex items-center justify-between gap-2">
+                <span>Giá gốc (VNĐ — bỏ trống nếu không giảm)</span>
+                <span id="ng-discount-preview" class="text-[11px] font-bold text-emerald-300"></span>
+              </span>
+              <input id="ng-original-price" type="number" min="0" step="1000" class="inp" placeholder="890000">
+            </label>
+
+            <!-- Hybrid fields -->
+            <label id="wrap-ng-stock" class="hidden text-xs text-outline flex flex-col gap-1">
+              Tồn kho đĩa ban đầu *
+              <input id="ng-stock" type="number" min="0" class="inp" value="50" disabled>
+            </label>
+            <label id="wrap-ng-phys-specs" class="hidden text-xs text-outline flex flex-col gap-1">
+              Đặc tả đóng gói / Trọng lượng
+              <input id="ng-phys-specs" class="inp" maxlength="1000" placeholder="VD: 180g • Hộp Blu-ray PS5 nguyên seal, kèm booklet" disabled>
+            </label>
+
+            <label id="wrap-ng-min-req" class="sm:col-span-2 text-xs text-outline flex flex-col gap-1">
+              Cấu hình tối thiểu (Dành cho bản Kỹ thuật số)
+              <input id="ng-min-req" class="inp" maxlength="1000" placeholder="VD: Windows 10 64-bit, Core i5-10400, RAM 16GB, RTX 2060, SSD 50GB">
+            </label>
+
+            <label class="sm:col-span-2 text-xs text-outline flex flex-col gap-1">
+              Link ảnh bìa (URL)
+              <div class="flex items-center gap-3">
+                <input id="ng-cover" type="url" class="inp flex-1" maxlength="1000" placeholder="https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2358720/library_600x900.jpg">
+                <img id="ng-cover-preview" class="hidden w-10 h-14 rounded-lg object-cover border border-brand/40 bg-dark-bg shrink-0" alt="Preview bìa">
+              </div>
+            </label>
+
+            <label class="sm:col-span-2 text-xs text-outline flex flex-col gap-1">
+              Mô tả chi tiết
+              <textarea id="ng-desc" rows="3" class="inp" maxlength="5000" placeholder="Giới thiệu cốt truyện, gameplay và các điểm nổi bật..."></textarea>
+            </label>
+
+            <div class="sm:col-span-2 flex flex-wrap items-center justify-between gap-3 pt-1">
+              <p id="ng-msg" class="text-xs text-outline"></p>
+              <button id="ng-submit" type="submit" class="btn">
+                <i class="fa-solid fa-paper-plane"></i> Gửi game chờ Admin duyệt
+              </button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Form Dang Ban va (Patch) / DLC moi -->
+        <section id="sec-patches" class="lg:col-span-5 studio-card p-5 sm:p-6 space-y-5">
+          <div>
+            <h2 class="text-xl font-bold border-l-4 border-brand pl-3">Đăng Bản vá (Patch) / DLC mới</h2>
+            <p class="text-xs text-outline mt-1">Cập nhật phiên bản mới hoặc phát hành nội dung mở rộng cho game của Studio.</p>
+          </div>
+
+          <form id="form-new-patch" class="space-y-3.5">
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Chọn game thuộc Studio *
+              <select id="pt-product" class="inp" required>
+                <option value="">-- Chưa có game --</option>
+              </select>
+            </label>
+
+            <div class="grid grid-cols-2 gap-3">
+              <label class="text-xs text-outline flex flex-col gap-1">
+                Phiên bản *
+                <input id="pt-version" class="inp font-mono" maxlength="32" required placeholder="VD: v1.2.0">
+              </label>
+              <label class="text-xs text-outline flex flex-col gap-1">
+                Dung lượng (MB) *
+                <input id="pt-size" type="number" min="1" class="inp" required value="150">
+              </label>
+            </div>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Tiêu đề bản cập nhật *
+              <input id="pt-title" class="inp" maxlength="200" required placeholder="VD: Tối ưu hiệu năng & Sửa lỗi Quest Chương 3">
+            </label>
+
+            <label class="text-xs text-outline flex flex-col gap-1">
+              Nội dung cập nhật (Patch Notes) *
+              <textarea id="pt-notes" rows="3" class="inp" maxlength="10000" required placeholder="- Cải thiện FPS khi bật Ray Tracing&#10;- Vá lỗi kẹt nhân vật..."></textarea>
+            </label>
+
+            <label class="flex items-center gap-2.5 text-sm text-gray-200 cursor-pointer select-none pt-1">
+              <input id="pt-dlc" type="checkbox" class="h-4 w-4 rounded accent-purple-500">
+              <span>Đánh dấu đây là <b>Gói mở rộng / DLC mới</b></span>
+            </label>
+
+            <div class="flex flex-wrap items-center justify-between gap-2 pt-1">
+              <p id="pt-msg" class="text-xs text-outline"></p>
+              <button id="pt-submit" type="submit" class="btn">
+                <i class="fa-solid fa-upload"></i> Phát hành Bản vá / DLC
+              </button>
+            </div>
+          </form>
+
+          <div class="border-t border-white/10 pt-4">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-sm font-bold text-white">Lịch sử Bản vá &amp; DLC gần đây</h3>
+              <span id="patch-count" class="text-xs text-outline">0 bản</span>
+            </div>
+            <div id="patches-list" class="space-y-2.5 max-h-72 overflow-y-auto pr-1"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- KHU VUC 4: QUAN LY & PHAN HOI DANH GIA NGUOI CHOI -->
+      <section id="sec-reviews" class="studio-card p-5 sm:p-6">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+          <div>
+            <h2 class="text-xl font-bold border-l-4 border-brand pl-3">Quản lý &amp; Phản hồi Đánh giá người chơi</h2>
+            <p class="text-xs text-outline mt-1">Phản hồi trực tiếp tới game thủ; câu trả lời sẽ hiển thị công khai dưới đánh giá trên trang chi tiết game.</p>
+          </div>
+          <div id="reviews-filter-wrap" class="flex flex-wrap gap-1.5"></div>
+        </div>
+        <div id="reviews-list" class="grid md:grid-cols-2 gap-4"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- Modal Cai dat Gia & Khuyen mai -->
+  <div id="pricing-modal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm p-4" role="dialog" aria-modal="true" aria-labelledby="pm-title">
+    <form id="pricing-form" class="studio-card w-full max-w-md p-6 border border-brand/50 shadow-2xl space-y-4">
+      <div class="flex items-start justify-between gap-3 border-b border-white/10 pb-3">
+        <div class="min-w-0">
+          <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Cài đặt giá &amp; khuyến mãi</span>
+          <h3 id="pm-title" class="text-lg font-black text-white mt-0.5 truncate"></h3>
+        </div>
+        <button id="pm-close" type="button" class="ghost !px-2.5 !py-1.5" aria-label="Đóng">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 gap-3">
+        <label class="text-xs text-outline flex flex-col gap-1">
+          Giá bán mới (VNĐ) *
+          <input id="pm-price" type="number" min="0" step="1000" class="inp" required>
+        </label>
+        <label class="text-xs text-outline flex flex-col gap-1">
+          Giá gốc (VNĐ)
+          <input id="pm-original" type="number" min="0" step="1000" class="inp" placeholder="Bỏ trống nếu không giảm">
+        </label>
+      </div>
+
+      <div class="rounded-xl bg-dark-bg border border-dark-border p-3 flex items-center justify-between text-xs">
+        <span class="text-outline">Mức giảm giá tự động:</span>
+        <span id="pm-discount-badge" class="font-bold text-emerald-300">0%</span>
+      </div>
+
+      <p id="pm-error" class="hidden text-xs text-red-400"></p>
+
+      <div class="flex justify-end gap-2 pt-1">
+        <button id="pm-cancel" type="button" class="ghost">Hủy</button>
+        <button id="pm-save" type="submit" class="btn"><i class="fa-solid fa-check"></i> Lưu giá mới</button>
+      </div>
+    </form>
+  </div>
+
+  <script src="assets/layout.js" data-part="footer"></script>
+  <script>
+  (function () {
+    const $ = (id) => document.getElementById(id);
+    const money = (n) => new Intl.NumberFormat('vi-VN').format(Math.round(Number(n) || 0)) + 'đ';
+    const fmtDate = (d) => d ? new Date(d).toLocaleString('vi-VN', { dateStyle: 'short', timeStyle: 'short' }) : '—';
+
+    function h(tag, attrs, ...kids) {
+      const e = document.createElement(tag);
+      for (const [k, v] of Object.entries(attrs || {})) {
+        if (v == null || v === false) continue;
+        if (k.startsWith('on')) e.addEventListener(k.slice(2), v);
+        else if (k === 'class') e.className = v;
+        else e.setAttribute(k, v === true ? '' : v);
+      }
+      for (const c of kids.flat()) {
+        if (c != null && c !== false) e.append(c instanceof Node ? c : document.createTextNode(String(c)));
+      }
+      return e;
+    }
+
+    function flash(msg, ok = true) {
+      const box = $('pub-flash');
+      box.textContent = msg;
+      box.className = 'px-4 py-3 rounded-xl text-sm font-semibold border ' +
+        (ok ? 'bg-emerald-950/60 border-emerald-500/40 text-emerald-300' : 'bg-red-950/60 border-red-500/40 text-red-300');
+      clearTimeout(flash._t);
+      flash._t = setTimeout(() => box.classList.add('hidden'), 4500);
+    }
+
+    function pubError(err) {
+      const code = err && err.message;
+      if (code === 'already_exists') return 'Slug game đã tồn tại. Vui lòng chọn slug khác.';
+      if (code === 'invalid_request') return 'Dữ liệu nhập chưa hợp lệ (kiểm tra slug a-z/0-9/-, URL ảnh bìa, độ dài phản hồi >= 2 ký tự).';
+      return G5.errorText(err);
+    }
+
+    function calcDiscount(price, original) {
+      const p = Number(price), o = Number(original);
+      if (!o || o <= p || o <= 0) return 0;
+      return Math.max(0, Math.min(100, Math.round((1 - p / o) * 100)));
+    }
+
+    function slugify(text) {
+      return String(text || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/đ/g, 'd')
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .slice(0, 180);
+    }
+
+    let state = { products: [], reviews: [], patches: [], stats: {} };
+    let gameFilter = 'all';
+    let gameSearch = '';
+    let reviewFilter = 'all';
+    let slugEdited = false;
+    let pricingTarget = null;
+
+    /* ---- Status badges ---- */
+    function statusBadge(p) {
+      if (p.status === 'draft') {
+        return h('span', {
+          class: 'pill',
+          style: 'color:#fbbf24;border-color:#f59e0b;background:rgba(245,158,11,0.16)'
+        }, h('i', { class: 'fa-solid fa-clock' }), 'Chờ duyệt');
+      }
+      if (p.status === 'active') {
+        return h('span', {
+          class: 'pill',
+          style: 'color:#34d399;border-color:#10b981;background:rgba(16,185,129,0.14)'
+        }, h('i', { class: 'fa-solid fa-circle-check' }), 'Đang bán');
+      }
+      if (p.rejection_reason) {
+        return h('span', {
+          class: 'pill',
+          style: 'color:#fca5a5;border-color:#ef4444;background:rgba(239,68,68,0.16)'
+        }, h('i', { class: 'fa-solid fa-circle-xmark' }), 'Bị từ chối');
+      }
+      return h('span', {
+        class: 'pill',
+        style: 'color:#9ca3af;border-color:#6b7280;background:rgba(107,114,128,0.15)'
+      }, 'Đã ẩn');
+    }
+
+    /* ---- Render 4 KPI Cards ---- */
+    function renderStats() {
+      const s = state.stats || {};
+      $('stat-total').textContent = String(s.totalProducts ?? state.products.length);
+      $('stat-total-sub').textContent = `${s.activeProducts ?? 0} đang bán · ${s.rejectedProducts ?? 0} từ chối/ẩn`;
+      $('stat-draft').textContent = String(s.draftProducts ?? 0);
+      $('stat-draft-sub').textContent = (s.draftProducts || 0) > 0 ? 'Đang đợi Admin phê duyệt' : 'Không có game chờ duyệt';
+      $('stat-sold').textContent = String(s.totalSold ?? 0);
+      $('stat-revenue').textContent = money(s.totalRevenue ?? 0);
+    }
+
+    /* ---- Render Studio Games & Pricing ---- */
+    function renderGames() {
+      const list = state.products || [];
+      const counts = {
+        all: list.length,
+        draft: list.filter((p) => p.status === 'draft').length,
+        active: list.filter((p) => p.status === 'active').length,
+        inactive: list.filter((p) => p.status === 'inactive').length,
+      };
+
+      const filterBtns = [
+        ['all', `Tất cả (${counts.all})`],
+        ['draft', `Chờ duyệt (${counts.draft})`],
+        ['active', `Đang bán (${counts.active})`],
+        ['inactive', `Bị từ chối / Ẩn (${counts.inactive})`],
+      ].map(([val, label]) =>
+        h('button', {
+          type: 'button',
+          class: 'ghost !py-1.5 !px-3 text-xs ' + (gameFilter === val ? 'active-pill' : ''),
+          onclick: () => { gameFilter = val; renderGames(); }
+        }, label)
+      );
+      $('games-filter-wrap').replaceChildren(...filterBtns);
+
+      const q = gameSearch.trim().toLowerCase();
+      const filtered = list.filter((p) => {
+        if (gameFilter !== 'all' && p.status !== gameFilter) return false;
+        if (q && !String(p.title || '').toLowerCase().includes(q) && !String(p.slug || '').toLowerCase().includes(q)) return false;
+        return true;
+      });
+
+      const box = $('games-list');
+      if (!filtered.length) {
+        box.replaceChildren(h('div', { class: 'rounded-xl border border-dashed border-dark-border bg-dark-bg/50 p-8 text-center text-sm text-outline' },
+          list.length ? 'Không có game nào khớp bộ lọc hiện tại.' : 'Studio chưa đăng game nào. Hãy dùng form "Đăng tải Game mới" bên dưới để bắt đầu!'));
+        return;
+      }
+
+      box.replaceChildren(...filtered.map((p) => {
+        const isPhys = p.product_type === 'physical';
+        const disc = Number(p.discount_percent) || 0;
+        const hasOrig = p.original_price && Number(p.original_price) > Number(p.price);
+
+        const thumb = p.cover_url
+          ? h('img', {
+              src: p.cover_url,
+              alt: p.title,
+              class: 'w-14 h-20 rounded-lg object-cover border border-white/10 shrink-0 bg-dark-bg',
+              onerror: (e) => { e.target.replaceWith(h('div', { class: 'w-14 h-20 rounded-lg border border-brand/30 bg-brand/15 grid place-items-center text-brand-light shrink-0' }, h('i', { class: 'fa-solid fa-gamepad' }))); }
+            })
+          : h('div', { class: 'w-14 h-20 rounded-lg border border-brand/30 bg-brand/15 grid place-items-center text-brand-light shrink-0' }, h('i', { class: 'fa-solid fa-gamepad' }));
+
+        const titleNode = p.status === 'active'
+          ? h('a', { href: 'detail.html?slug=' + encodeURIComponent(p.slug), class: 'font-bold text-white hover:text-brand-light transition-colors text-base' }, p.title)
+          : h('span', { class: 'font-bold text-white text-base' }, p.title);
+
+        return h('article', { class: 'rounded-xl border border-dark-border bg-dark-bg/75 p-4 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-brand/50 transition-colors' },
+          h('div', { class: 'flex items-start gap-3.5 min-w-0 flex-1' },
+            thumb,
+            h('div', { class: 'min-w-0 flex-1 space-y-1.5' },
+              h('div', { class: 'flex flex-wrap items-center gap-2' },
+                titleNode,
+                statusBadge(p),
+                h('span', { class: 'chip ' + (isPhys ? 'ph' : 'dg') }, isPhys ? 'VẬT LÝ' : 'KỸ THUẬT SỐ')
+              ),
+              h('p', { class: 'text-xs text-outline' },
+                [p.platform, p.genre, 'slug: ' + p.slug].filter(Boolean).join(' · ')
+              ),
+              p.status === 'inactive' && p.rejection_reason
+                ? h('div', { class: 'rounded-lg border border-red-500/35 bg-red-950/35 px-3 py-2 text-xs text-red-200' },
+                    h('strong', { class: 'text-red-300' }, 'Lý do từ chối: '),
+                    p.rejection_reason)
+                : null,
+              p.status === 'draft'
+                ? h('p', { class: 'text-xs text-amber-200/80' }, 'Đang chờ Admin kiểm duyệt trước khi hiển thị trên cửa hàng.')
+                : null
+            )
+          ),
+
+          h('div', { class: 'flex flex-wrap sm:flex-nowrap items-center justify-between md:justify-end gap-4 sm:gap-6 border-t md:border-t-0 border-white/10 pt-3 md:pt-0 shrink-0' },
+            h('div', { class: 'text-left md:text-right text-xs space-y-1' },
+              h('div', { class: 'text-outline' }, 'Tồn kho: ', h('b', { class: 'text-white' }, isPhys ? `${p.available_stock ?? 0} đĩa` : '∞')),
+              h('div', { class: 'text-outline' }, 'Đã bán: ', h('b', { class: 'text-blue-300 mono' }, `${p.sold || 0} bản`)),
+              h('div', { class: 'text-outline' }, 'Doanh thu: ', h('b', { class: 'text-emerald-300 mono' }, money(p.revenue || 0)))
+            ),
+            h('div', { class: 'text-right min-w-[120px]' },
+              hasOrig ? h('del', { class: 'block text-xs text-outline mono' }, money(p.original_price)) : null,
+              h('div', { class: 'flex items-center justify-end gap-1.5' },
+                h('span', { class: 'text-lg font-black text-brand-light mono' }, money(p.price)),
+                disc > 0 ? h('span', { class: 'text-[11px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' }, `-${disc}%`) : null
+              ),
+              h('button', {
+                type: 'button',
+                class: 'ghost !py-1.5 !px-3 text-xs mt-2',
+                onclick: () => openPricingModal(p)
+              }, h('i', { class: 'fa-solid fa-tag text-brand-light' }), 'Sửa giá')
+            )
+          )
+        );
+      }));
+    }
+
+    /* ---- Render Patch Select & History ---- */
+    function renderPatches() {
+      const select = $('pt-product');
+      const prevVal = select.value;
+      const games = state.products || [];
+      if (!games.length) {
+        select.replaceChildren(h('option', { value: '' }, '-- Studio chưa có game nào --'));
+        $('pt-submit').disabled = true;
+      } else {
+        select.replaceChildren(...games.map((p) =>
+          h('option', { value: p.id }, `${p.title} (${p.product_type === 'digital' ? 'Số' : 'Đĩa'} · ${p.status === 'active' ? 'Đang bán' : p.status === 'draft' ? 'Chờ duyệt' : 'Ẩn'})`)
+        ));
+        if (prevVal && games.some((g) => String(g.id) === String(prevVal))) select.value = prevVal;
+        $('pt-submit').disabled = false;
+      }
+
+      const patches = state.patches || [];
+      $('patch-count').textContent = `${patches.length} bản`;
+      const listBox = $('patches-list');
+      if (!patches.length) {
+        listBox.replaceChildren(h('p', { class: 'text-xs text-outline py-4 text-center' }, 'Chưa có bản vá hay DLC nào được phát hành.'));
+        return;
+      }
+      listBox.replaceChildren(...patches.map((pt) =>
+        h('div', { class: 'rounded-xl border border-dark-border bg-dark-bg/75 p-3 text-xs space-y-1.5' },
+          h('div', { class: 'flex flex-wrap items-center justify-between gap-2' },
+            h('div', { class: 'flex items-center gap-2 min-w-0' },
+              h('span', { class: 'pill', style: pt.is_dlc ? 'color:#fbbf24;border-color:#f59e0b;background:rgba(245,158,11,0.14)' : 'color:#c77dff;border-color:#9d4edd;background:rgba(157,78,221,0.16)' }, pt.is_dlc ? 'DLC' : 'PATCH'),
+              h('span', { class: 'font-mono font-bold text-white' }, pt.version),
+              h('span', { class: 'text-outline truncate' }, pt.product_title)
+            ),
+            h('span', { class: 'text-outline whitespace-nowrap' }, `${pt.size_mb} MB · ${fmtDate(pt.released_at)}`)
+          ),
+          h('p', { class: 'font-semibold text-gray-100' }, pt.title),
+          h('p', { class: 'text-outline whitespace-pre-line leading-relaxed' }, pt.patch_notes)
+        )
+      ));
+    }
+
+    /* ---- Render Reviews & Reply Form ---- */
+    function renderReviews() {
+      const all = state.reviews || [];
+      const unansweredCount = all.filter((r) => !r.publisher_reply).length;
+      const repliedCount = all.filter((r) => !!r.publisher_reply).length;
+
+      const filters = [
+        ['all', `Tất cả (${all.length})`],
+        ['unanswered', `Chưa phản hồi (${unansweredCount})`],
+        ['replied', `Đã phản hồi (${repliedCount})`],
+      ].map(([val, label]) =>
+        h('button', {
+          type: 'button',
+          class: 'ghost !py-1.5 !px-3 text-xs ' + (reviewFilter === val ? 'active-pill' : ''),
+          onclick: () => { reviewFilter = val; renderReviews(); }
+        }, label)
+      );
+      $('reviews-filter-wrap').replaceChildren(...filters);
+
+      const list = all.filter((r) => {
+        if (reviewFilter === 'unanswered') return !r.publisher_reply;
+        if (reviewFilter === 'replied') return !!r.publisher_reply;
+        return true;
+      });
+
+      const box = $('reviews-list');
+      if (!list.length) {
+        box.replaceChildren(h('div', { class: 'md:col-span-2 rounded-xl border border-dashed border-dark-border bg-dark-bg/50 p-8 text-center text-sm text-outline' },
+          all.length ? 'Không có đánh giá nào trong mục này.' : 'Chưa có đánh giá nào từ người chơi cho các game của Studio.'));
+        return;
+      }
+
+      box.replaceChildren(...list.map((rev) => {
+        const stars = '★'.repeat(rev.rating) + '☆'.repeat(Math.max(0, 5 - rev.rating));
+        const input = h('textarea', {
+          class: 'inp text-xs',
+          rows: 2,
+          maxlength: 2000,
+          placeholder: rev.publisher_reply ? 'Chỉnh sửa phản hồi của Nhà phát hành...' : 'Nhập phản hồi của Nhà phát hành (tối thiểu 2 ký tự)...',
+        });
+        if (rev.publisher_reply) input.value = rev.publisher_reply;
+        const msg = h('span', { class: 'text-xs text-outline' });
+        const sendBtn = h('button', {
+          type: 'button',
+          class: 'btn !py-1.5 !px-3.5 text-xs',
+          onclick: async () => {
+            const text = input.value.trim();
+            if (text.length < 2) {
+              msg.className = 'text-xs text-red-400';
+              msg.textContent = 'Phản hồi cần tối thiểu 2 ký tự.';
+              input.focus();
+              return;
+            }
+            sendBtn.disabled = true;
+            try {
+              await G5.api(`/publisher/reviews/${rev.id}/reply`, { method: 'PUT', body: { reply: text } });
+              flash(`Đã gửi phản hồi cho đánh giá của ${rev.display_name}.`);
+              await loadDashboard();
+            } catch (err) {
+              msg.className = 'text-xs text-red-400';
+              msg.textContent = pubError(err);
+            } finally {
+              sendBtn.disabled = false;
+            }
+          }
+        }, h('i', { class: 'fa-solid fa-reply' }), rev.publisher_reply ? 'Cập nhật phản hồi' : 'Gửi phản hồi');
+
+        return h('article', { class: 'rounded-xl border border-dark-border bg-dark-bg/75 p-4 flex flex-col justify-between gap-3' },
+          h('div', { class: 'space-y-2' },
+            h('div', { class: 'flex flex-wrap items-center justify-between gap-2' },
+              h('span', { class: 'text-xs font-bold text-brand-light' }, rev.product_title),
+              h('span', { class: 'text-yellow-400 text-sm tracking-wider' }, stars)
+            ),
+            h('div', { class: 'flex flex-wrap items-center gap-2 text-xs text-outline' },
+              h('b', { class: 'text-white' }, rev.display_name),
+              rev.verified_purchase ? h('span', { class: 'text-emerald-300 font-semibold' }, '✔ Đã mua') : null,
+              h('span', {}, '· ' + fmtDate(rev.created_at))
+            ),
+            rev.title ? h('h4', { class: 'font-bold text-sm text-white' }, rev.title) : null,
+            h('p', { class: 'text-sm text-gray-200 whitespace-pre-line leading-relaxed' }, rev.body),
+            rev.publisher_reply
+              ? h('div', { class: 'ml-3 pl-3 border-l-2 border-brand-light bg-brand/10 rounded-r-lg p-2.5 text-xs' },
+                  h('p', { class: 'font-bold text-brand-light' },
+                    'Phản hồi từ Nhà phát hành',
+                    rev.publisher_replied_at ? ` · ${fmtDate(rev.publisher_replied_at)}` : ''),
+                  h('p', { class: 'text-gray-200 mt-1 whitespace-pre-line' }, rev.publisher_reply))
+              : null
+          ),
+          h('div', { class: 'pt-2 border-t border-white/10 space-y-2' },
+            input,
+            h('div', { class: 'flex items-center justify-between gap-2' }, msg, sendBtn)
+          )
+        );
+      }));
+    }
+
+    /* ---- Pricing Modal ---- */
+    function openPricingModal(p) {
+      pricingTarget = p;
+      $('pm-title').textContent = p.title;
+      $('pm-price').value = Number(p.price) || 0;
+      $('pm-original').value = (p.original_price && Number(p.original_price) > Number(p.price)) ? Number(p.original_price) : '';
+      $('pm-error').classList.add('hidden');
+      updatePricingPreview();
+      $('pricing-modal').classList.remove('hidden');
+      $('pricing-modal').classList.add('flex');
+      $('pm-price').focus();
+    }
+
+    function closePricingModal() {
+      pricingTarget = null;
+      $('pricing-modal').classList.add('hidden');
+      $('pricing-modal').classList.remove('flex');
+    }
+
+    function updatePricingPreview() {
+      const d = calcDiscount($('pm-price').value, $('pm-original').value);
+      $('pm-discount-badge').textContent = d > 0 ? `-${d}%` : '0% (Không giảm)';
+    }
+
+    $('pm-price').addEventListener('input', updatePricingPreview);
+    $('pm-original').addEventListener('input', updatePricingPreview);
+    $('pm-close').addEventListener('click', closePricingModal);
+    $('pm-cancel').addEventListener('click', closePricingModal);
+    $('pricing-modal').addEventListener('click', (e) => { if (e.target === $('pricing-modal')) closePricingModal(); });
+
+    $('pricing-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      if (!pricingTarget) return;
+      const errBox = $('pm-error');
+      errBox.classList.add('hidden');
+      const priceVal = Number($('pm-price').value);
+      const origRaw = $('pm-original').value.trim();
+      const origVal = origRaw === '' ? null : Number(origRaw);
+      if (Number.isNaN(priceVal) || priceVal < 0) {
+        errBox.textContent = 'Giá bán phải >= 0.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+      $('pm-save').disabled = true;
+      try {
+        const res = await G5.api(`/publisher/products/${pricingTarget.id}/pricing`, {
+          method: 'PUT',
+          body: { price: priceVal, original_price: origVal }
+        });
+        const name = pricingTarget.title;
+        closePricingModal();
+        flash(`Đã cập nhật giá "${name}" thành ${money(res.price)}${res.discount_percent > 0 ? ` (-${res.discount_percent}%)` : ''}.`);
+        await loadDashboard();
+      } catch (err) {
+        errBox.textContent = pubError(err);
+        errBox.classList.remove('hidden');
+      } finally {
+        $('pm-save').disabled = false;
+      }
+    });
+
+    /* ---- Hybrid Fields & Form New Game ---- */
+    function syncNewGameHybrid() {
+      const isPhys = $('ng-type').value === 'physical';
+      $('wrap-ng-stock').classList.toggle('hidden', !isPhys);
+      $('wrap-ng-phys-specs').classList.toggle('hidden', !isPhys);
+      $('ng-stock').disabled = !isPhys;
+      $('ng-stock').required = isPhys;
+      $('ng-phys-specs').disabled = !isPhys;
+      $('wrap-ng-min-req').classList.toggle('hidden', isPhys);
+      $('ng-min-req').disabled = isPhys;
+    }
+
+    function updateNewGameDiscount() {
+      const d = calcDiscount($('ng-price').value, $('ng-original-price').value);
+      $('ng-discount-preview').textContent = d > 0 ? `Giảm ${d}%` : '';
+    }
+
+    $('ng-type').addEventListener('change', syncNewGameHybrid);
+    $('ng-price').addEventListener('input', updateNewGameDiscount);
+    $('ng-original-price').addEventListener('input', updateNewGameDiscount);
+    $('ng-title').addEventListener('input', () => {
+      if (!slugEdited) $('ng-slug').value = slugify($('ng-title').value);
+    });
+    $('ng-slug').addEventListener('input', () => {
+      slugEdited = $('ng-slug').value.trim().length > 0;
+    });
+    $('ng-cover').addEventListener('input', () => {
+      const url = $('ng-cover').value.trim();
+      const prev = $('ng-cover-preview');
+      if (url) { prev.src = url; prev.classList.remove('hidden'); }
+      else { prev.classList.add('hidden'); }
+    });
+    $('ng-cover-preview').addEventListener('error', () => $('ng-cover-preview').classList.add('hidden'));
+
+    $('form-new-game').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = $('ng-msg');
+      msg.textContent = '';
+      const isPhys = $('ng-type').value === 'physical';
+      const body = {
+        title: $('ng-title').value.trim(),
+        slug: $('ng-slug').value.trim(),
+        product_type: $('ng-type').value,
+        platform: $('ng-platform').value.trim(),
+        genre: $('ng-genre').value.trim(),
+        publisher: $('ng-publisher').value.trim(),
+        developer: $('ng-developer').value.trim(),
+        release_date: $('ng-release').value || null,
+        price: Number($('ng-price').value),
+        original_price: $('ng-original-price').value.trim() === '' ? null : Number($('ng-original-price').value),
+        cover_url: $('ng-cover').value.trim(),
+        description: $('ng-desc').value.trim(),
+      };
+      if (isPhys) {
+        body.stock = Number($('ng-stock').value || 0);
+        body.physical_specs = $('ng-phys-specs').value.trim();
+      } else {
+        body.min_requirements = $('ng-min-req').value.trim();
+      }
+
+      $('ng-submit').disabled = true;
+      try {
+        const res = await G5.api('/publisher/products', { method: 'POST', body });
+        flash(`Đã đăng "${body.title}" (ID #${res.id}) ở trạng thái Chờ duyệt!`);
+        $('form-new-game').reset();
+        $('ng-platform').value = 'PC';
+        $('ng-stock').value = '50';
+        const u = G5.user();
+        if (u && u.name) $('ng-publisher').value = u.name;
+        $('ng-cover-preview').classList.add('hidden');
+        slugEdited = false;
+        syncNewGameHybrid();
+        updateNewGameDiscount();
+        await loadDashboard();
+      } catch (err) {
+        msg.className = 'text-xs text-red-400';
+        msg.textContent = pubError(err);
+      } finally {
+        $('ng-submit').disabled = false;
+      }
+    });
+
+    /* ---- Form New Patch / DLC ---- */
+    $('form-new-patch').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const msg = $('pt-msg');
+      msg.textContent = '';
+      const productId = $('pt-product').value;
+      if (!productId) return;
+      const body = {
+        version: $('pt-version').value.trim(),
+        title: $('pt-title').value.trim(),
+        patch_notes: $('pt-notes').value.trim(),
+        size_mb: Number($('pt-size').value || 150),
+        is_dlc: $('pt-dlc').checked,
+      };
+      $('pt-submit').disabled = true;
+      try {
+        await G5.api(`/publisher/products/${productId}/patches`, { method: 'POST', body });
+        flash(`Đã phát hành ${body.is_dlc ? 'DLC' : 'Bản vá'} ${body.version}: "${body.title}"!`);
+        $('pt-version').value = '';
+        $('pt-title').value = '';
+        $('pt-notes').value = '';
+        $('pt-size').value = '150';
+        $('pt-dlc').checked = false;
+        await loadDashboard();
+      } catch (err) {
+        msg.className = 'text-xs text-red-400';
+        msg.textContent = pubError(err);
+      } finally {
+        $('pt-submit').disabled = false;
+      }
+    });
+
+    /* ---- Load & Refresh ---- */
+    $('games-search').addEventListener('input', (e) => {
+      gameSearch = e.target.value;
+      renderGames();
+    });
+    $('btn-refresh').addEventListener('click', () => loadDashboard(true));
+
+    async function loadDashboard(showToast = false) {
+      const data = await G5.api('/publisher/dashboard');
+      state = data;
+      renderStats();
+      renderGames();
+      renderPatches();
+      renderReviews();
+      if (showToast) flash('Đã đồng bộ dữ liệu mới nhất từ máy chủ.');
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      syncNewGameHybrid();
+      const u = G5.user();
+      if (u && u.name && !$('ng-publisher').value) $('ng-publisher').value = u.name;
+
+      if (!G5.isApiMode()) {
+        $('pub-loading').classList.add('hidden');
+        $('pub-denied').classList.remove('hidden');
+        return;
+      }
+
+      try {
+        await loadDashboard(false);
+        $('pub-loading').classList.add('hidden');
+        $('pub-app').classList.remove('hidden');
+      } catch (err) {
+        $('pub-loading').classList.add('hidden');
+        if (err && err.message === 'forbidden') {
+          $('pub-denied').classList.remove('hidden');
+        } else if (err && /authentication|token/.test(err.message)) {
+          G5.logout();
+          location.replace('login.html?next=publisher.html');
+        } else {
+          $('pub-denied').classList.remove('hidden');
+          flash(pubError(err), false);
+        }
+      }
+    });
+  })();
+  </script>
+</body>
+</html>

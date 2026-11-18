@@ -4,6 +4,8 @@ import products from './products.routes.js';
 import store from './store.routes.js';
 import payments from './payments.routes.js';
 import admin from './admin.routes.js';
+import publisher from './publisher.routes.js';
+import mods from './mods.routes.js';
 import support from './support.routes.js';
 import profile from './profile.routes.js';
 
@@ -12,6 +14,8 @@ api.get('/health', (req,res)=>res.json({status:'ok'}));
 api.use('/auth',auth);
 api.use('/products',products);
 api.use('/admin',admin);
+api.use('/publisher',publisher);
+api.use('/mods',mods);
 api.use('/support',support);
 api.use('/profile',profile);
 api.use('/orders',payments);

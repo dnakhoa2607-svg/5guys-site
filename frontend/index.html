@@ -710,7 +710,7 @@
         function handleTicketSubmit(e) {
             e.preventDefault();
             const orderId = document.getElementById('ticket-order-id').value;
-            showNotification(`Đã ghi nhận yêu cầu hỗ trợ cho đơn hàng <b>${orderId}</b>! Chúng tôi sẽ phản hồi qua Email.`);
+            showNotification(`Đã ghi nhận yêu cầu hỗ trợ cho đơn hàng <b>${escapeHtml(orderId)}</b>! Chúng tôi sẽ phản hồi qua Email.`);
             e.target.reset();
             switchSupportSubTab('tracker');
         }
@@ -718,7 +718,7 @@
         function renderTicketProgress() {
             const inputVal = document.getElementById('track-ticket-input').value.trim();
             if (!inputVal) return;
-            showNotification(`Đã cập nhật dữ liệu tiến trình cho mã đơn: <b>${inputVal}</b>.`);
+            showNotification(`Đã cập nhật dữ liệu tiến trình cho mã đơn: <b>${escapeHtml(inputVal)}</b>.`);
         }
 
         // -------------------------------------------------------------
@@ -748,7 +748,7 @@
         }
 
         function escapeHtml(str) {
-            return str.replace(/&/g, '&amp;').replace(/&lt;/g, '&lt;').replace(/&gt;/g, '&gt;').replace(/"/g, '&quot;');
+            return String(str == null ? '' : str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
         }
 
         function sendChatMessage() {

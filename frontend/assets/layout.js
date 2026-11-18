@@ -78,7 +78,7 @@
                     <ul class="space-y-4 text-sm text-gray-400 font-medium">
                         <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Về 5GUYS Store</a></li>
                         <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Điều khoản dịch vụ</a></li>
-                        <li class=""><a href="support.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Chính sách bảo mật</a></li>
+                        <li class=""><a href="privacy.html" class="hover:text-brand-light hover:translate-x-2 transition-all inline-block"><i class="fa-solid fa-angle-right text-xs mr-2 text-dark-border"></i> Chính sách bảo mật</a></li>
                         <li class="pt-2"><a href="index.html#gift-section" class="text-brand-light hover:text-white transition-all font-bold flex items-center gap-2 bg-brand/10 w-fit px-4 py-2 rounded-lg border border-brand/30 hover:bg-brand/20 hover:shadow-[0_0_10px_rgba(157,78,221,0.3)]"><i class="fa-solid fa-gift animate-bounce"></i> Nhận Quà Tặng</a></li>
                     </ul>
                 </div>

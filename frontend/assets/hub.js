@@ -6,13 +6,19 @@
       if (!container) return;
       const toast = document.createElement('div');
       toast.className = `p-4 rounded-2xl bg-[#241832] shadow-2xl flex items-center gap-3 text-white transition-all transform duration-300 translate-y-2 pointer-events-auto border-l-4 ${isSuccess ? 'border-[#9d4edd]' : 'border-red-500'} border border-outline-variant/30 min-w-[280px] max-w-sm`;
-      toast.innerHTML = `
-        <span class="material-symbols-outlined ${isSuccess ? 'text-brand-neon' : 'text-red-400'} text-2xl">${isSuccess ? 'check_circle' : 'error'}</span>
-        <div class="flex flex-col">
-          <span class="text-xs font-bold text-white">${title}</span>
-          <span class="text-[11px] text-on-surface-variant leading-tight">${message}</span>
-        </div>
-      `;
+      const ic = document.createElement('span');
+      ic.className = `material-symbols-outlined ${isSuccess ? 'text-brand-neon' : 'text-red-400'} text-2xl`;
+      ic.textContent = isSuccess ? 'check_circle' : 'error';
+      const box = document.createElement('div');
+      box.className = 'flex flex-col';
+      const tEl = document.createElement('span');
+      tEl.className = 'text-xs font-bold text-white';
+      tEl.textContent = String(title || '');
+      const mEl = document.createElement('span');
+      mEl.className = 'text-[11px] text-on-surface-variant leading-tight';
+      mEl.textContent = String(message || '');
+      box.append(tEl, mEl);
+      toast.append(ic, box);
       container.appendChild(toast);
       requestAnimationFrame(() => {
         toast.classList.remove('translate-y-2');
@@ -197,15 +203,18 @@
   }
 
   function renderDrive() {
-    var d = currentDrive(), used = d.total - d.free, size = current.size || 0;
+    var d = currentDrive(), bonus = current.patchSizeGb || 0;
+    var used = Math.round(Math.min(d.total, (d.total - d.free) + bonus) * 10) / 10;
+    var free = Math.round(Math.max(0, d.free - bonus) * 10) / 10;
+    var size = Math.round((current.size || 0) * 10) / 10;
     var $ = function (id) { return document.getElementById(id); };
     if (!$('drive-name')) return;
     $('drive-name').textContent = d.name;
     $('drive-usage').textContent = used + ' GB / ' + d.total + ' GB';
-    $('drive-free').textContent = 'Trống ' + d.free + ' GB';
+    $('drive-free').textContent = 'Trống ' + free + ' GB';
     $('drive-speed').textContent = 'Tốc độ đọc ngẫu nhiên: ' + d.speed;
     var gamePct = Math.min(size, used) / d.total * 100;
-    $('drive-bar-used').style.width = ((used / d.total * 100) - gamePct) + '%';
+    $('drive-bar-used').style.width = Math.max(0, (used / d.total * 100) - gamePct) + '%';
     $('drive-bar-game').style.width = gamePct + '%';
     $('drive-game-size').textContent = current.title ? current.title + ' - ' + size + ' GB' : 'Chọn game để xem dung lượng';
     $('drive-game-size').title = $('drive-game-size').textContent;
@@ -255,7 +264,11 @@
 
   /* ---------------- KHO GAME ---------------- */
   var GAME_LAUNCHERS = {
-    'neon-viper': 'games/neon-viper.html'
+    'neon-viper': 'games/neon-viper.html',
+    'black-myth-wukong': 'games/black-myth.html',
+    'black-myth': 'games/black-myth.html',
+    'hollow-knight': 'games/hollow-knight.html',
+    'hollow-knight-silksong': 'games/hollow-knight.html'
   };
 
   function slugifyTitle(title) {
@@ -272,8 +285,152 @@
     return 'games/' + encodeURIComponent(slug) + '.html';
   }
 
-  var current = { title: '', slug: '', cover: '', key: '', size: 0, week: null };
-  var realKey = '', keyVisible = false;
+  var current = {
+    productId: null, title: '', slug: '', cover: '', key: '',
+    baseSize: 0, patchSizeGb: 0, size: 0, week: null,
+    installedVersion: '1.0.0', dlcInstalled: false, patches: [], cardEl: null
+  };
+  var realKey = '', keyVisible = false, isPatching = false;
+
+  function normVer(v) {
+    return String(v || '1.0.0').trim().replace(/^[vV]/, '').replace(/-.*$/, '') || '1.0.0';
+  }
+  function fmtVer(v) {
+    return 'v' + normVer(v);
+  }
+  function cmpVer(a, b) {
+    var pa = normVer(a).split('.').map(function (n) { return parseInt(n, 10) || 0; });
+    var pb = normVer(b).split('.').map(function (n) { return parseInt(n, 10) || 0; });
+    var len = Math.max(pa.length, pb.length, 3), i;
+    for (i = 0; i < len; i++) {
+      var av = pa[i] || 0, bv = pb[i] || 0;
+      if (av < bv) return -1;
+      if (av > bv) return 1;
+    }
+    return 0;
+  }
+  function defaultDemoPatches(title) {
+    return [
+      {
+        version: 'v1.2.0',
+        title: 'Bản vá v1.2.0: Tối ưu Hiệu năng & DirectStorage',
+        patch_notes: '• Tăng 15% độ ổn định FPS ở độ phân giải 2K/4K\n• Cải thiện tốc độ tải NVMe DirectStorage và đồng bộ Cloud Saves.',
+        size_mb: 420,
+        is_dlc: false
+      },
+      {
+        version: 'v1.2.0',
+        title: 'Gói Mở Rộng DLC: ' + (title || 'Game') + ' - Special Edition',
+        patch_notes: '• Mở khóa chế độ thử thách Boss Rush & trang bị đặc biệt 5GUYS Edition.',
+        size_mb: 1850,
+        is_dlc: true
+      }
+    ];
+  }
+  function readDemoPatchState(slug) {
+    try {
+      var map = JSON.parse(localStorage.getItem('5guys_patch_state_' + accountSeed()) || '{}');
+      return map[slug] || { installed_version: '1.0.0', dlc_installed: false };
+    } catch (e) { return { installed_version: '1.0.0', dlc_installed: false }; }
+  }
+  function writeDemoPatchState(slug, installedVersion, dlcInstalled) {
+    try {
+      var key = '5guys_patch_state_' + accountSeed();
+      var map = JSON.parse(localStorage.getItem(key) || '{}');
+      map[slug] = { installed_version: installedVersion, dlc_installed: !!dlcInstalled };
+      localStorage.setItem(key, JSON.stringify(map));
+    } catch (e) {}
+  }
+  function patchMetaForCurrent() {
+    var patches = Array.isArray(current.patches) && current.patches.length
+      ? current.patches
+      : defaultDemoPatches(current.title);
+    var latestRaw = '1.0.0';
+    var hasDlc = false;
+    var patchMb = 0;
+    var dlcMb = 0;
+    patches.forEach(function (pt) {
+      if (cmpVer(latestRaw, pt.version) < 0) latestRaw = normVer(pt.version);
+      if (pt.is_dlc) { hasDlc = true; dlcMb += Number(pt.size_mb || 0); }
+      else { patchMb += Number(pt.size_mb || 0); }
+    });
+    if (cmpVer(latestRaw, '1.0.0') <= 0) latestRaw = '1.2.0';
+    var installedMb = (cmpVer(current.installedVersion, latestRaw) >= 0 ? patchMb : 0) + (current.dlcInstalled ? dlcMb : 0);
+    var bonusGb = installedMb > 0 ? Math.max(0.5, Math.round((installedMb / 1024) * 10) / 10) : 0;
+    return { patches: patches, latestRaw: latestRaw, hasDlc: hasDlc, patchMb: patchMb, dlcMb: dlcMb, bonusGb: bonusGb };
+  }
+  function syncCurrentSizeAndBadge() {
+    var meta = patchMetaForCurrent();
+    current.patchSizeGb = meta.bonusGb;
+    current.size = Math.round((current.baseSize + meta.bonusGb) * 10) / 10;
+    if (current.cardEl) {
+      var badge = current.cardEl.querySelector('[data-size-badge]');
+      if (badge) badge.textContent = 'Đã thêm vào kho · ' + current.size + ' GB';
+    }
+  }
+  function renderAutoPatcher() {
+    var box = document.getElementById('auto-patcher-box');
+    if (!box) return;
+    var meta = patchMetaForCurrent();
+    var instEl = document.getElementById('game-installed-ver');
+    var latEl = document.getElementById('game-latest-ver');
+    var dlcBadge = document.getElementById('game-dlc-badge');
+    var notesEl = document.getElementById('patch-notes-summary');
+    var btn = document.getElementById('btn-update-patch');
+
+    if (instEl) instEl.textContent = fmtVer(current.installedVersion);
+    if (latEl) latEl.textContent = fmtVer(meta.latestRaw);
+
+    if (dlcBadge) {
+      if (meta.hasDlc && current.dlcInstalled) {
+        dlcBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-500/40';
+        dlcBadge.textContent = '✔ Đã cài đặt DLC';
+      } else if (meta.hasDlc) {
+        dlcBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-purple/20 text-brand-neon border border-brand-purple/40';
+        dlcBadge.textContent = 'DLC khả dụng';
+      } else {
+        dlcBadge.className = 'hidden';
+      }
+    }
+
+    if (notesEl) {
+      notesEl.replaceChildren();
+      meta.patches.slice(0, 3).forEach(function (pt, idx) {
+        var row = document.createElement('div');
+        row.className = idx > 0 ? 'pt-1.5 border-t border-outline-variant/15' : '';
+        var head = document.createElement('div');
+        head.className = 'flex flex-wrap items-center justify-between gap-2';
+        var left = document.createElement('span');
+        left.className = 'font-bold text-white flex items-center gap-1.5';
+        var tag = document.createElement('span');
+        tag.className = 'px-1.5 py-0.5 rounded text-[10px] font-bold ' + (pt.is_dlc ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-brand-purple/20 text-brand-neon border border-brand-purple/30');
+        tag.textContent = pt.is_dlc ? 'DLC' : 'PATCH';
+        left.append(tag, document.createTextNode(' ' + pt.title));
+        var sz = document.createElement('span');
+        sz.className = 'text-[11px] font-mono text-outline';
+        sz.textContent = fmtVer(pt.version) + ' · ' + (pt.size_mb || 150) + ' MB';
+        head.append(left, sz);
+        var notes = document.createElement('p');
+        notes.className = 'text-[11px] text-on-surface-variant whitespace-pre-line mt-1 leading-relaxed';
+        notes.textContent = pt.patch_notes;
+        row.append(head, notes);
+        notesEl.appendChild(row);
+      });
+    }
+
+    var needsUpdate = cmpVer(current.installedVersion, meta.latestRaw) < 0 || (meta.hasDlc && !current.dlcInstalled);
+    if (btn) {
+      if (needsUpdate) {
+        btn.disabled = false;
+        btn.className = 'px-4 py-2 rounded-xl bg-gradient-to-r from-brand-purple to-brand-neon hover:opacity-95 text-white text-xs font-bold shadow-[0_0_16px_rgba(157,78,221,0.5)] transition-all flex items-center gap-1.5 cursor-pointer';
+        btn.innerHTML = '<span class="material-symbols-outlined text-base">download</span><span>' + (meta.hasDlc ? 'Cập nhật Bản vá & DLC' : 'Cập nhật Bản vá') + '</span>';
+      } else {
+        btn.disabled = true;
+        btn.className = 'px-4 py-2 rounded-xl bg-surface-container text-emerald-300 text-xs font-bold border border-emerald-500/35 flex items-center gap-1.5 cursor-default';
+        btn.textContent = '✓ Đã ở phiên bản mới nhất';
+      }
+    }
+  }
 
   function renderKey() {
     var t = document.getElementById('license-key-text'), tg = document.getElementById('btn-toggle-key');
@@ -314,6 +471,112 @@
         showToast('Đã Sao Chép Key 📋', 'Mã bản quyền ' + current.title + ' đã được lưu vào clipboard.');
       }).catch(function () { showToast('Không thể sao chép', 'Trình duyệt chặn clipboard. Hãy bấm biểu tượng con mắt để hiện mã và chép thủ công.', false); });
     });
+
+    var checkPatchBtn = document.getElementById('btn-check-patch');
+    if (checkPatchBtn) {
+      checkPatchBtn.addEventListener('click', async function () {
+        if (isPatching) return;
+        if (G5.isApiMode()) {
+          checkPatchBtn.disabled = true;
+          try {
+            var games = await G5.getLibrary();
+            var map = Object.create(null);
+            games.forEach(function (g) {
+              map[String(g.product_id)] = g;
+              if (g.slug) map[g.slug] = g;
+            });
+            window.__g5ApiLibraryMap = map;
+            var hit = map[String(current.productId)] || map[current.slug];
+            if (hit) {
+              current.installedVersion = hit.installed_version || '1.0.0';
+              current.dlcInstalled = !!hit.dlc_installed;
+              current.patches = Array.isArray(hit.patches) ? hit.patches : [];
+              syncCurrentSizeAndBadge();
+              renderDrive();
+            }
+            renderAutoPatcher();
+            showToast('Đã Kiểm Tra Máy Chủ 5GUYS', 'Dữ liệu bản vá và DLC cho ' + current.title + ' đã được đồng bộ.');
+          } catch (err) {
+            showToast('Không thể kiểm tra bản vá', G5.errorText(err), false);
+          } finally {
+            checkPatchBtn.disabled = false;
+          }
+        } else {
+          renderAutoPatcher();
+          showToast('Đã Kiểm Tra Bản Vá', 'Phiên bản mới nhất cho ' + current.title + ' là ' + fmtVer(patchMetaForCurrent().latestRaw) + '.');
+        }
+      });
+    }
+
+    var updatePatchBtn = document.getElementById('btn-update-patch');
+    if (updatePatchBtn) {
+      updatePatchBtn.addEventListener('click', function () {
+        if (isPatching || !current.title) return;
+        var meta = patchMetaForCurrent();
+        var needsUpdate = cmpVer(current.installedVersion, meta.latestRaw) < 0 || (meta.hasDlc && !current.dlcInstalled);
+        if (!needsUpdate) return;
+
+        isPatching = true;
+        updatePatchBtn.disabled = true;
+        var pBar = document.getElementById('patch-progress-bar');
+        var pFill = document.getElementById('patch-progress-fill');
+        var pPct = document.getElementById('patch-progress-pct');
+        var pLbl = document.getElementById('patch-progress-label');
+        var drive = currentDrive();
+        if (pBar) pBar.classList.remove('hidden');
+        if (pFill) pFill.style.width = '0%';
+        if (pPct) pPct.textContent = '0%';
+        if (pLbl) pLbl.textContent = 'Đang tải & ghi vào ' + drive.name + ' (' + drive.speed + ')...';
+
+        var duration = 1800, startAt = Date.now();
+        var timer = setInterval(async function () {
+          var elapsed = Date.now() - startAt;
+          var pct = Math.min(100, Math.round((elapsed / duration) * 100));
+          if (pFill) pFill.style.width = pct + '%';
+          if (pPct) pPct.textContent = pct + '%';
+          if (pct < 100) return;
+
+          clearInterval(timer);
+          try {
+            if (G5.isApiMode() && current.productId) {
+              var res = await G5.api('/library/' + current.productId + '/update', {
+                method: 'POST',
+                body: {
+                  targetVersion: meta.latestRaw,
+                  installDlc: meta.hasDlc ? true : undefined
+                }
+              });
+              current.installedVersion = res.installed_version || meta.latestRaw;
+              current.dlcInstalled = res.dlc_installed !== undefined ? !!res.dlc_installed : meta.hasDlc;
+              var libMap = window.__g5ApiLibraryMap || {};
+              var entry = libMap[String(current.productId)] || libMap[current.slug];
+              if (entry) {
+                entry.installed_version = current.installedVersion;
+                entry.dlc_installed = current.dlcInstalled;
+              }
+            } else {
+              current.installedVersion = meta.latestRaw;
+              current.dlcInstalled = meta.hasDlc;
+              writeDemoPatchState(current.slug, current.installedVersion, current.dlcInstalled);
+            }
+            syncCurrentSizeAndBadge();
+            renderDrive();
+            renderAutoPatcher();
+            if (pBar) setTimeout(function () { if (!isPatching) pBar.classList.add('hidden'); }, 350);
+            showToast(
+              'Cập Nhật Hoàn Tất ✨',
+              'Đã cài đặt bản vá ' + fmtVer(meta.latestRaw) + (meta.hasDlc ? ' và kích hoạt DLC' : '') + ' thành công!'
+            );
+          } catch (err) {
+            if (pBar) pBar.classList.add('hidden');
+            renderAutoPatcher();
+            showToast('Cập Nhật Thất Bại', G5.errorText(err), false);
+          } finally {
+            isPatching = false;
+          }
+        }, 45);
+      });
+    }
 
     var driveBtn = document.getElementById('drive-toggle'), menu = document.getElementById('drive-menu'), caret = document.getElementById('drive-caret');
     if (!driveBtn || !menu) return;
@@ -365,15 +628,31 @@
     card.classList.add('bg-surface-container', 'border-brand-purple/50', 'shadow-[0_0_15px_rgba(157,78,221,0.2)]');
     var title = card.querySelector('h3').textContent.trim();
     var slug = card.dataset.slug || slugifyTitle(title);
+    var productId = card.dataset.productId ? Number(card.dataset.productId) : null;
     var profile = gameProfile(slug, title);
+    var libMap = window.__g5ApiLibraryMap || {};
+    var apiInfo = (productId && libMap[String(productId)]) || libMap[slug] || null;
+    var demoState = !apiInfo ? readDemoPatchState(slug) : null;
+
     current = {
+      productId: productId || (apiInfo && apiInfo.product_id) || null,
       title: title,
       slug: slug,
       cover: card.dataset.cover || '',
       key: card.dataset.key || makeKey(title, slug),
+      baseSize: profile.size,
+      patchSizeGb: 0,
       size: profile.size,
-      week: profile.week
+      week: profile.week,
+      installedVersion: apiInfo ? (apiInfo.installed_version || '1.0.0') : (demoState.installed_version || '1.0.0'),
+      dlcInstalled: apiInfo ? !!apiInfo.dlc_installed : !!demoState.dlc_installed,
+      patches: apiInfo && Array.isArray(apiInfo.patches) ? apiInfo.patches : [],
+      cardEl: card
     };
+    syncCurrentSizeAndBadge();
+    var pBar = document.getElementById('patch-progress-bar');
+    if (pBar && !isPatching) pBar.classList.add('hidden');
+
     var h = document.getElementById('banner-title'); if (h) h.textContent = current.title;
     var p = document.getElementById('banner-desc');
     if (p) p.textContent = 'Game đã được kích hoạt trong kho của bạn. Bấm CHƠI NGAY để mở trực tiếp "' + current.title + '" trong tab mới.';
@@ -386,6 +665,7 @@
     setKey(current.key);
     renderPlaytime();
     renderDrive();
+    renderAutoPatcher();
   }
 
   function initLibrary() {
@@ -394,7 +674,15 @@
     if (G5.isApiMode() && !window.__g5ApiLibraryLoaded) {
       window.__g5ApiLibraryLoaded = true;
       G5.getLibrary().then(function (games) {
-        window.__g5ApiOwnedOrders = games.map(function (g) { return [g.id, new Date(g.acquired_at).toLocaleDateString('vi-VN'), g.title, 'digital', 0, 3, g.slug, g.cover_url]; });
+        var map = Object.create(null);
+        games.forEach(function (g) {
+          map[String(g.product_id)] = g;
+          if (g.slug) map[g.slug] = g;
+        });
+        window.__g5ApiLibraryMap = map;
+        window.__g5ApiOwnedOrders = games.map(function (g) {
+          return [g.id, new Date(g.acquired_at).toLocaleDateString('vi-VN'), g.title, 'digital', 0, 3, g.slug, g.cover_url, g.product_id];
+        });
         initLibrary();
       }).catch(function () { window.__g5ApiLibraryLoaded = false; showToast('Không tải được thư viện', 'Hãy kiểm tra kết nối API.', false); });
       return;
@@ -431,15 +719,19 @@
       return;
     }
 
+    var libMap = window.__g5ApiLibraryMap || {};
     owned.forEach(function (order) {
       var title = String(order[2]).trim();
+      var slug = order[6] || slugifyTitle(title);
+      var pid = order[8] || null;
       var card = document.createElement('button');
       card.type = 'button';
       card.className = 'game-select-card w-full p-3 rounded-xl bg-surface-container-low hover:bg-surface-container border border-outline-variant/10 cursor-pointer transition-all flex items-center gap-3 text-left';
       card.dataset.game = 'order-' + String(order[0] || title);
-      card.dataset.slug = order[6] || slugifyTitle(title);
+      card.dataset.slug = slug;
       card.dataset.cover = order[7] || '';
       card.dataset.key = '';
+      if (pid) card.dataset.productId = String(pid);
 
       var cover = document.createElement('span');
       cover.className = 'grid h-14 w-14 shrink-0 place-items-center rounded-lg border border-brand-purple/20 bg-gradient-to-br from-brand-purple to-secondary-container text-white';
@@ -461,15 +753,30 @@
       var orderDetail = document.createElement('span');
       orderDetail.className = 'mt-1 block truncate text-[11px] text-on-surface-variant';
       orderDetail.textContent = 'Bản quyền kỹ thuật số' + (order[1] ? ' • Mua ngày ' + String(order[1]) : '');
+      var apiInfo = (pid && libMap[String(pid)]) || libMap[slug] || null;
+      var baseGb = gameProfile(slug, title).size;
       var ready = document.createElement('span');
+      ready.setAttribute('data-size-badge', '');
       ready.className = 'mt-1.5 inline-flex rounded bg-brand-purple/20 px-2 py-0.5 text-[10px] font-semibold text-secondary';
-      ready.textContent = 'Đã thêm vào kho · ' + gameProfile(card.dataset.slug, title).size + ' GB';
+      ready.textContent = 'Đã thêm vào kho · ' + baseGb + ' GB';
       info.appendChild(head);
       info.appendChild(orderDetail);
       info.appendChild(ready);
       card.appendChild(cover);
       card.appendChild(info);
       list.appendChild(card);
+
+      if (apiInfo && (apiInfo.dlc_installed || cmpVer(apiInfo.installed_version || '1.0.0', '1.2.0') >= 0)) {
+        var extraMb = (apiInfo.patches || []).reduce(function (s, pt) {
+          if (pt.is_dlc && !apiInfo.dlc_installed) return s;
+          if (!pt.is_dlc && cmpVer(apiInfo.installed_version || '1.0.0', pt.version) < 0) return s;
+          return s + Number(pt.size_mb || 0);
+        }, 0);
+        if (extraMb > 0) {
+          var bonusGb = Math.max(0.5, Math.round((extraMb / 1024) * 10) / 10);
+          ready.textContent = 'Đã thêm vào kho · ' + (Math.round((baseGb + bonusGb) * 10) / 10) + ' GB';
+        }
+      }
     });
 
     if (detailPanel) detailPanel.classList.remove('hidden');
@@ -498,32 +805,282 @@
     'black-myth-wukong': [['Cinematic Photo Mode Ideas','MonkeyKingPH','Gợi ý khung hình và thiết lập chụp ảnh.','32 MB',4.7,1760,'ĐỒ HỌA'],['Journey Challenge Pack','StaffMaster','Ý tưởng thử thách cộng đồng cho hành trình Tây Du.','8 MB',4.5,810,'LỐI CHƠI']]
   };
 
+  function fallbackModsFor(slug) {
+    return (MODS[slug] || []).map(function (m) {
+      return {
+        id: null,
+        product_slug: slug,
+        title: m[0],
+        author_name: m[1],
+        description: m[2],
+        size_label: m[3],
+        rating: m[4],
+        downloads_count: m[5],
+        category: m[6],
+        version: 'v1.0',
+      };
+    });
+  }
+
+  function triggerModManifestDownload(mod, fallbackSlug) {
+    var slug = String(mod.product_slug || fallbackSlug || 'game').replace(/[^a-zA-Z0-9_-]/g, '-');
+    var ver = String(mod.version || 'v1.0').replace(/[^a-zA-Z0-9._-]/g, '_');
+    var filename = '5GUYS_Mod_' + slug + '_' + ver + '.json';
+    var manifest = {
+      platform: '5GUYS Game Store',
+      modId: mod.id || null,
+      productSlug: mod.product_slug || fallbackSlug || slug,
+      productTitle: mod.product_title || '',
+      title: mod.title,
+      category: mod.category,
+      version: mod.version || 'v1.0',
+      author: mod.author_name || 'Cộng đồng 5GUYS',
+      size: mod.size_label || '15 MB',
+      downloadsCount: Number(mod.downloads_count || 0),
+      description: mod.description || '',
+      downloadedAt: new Date().toISOString()
+    };
+    try {
+      var blob = new Blob([JSON.stringify(manifest, null, 2)], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+    } catch (e) {}
+    return filename;
+  }
+
+  var modModalBound = false;
   function initMods() {
     var bar = document.getElementById('mod-game-bar'), grid = document.getElementById('mod-grid');
     if (!bar || !grid || !window.G5) return;
     var spot = document.getElementById('section-mod');
     if (spot) spot.classList.add('hidden'); // Ẩn workshop Cyberpunk mẫu cũ.
-    grid.replaceChildren(Object.assign(document.createElement('p'), {className:'col-span-full text-sm text-on-surface-variant',textContent:'Đang tải game kỹ thuật số…'}));
-    G5.api('/products?type=digital&limit=100').then(function (data) {
-      var games = (data.products || []).filter(function (game) { return game.product_type === 'digital'; });
-      if (!games.length) { bar.replaceChildren(); grid.innerHTML='<p class="col-span-full rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 text-sm text-on-surface-variant">Chưa có game kỹ thuật số trong catalog. Game vật lý không được hỗ trợ mod.</p>'; return; }
-      var requested = new URLSearchParams(location.search).get('game');
-      var selected = games.some(function (g) { return g.slug === requested; }) ? requested : games[0].slug;
+    grid.replaceChildren(Object.assign(document.createElement('p'), { className: 'col-span-full text-sm text-on-surface-variant', textContent: 'Đang tải game kỹ thuật số…' }));
+
+    var games = [];
+    var selected = '';
+
+    function renderGameTabs() {
       bar.replaceChildren();
       games.forEach(function (game) {
-        var a=document.createElement('a');a.href='mods.html?game='+encodeURIComponent(game.slug);a.className='flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all '+(game.slug===selected?'active-nav-tab':'inactive-nav-tab');a.textContent=game.title;bar.appendChild(a);
+        var a = document.createElement('a');
+        a.href = 'mods.html?game=' + encodeURIComponent(game.slug);
+        a.className = 'flex-shrink-0 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all ' + (game.slug === selected ? 'active-nav-tab' : 'inactive-nav-tab');
+        a.textContent = game.title;
+        bar.appendChild(a);
       });
-      var game=games.find(function (g) { return g.slug===selected; }), mods=MODS[selected]||[];
-      document.getElementById('mod-grid-title').textContent='Mod dành cho '+game.title+' · Bản kỹ thuật số';
+    }
+
+    function renderModCards(mods, game) {
+      document.getElementById('mod-grid-title').textContent = 'Mod dành cho ' + game.title + ' · Bản kỹ thuật số';
       grid.replaceChildren();
-      if (!mods.length) { grid.innerHTML='<p class="col-span-full rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 text-sm text-on-surface-variant">Mod cho game này đang được cập nhật.</p>'; return; }
-      mods.forEach(function (m,i) {
-        var card=document.createElement('article');card.className='bg-surface-container-low p-5 rounded-2xl border border-outline-variant/20 hover:border-brand-purple/50 transition-all flex flex-col gap-3';
-        var heading=document.createElement('div');heading.className='flex items-start justify-between gap-2';var title=document.createElement('h3');title.className='text-sm font-bold text-white leading-snug';title.textContent=m[0];var tag=document.createElement('span');tag.className='text-[10px] font-bold px-2 py-1 rounded-full bg-brand-purple/20 text-brand-neon whitespace-nowrap';tag.textContent=m[6];heading.append(title,tag);
-        var desc=document.createElement('p');desc.className='text-xs text-on-surface-variant leading-relaxed flex-1';desc.textContent=m[2];var author=document.createElement('p');author.className='text-[11px] text-outline';author.textContent='Tác giả minh họa: '+m[1]+' · '+m[3];
-        var foot=document.createElement('div');foot.className='flex items-center justify-between gap-2';var rating=document.createElement('span');rating.className='text-xs text-on-surface-variant';rating.textContent='★ '+m[4]+' · '+m[5].toLocaleString('vi-VN')+' lượt tải mẫu';var button=document.createElement('button');button.type='button';button.disabled=true;button.title='Chức năng tải mod chưa được kết nối';button.className='px-4 py-2 rounded-full bg-surface-container text-outline text-xs font-bold cursor-not-allowed';button.textContent='Sắp có';foot.append(rating,button);card.append(heading,desc,author,foot);grid.appendChild(card);
+      if (!mods.length) {
+        var empty = document.createElement('p');
+        empty.className = 'col-span-full rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 text-sm text-on-surface-variant';
+        empty.textContent = 'Chưa có bản Mod nào cho game này. Hãy nhấn "+ Đăng tải Bản Mod" để chia sẻ bản Mod đầu tiên!';
+        grid.appendChild(empty);
+        return;
+      }
+      mods.forEach(function (m) {
+        var card = document.createElement('article');
+        card.className = 'bg-surface-container-low p-5 rounded-2xl border border-outline-variant/20 hover:border-brand-purple/50 transition-all flex flex-col gap-3';
+
+        var heading = document.createElement('div');
+        heading.className = 'flex items-start justify-between gap-2';
+        var title = document.createElement('h3');
+        title.className = 'text-sm font-bold text-white leading-snug';
+        title.textContent = m.title;
+        var tag = document.createElement('span');
+        tag.className = 'text-[10px] font-bold px-2 py-1 rounded-full bg-brand-purple/20 text-brand-neon whitespace-nowrap';
+        tag.textContent = m.category || 'LỐI CHỌI';
+        heading.append(title, tag);
+
+        var desc = document.createElement('p');
+        desc.className = 'text-xs text-on-surface-variant leading-relaxed flex-1 whitespace-pre-line';
+        desc.textContent = m.description;
+
+        var author = document.createElement('p');
+        author.className = 'text-[11px] text-outline';
+        author.textContent = 'Tác giả: ' + (m.author_name || 'Cộng đồng') + ' · ' + (m.version || 'v1.0') + ' · ' + (m.size_label || '15 MB');
+
+        var foot = document.createElement('div');
+        foot.className = 'flex items-center justify-between gap-2 pt-1';
+
+        var rating = document.createElement('span');
+        rating.className = 'text-xs text-on-surface-variant';
+        var dlCount = document.createElement('span');
+        dlCount.textContent = Number(m.downloads_count || 0).toLocaleString('vi-VN');
+        rating.append(
+          document.createTextNode('★ ' + Number(m.rating || 4.8).toFixed(1) + ' · '),
+          dlCount,
+          document.createTextNode(' lượt tải')
+        );
+
+        var button = document.createElement('button');
+        button.type = 'button';
+        button.className = 'px-4 py-2 rounded-full bg-brand-purple hover:bg-brand-neon text-white text-xs font-bold cursor-pointer transition-all shadow-[0_0_12px_rgba(157,78,221,0.4)]';
+        button.textContent = 'Tải Mod';
+
+        button.addEventListener('click', async function () {
+          if (!G5.requireLogin('Vui lòng đăng nhập để tải bản Mod này.')) return;
+          if (G5.isApiMode() && m.id) {
+            button.disabled = true;
+            try {
+              var res = await G5.api('/mods/' + m.id + '/download', { method: 'POST' });
+              var info = (res && res.mod) ? res.mod : m;
+              m.downloads_count = Number(info.downloads_count || (Number(m.downloads_count || 0) + 1));
+              dlCount.textContent = m.downloads_count.toLocaleString('vi-VN');
+              var file = triggerModManifestDownload(info, game.slug);
+              showToast('Đang Tải Bản Mod 🚀', 'Đang tải ' + info.title + ' (' + (info.version || 'v1.0') + ' · ' + (info.size_label || '15 MB') + ') — ' + file);
+            } catch (err) {
+              showToast('Không thể tải bản Mod', G5.errorText(err), false);
+            } finally {
+              button.disabled = false;
+            }
+          } else {
+            m.downloads_count = Number(m.downloads_count || 0) + 1;
+            dlCount.textContent = m.downloads_count.toLocaleString('vi-VN');
+            var offlineFile = triggerModManifestDownload(m, game.slug);
+            showToast('Đang Tải Bản Mod 🚀', 'Đang tải ' + m.title + ' (' + (m.version || 'v1.0') + ') — ' + offlineFile);
+          }
+        });
+
+        foot.append(rating, button);
+        card.append(heading, desc, author, foot);
+        grid.appendChild(card);
       });
-    }).catch(function(){bar.replaceChildren();grid.innerHTML='<p class="col-span-full rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100">Không tải được danh sách game. Hãy kiểm tra API rồi tải lại trang.</p>';});
+    }
+
+    function loadModsForGame(slug) {
+      var game = games.find(function (g) { return g.slug === slug; }) || games[0];
+      if (!game) return;
+      selected = game.slug;
+      renderGameTabs();
+      grid.replaceChildren(Object.assign(document.createElement('p'), { className: 'col-span-full text-sm text-on-surface-variant', textContent: 'Đang tải danh sách bản Mod…' }));
+      G5.api('/mods?slug=' + encodeURIComponent(selected)).then(function (res) {
+        renderModCards(res.mods || [], game);
+      }).catch(function () {
+        renderModCards(fallbackModsFor(selected), game);
+      });
+    }
+
+    function bindUploadModal() {
+      if (modModalBound) return;
+      modModalBound = true;
+      var openBtn = document.getElementById('btn-open-upload-mod');
+      var modal = document.getElementById('modal-upload-mod');
+      var form = document.getElementById('form-upload-mod');
+      var closeBtn = document.getElementById('mod-up-close');
+      var cancelBtn = document.getElementById('mod-up-cancel');
+      var gameSelect = document.getElementById('mod-up-game');
+      var errEl = document.getElementById('mod-up-error');
+      var submitBtn = document.getElementById('mod-up-submit');
+      if (!openBtn || !modal || !form) return;
+
+      function closeModal() {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      function openModal() {
+        if (!G5.requireLogin('Vui lòng đăng nhập để đăng tải bản Mod mới.')) return;
+        if (!G5.isApiMode()) {
+          showToast('Cần kết nối API', 'Vui lòng đăng nhập qua backend API để đăng tải bản Mod.', false);
+          return;
+        }
+        if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+        if (gameSelect && selected) gameSelect.value = selected;
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+        var titleInp = document.getElementById('mod-up-title');
+        if (titleInp) titleInp.focus();
+      }
+
+      openBtn.addEventListener('click', openModal);
+      if (closeBtn) closeBtn.addEventListener('click', closeModal);
+      if (cancelBtn) cancelBtn.addEventListener('click', closeModal);
+      modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+      document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.classList.contains('hidden')) closeModal(); });
+
+      form.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        if (errEl) { errEl.classList.add('hidden'); errEl.textContent = ''; }
+        var productSlug = gameSelect ? gameSelect.value : selected;
+        var title = document.getElementById('mod-up-title').value.trim();
+        var category = document.getElementById('mod-up-category').value;
+        var version = document.getElementById('mod-up-version').value.trim();
+        var sizeLabel = document.getElementById('mod-up-size').value.trim();
+        var description = document.getElementById('mod-up-desc').value.trim();
+
+        if (title.length < 3 || description.length < 10) {
+          if (errEl) {
+            errEl.textContent = 'Tên bản Mod tối thiểu 3 ký tự và mô tả chi tiết tối thiểu 10 ký tự.';
+            errEl.classList.remove('hidden');
+          }
+          return;
+        }
+        if (submitBtn) submitBtn.disabled = true;
+        try {
+          await G5.api('/mods', {
+            method: 'POST',
+            body: { productSlug: productSlug, title: title, category: category, version: version, sizeLabel: sizeLabel, description: description }
+          });
+          form.reset();
+          document.getElementById('mod-up-version').value = 'v1.0';
+          document.getElementById('mod-up-size').value = '25 MB';
+          closeModal();
+          showToast('Đăng Tải Thành Công 🎉', 'Bản Mod "' + title + '" đã được đăng lên Cộng đồng Mod!');
+          if (productSlug && productSlug !== selected) {
+            selected = productSlug;
+            try {
+              var u = new URL(location.href);
+              u.searchParams.set('game', selected);
+              history.replaceState({}, '', u);
+            } catch (err2) {}
+          }
+          loadModsForGame(selected);
+        } catch (err) {
+          if (errEl) {
+            errEl.textContent = G5.errorText(err);
+            errEl.classList.remove('hidden');
+          }
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
+
+    G5.api('/products?type=digital&limit=100').then(function (data) {
+      games = (data.products || []).filter(function (game) {
+        return game.product_type === 'digital' || String(game.available_formats || '').indexOf('digital') !== -1;
+      });
+      if (!games.length) {
+        bar.replaceChildren();
+        grid.innerHTML = '<p class="col-span-full rounded-2xl border border-outline-variant/20 bg-surface-container-low p-5 text-sm text-on-surface-variant">Chưa có game kỹ thuật số trong catalog. Game vật lý không được hỗ trợ mod.</p>';
+        return;
+      }
+      var gameSelect = document.getElementById('mod-up-game');
+      if (gameSelect) {
+        gameSelect.replaceChildren();
+        games.forEach(function (g) {
+          var opt = document.createElement('option');
+          opt.value = g.slug;
+          opt.textContent = g.title;
+          gameSelect.appendChild(opt);
+        });
+      }
+      var requested = new URLSearchParams(location.search).get('game');
+      selected = games.some(function (g) { return g.slug === requested; }) ? requested : games[0].slug;
+      bindUploadModal();
+      loadModsForGame(selected);
+    }).catch(function () {
+      bar.replaceChildren();
+      grid.innerHTML = '<p class="col-span-full rounded-2xl border border-amber-400/30 bg-amber-400/10 p-5 text-sm text-amber-100">Không tải được danh sách game. Hãy kiểm tra API rồi tải lại trang.</p>';
+    });
   }
 
   window.initHub = function () { initLibrary(); initMods(); };

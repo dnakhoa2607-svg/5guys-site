@@ -1,8 +1,9 @@
 USE `5guys_store`;
 
--- Tài khoản admin mặc định: admin@5guys.vn / Admin@12345
+-- Tai khoan admin mac dinh: admin@5guys.com (va admin@5guys.vn) / Admin@12345
 INSERT IGNORE INTO users(email,password_hash,display_name,role) VALUES
-('admin@5guys.vn','$2a$12$pUuj40AP3ieK5j.HeHi6sOKN7Q4VDkEiQDcov7E5mUJ2TS8jETnNy','Admin','admin');
+ ('admin@5guys.com','$2a$12$pUuj40AP3ieK5j.HeHi6sOKN7Q4VDkEiQDcov7E5mUJ2TS8jETnNy','Admin','admin'),
+ ('admin@5guys.vn','$2a$12$pUuj40AP3ieK5j.HeHi6sOKN7Q4VDkEiQDcov7E5mUJ2TS8jETnNy','Admin','admin');
 
 INSERT INTO categories(name,slug) VALUES
 ('Hành động','hanh-dong'),('Phiêu lưu','phieu-luu'),('Metroidvania','metroidvania'),

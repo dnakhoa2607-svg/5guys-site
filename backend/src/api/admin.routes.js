@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { z } from 'zod';
-import db from '../db.js';
+import db, { ensureSchemaReady } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 
 // Tat ca route trong file nay chi danh cho admin (hoac nhan vien - staff)
@@ -36,7 +36,7 @@ function ensureAdminReady() {
   if (!initPromise) {
     initPromise = (async () => {
       try {
-        await db.execute("ALTER TABLE users MODIFY role ENUM('customer','publisher','staff','admin') NOT NULL DEFAULT 'customer'");
+        await ensureSchemaReady();
       } catch {}
       try {
         const [[row]] = await db.execute('SELECT COUNT(*) AS cnt FROM support_tickets');
@@ -289,15 +289,18 @@ const productSchema = z.object({
 
 router.get('/products', async (req, res, next) => {
   try {
+    await ensureAdminReady();
     const [products] = await db.execute(
-      `SELECT p.id,p.slug,p.title,p.platform,p.genre,p.product_type,p.price,p.original_price,p.discount_percent,p.status,p.cover_url,
-              p.publisher,p.developer,p.description,p.release_date,
+      `SELECT p.id,p.slug,p.title,p.platform,p.genre,p.product_type,p.price,p.original_price,p.discount_percent,p.status,p.rejection_reason,p.cover_url,
+              p.publisher,p.developer,p.publisher_user_id,p.description,p.release_date,
+              u.email AS publisher_email, u.display_name AS publisher_name,
               i.quantity_on_hand, i.quantity_reserved,
               gr.minimum_requirements
        FROM products p
+       LEFT JOIN users u ON u.id=p.publisher_user_id
        LEFT JOIN physical_inventory i ON i.product_id=p.id
        LEFT JOIN game_requirements gr ON gr.product_id=p.id
-       ORDER BY p.title, p.product_type`
+       ORDER BY (p.status='draft') DESC, p.title, p.product_type`
     );
     res.json({ products });
   } catch (e) { next(e); }
@@ -356,6 +359,10 @@ router.put('/products/:id', async (req, res, next) => {
         [merged.title, merged.description, merged.publisher, merged.developer, merged.platform, merged.genre, merged.cover_url,
          merged.price, original, discountOf(merged.price, original), merged.status, id]
       );
+      await conn.execute(
+        "UPDATE product_editions SET price=?, original_price=? WHERE product_id=? AND edition_name='Standard'",
+        [merged.price, original, id]
+      );
       if (cur.product_type === 'physical' && p.stock !== undefined) {
         const [[inv]] = await conn.execute('SELECT quantity_reserved FROM physical_inventory WHERE product_id=? FOR UPDATE', [id]);
         if (inv && p.stock < inv.quantity_reserved) throw new HttpError(409, 'stock_below_reserved');
@@ -371,9 +378,32 @@ router.put('/products/:id', async (req, res, next) => {
           [id, reqJson, reqJson]
         );
       }
+      if (merged.status === 'active') {
+        await conn.execute('UPDATE products SET rejection_reason=NULL WHERE id=?', [id]);
+      }
     });
     res.json({ ok: true });
   } catch (e) { sendError(res, next, e); }
+});
+
+router.put('/products/:id/approval', async (req, res, next) => {
+  try {
+    await ensureAdminReady();
+    const id = idParam.parse(req.params.id);
+    const { action, reason } = z.object({
+      action: z.enum(['approve', 'reject']),
+      reason: z.string().trim().max(500).optional(),
+    }).parse(req.body);
+    const [[prod]] = await db.execute('SELECT id FROM products WHERE id=?', [id]);
+    if (!prod) return res.status(404).json({ error: 'product_not_found' });
+    if (action === 'approve') {
+      await db.execute("UPDATE products SET status='active', rejection_reason=NULL WHERE id=?", [id]);
+      return res.json({ ok: true, id, status: 'active', rejection_reason: null });
+    }
+    const cleanReason = reason ? reason : null;
+    await db.execute("UPDATE products SET status='inactive', rejection_reason=? WHERE id=?", [cleanReason, id]);
+    res.json({ ok: true, id, status: 'inactive', rejection_reason: cleanReason });
+  } catch (e) { next(e); }
 });
 
 /* ===================== NGUOI DUNG ===================== */

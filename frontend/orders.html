@@ -30,8 +30,8 @@ function R(){
 }
 window.op=id=>{mo.textContent=id;md.classList.remove('hidden')};
 cx.onclick=()=>md.classList.add('hidden');
-sb.onclick=async()=>{let o=O.find(x=>x[0]===mo.textContent);if(!o)return;
-  if(G5.isApiMode()){try{await G5.api('/orders/'+o[7]+'/refund',{method:'POST',body:{reason:rr.value+(rn.value.trim()?': '+rn.value.trim():'')}});md.classList.add('hidden');rn.value='';O=await G5.syncOrders();R();G5.notify('Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xử lý.');}catch(err){G5.notify(G5.errorText(err));}return;}
+sb.onclick=async()=>{if(sb.disabled)return;let o=O.find(x=>x[0]===mo.textContent);if(!o)return;
+  if(G5.isApiMode()){sb.disabled=true;try{await G5.api('/orders/'+o[7]+'/refund',{method:'POST',body:{reason:rr.value+(rn.value.trim()?': '+rn.value.trim():'')}});md.classList.add('hidden');rn.value='';O=await G5.syncOrders();R();G5.notify('Đã gửi yêu cầu hoàn tiền. Quản trị viên sẽ xử lý.');}catch(err){G5.notify(G5.errorText(err));}finally{sb.disabled=false;}return;}
   O.filter(x=>x[0]===o[0]).forEach(x=>x[6]='Đã gửi yêu cầu hoàn tiền');md.classList.add('hidden');R()};
 R();
 if(G5.isApiMode())G5.syncOrders().then(rows=>{O=rows;R()}).catch(()=>G5.notify("Không tải được đơn hàng từ API."));</script>

@@ -1,12 +1,20 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import crypto from 'node:crypto';
-import db from '../db.js';
+import db, { ensureSchemaReady } from '../db.js';
 import env from '../config.js';
 import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 router.use(requireAuth);
+router.use(async (req, res, next) => {
+  try {
+    await ensureSchemaReady();
+    next();
+  } catch (e) {
+    next(e);
+  }
+});
 
 // CHI DUNG DE DEMO: thanh toan gia lap, khong thu tien that.
 // Khi len production phai thay bang cong thanh toan that (webhook co chu ky).
@@ -20,24 +28,31 @@ router.post('/:id/pay', async (req, res, next) => {
 
     // 1. Chi chu don hang moi duoc thanh toan, va chi khi don dang cho thanh toan
     const [orders] = await conn.execute(
-      'SELECT id,status,total FROM orders WHERE id=? AND user_id=? FOR UPDATE',
+      'SELECT id,status,total,recipient_user_id,gift_email FROM orders WHERE id=? AND user_id=? FOR UPDATE',
       [id, req.user.sub]
     );
-    if (!orders.length) { await conn.rollback(); return res.status(404).json({ error: 'order_not_found' }); }
+    if (!orders.length) {
+      await conn.rollback();
+      return res.status(404).json({ error: 'order_not_found' });
+    }
     const order = orders[0];
-    if (order.status !== 'pending_payment') { await conn.rollback(); return res.status(409).json({ error: 'order_not_payable' }); }
+    if (order.status !== 'pending_payment') {
+      await conn.rollback();
+      return res.status(409).json({ error: 'order_not_payable' });
+    }
 
-    // 2. Xu ly tung mon: game so -> vao thu vien, game dia -> tru ton kho + tao yeu cau giao hang
+    // 2. Xu ly tung mon: game so -> vao thu vien (cua nguoi nhan neu la qua tang), game dia -> tru ton kho + tao yeu cau giao hang
     const [items] = await conn.execute(
       'SELECT id,product_id,product_type,quantity FROM order_items WHERE order_id=?',
       [id]
     );
     let hasPhysical = false;
+    const ownerUserId = order.recipient_user_id || req.user.sub;
     for (const item of items) {
       if (item.product_type === 'digital') {
         await conn.execute(
-          "INSERT INTO game_library(user_id,product_id,order_item_id) VALUES(?,?,?) ON DUPLICATE KEY UPDATE status='active'",
-          [req.user.sub, item.product_id, item.id]
+          "INSERT INTO game_library(user_id,product_id,order_item_id) VALUES(?,?,?) ON DUPLICATE KEY UPDATE status='active', order_item_id=VALUES(order_item_id)",
+          [ownerUserId, item.product_id, item.id]
         );
       } else {
         hasPhysical = true;
@@ -57,7 +72,7 @@ router.post('/:id/pay', async (req, res, next) => {
       ['MOCK-' + crypto.randomBytes(4).toString('hex').toUpperCase(), id]
     );
 
-    // 4. Tich diem: 1 diem / 10.000d
+    // 4. Tich diem: 1 diem / 10.000d (luon cong cho nguoi thanh toan)
     const points = Math.floor(Number(order.total) / 10000);
     if (points > 0) {
       await conn.execute(
@@ -71,7 +86,11 @@ router.post('/:id/pay', async (req, res, next) => {
     }
 
     await conn.commit();
-    res.json({ order: { id, status: newStatus }, pointsEarned: points, message: 'Thanh toan thu nghiem thanh cong (khong thu tien that).' });
+    res.json({
+      order: { id, status: newStatus, recipientUserId: order.recipient_user_id || null, giftEmail: order.gift_email || null },
+      pointsEarned: points,
+      message: 'Thanh toan thu nghiem thanh cong (khong thu tien that).',
+    });
   } catch (e) {
     if (conn) await conn.rollback();
     next(e);
@@ -86,19 +105,26 @@ router.post('/:id/refund', async (req, res, next) => {
     const id = z.coerce.number().int().positive().parse(req.params.id);
     const { reason } = z.object({ reason: z.string().trim().min(1).max(500) }).parse(req.body);
     const [[order]] = await db.execute(
-      "SELECT o.id,o.status,o.total,p.id AS payment_id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id=? AND o.user_id=? ORDER BY p.id DESC LIMIT 1",
+      'SELECT o.id,o.status,o.total,p.id AS payment_id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id=? AND o.user_id=? ORDER BY p.id DESC LIMIT 1',
       [id, req.user.sub]
     );
     if (!order) return res.status(404).json({ error: 'order_not_found' });
-    if (!['paid', 'processing', 'shipped', 'fulfilled'].includes(order.status)) return res.status(409).json({ error: 'order_not_refundable' });
-    const [[open]] = await db.execute("SELECT id FROM refunds WHERE order_id=? AND status IN ('requested','approved','processed')", [id]);
+    if (!['paid', 'processing', 'shipped', 'fulfilled'].includes(order.status)) {
+      return res.status(409).json({ error: 'order_not_refundable' });
+    }
+    const [[open]] = await db.execute(
+      "SELECT id FROM refunds WHERE order_id=? AND status IN ('requested','approved','processed')",
+      [id]
+    );
     if (open) return res.status(409).json({ error: 'refund_already_requested' });
     const [r] = await db.execute(
       "INSERT INTO refunds(payment_id,order_id,amount,reason,status) VALUES(?,?,?,?,'requested')",
       [order.payment_id, id, order.total, reason]
     );
     res.status(201).json({ refund: { id: r.insertId, status: 'requested' } });
-  } catch (e) { next(e); }
+  } catch (e) {
+    next(e);
+  }
 });
 
 export default router;

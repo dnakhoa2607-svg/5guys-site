@@ -21,7 +21,13 @@
     const box=document.getElementById(id);if(!box)return;
     box.replaceChildren(node('p','text-outline col-span-full py-10 text-center','Đang tải danh mục…'));
     try {const data=await G5.api('/products?limit=100'+(type?'&type='+type:''));const products=data.products||[];if(!products.length){box.replaceChildren(node('p','text-outline col-span-full py-10 text-center','Chưa có game trong danh mục.'));return;}renderGrid(box,products,compact);}
-    catch {box.replaceChildren(node('p','text-amber-200 col-span-full py-10 text-center','Không tải được catalog. Hãy khởi động API và MySQL rồi thử tải lại.'));}
+    catch {
+      const wrap=node('div','col-span-full py-10 text-center space-y-3');
+      wrap.appendChild(node('p','text-amber-200','Không tải được catalog. Hãy khởi động API và MySQL rồi thử tải lại.'));
+      const retry=node('button','ghost text-xs','Thử tải lại');retry.type='button';retry.onclick=()=>loadGrid(id,type,compact);
+      wrap.appendChild(retry);
+      box.replaceChildren(wrap);
+    }
   }
   window.G5Catalog={loadGrid,renderGrid,gameCard,money};
   document.addEventListener('DOMContentLoaded',()=>{

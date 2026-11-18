@@ -4,7 +4,7 @@ import env from './config.js';
 const pool = mysql.createPool({
   host: env.DB_HOST, port: env.DB_PORT, user: env.DB_USER, password: env.DB_PASSWORD,
   database: env.DB_NAME, waitForConnections: true, connectionLimit: 10,
-  queueLimit: 0, charset: 'utf8mb4', timezone: 'Z', decimalNumbers: true,
+  queueLimit: 0, ...(env.DB_SSL === 'true' ? { ssl: { minVersion: 'TLSv1.2', rejectUnauthorized: true } } : {}), charset: 'utf8mb4', timezone: 'Z', decimalNumbers: true,
 });
 
 pool.on('connection', (conn) => { conn.query("SET time_zone = '+00:00'"); });

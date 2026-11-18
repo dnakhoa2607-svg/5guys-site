@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5GUYS - Điều khoản Dịch vụ &amp; Quy định Sử dụng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind-config.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #12091c;
+      color: #f3e8ff;
+      overflow-x: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, h4 { letter-spacing: -0.02em; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #12091c; }
+    ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
+    .card {
+      background: #2a1645;
+      border: 1px solid #3c096c;
+      border-radius: 1rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card-container {
+      background: #1f1032;
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      border-radius: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: #9d4edd;
+      color: #fff;
+      font-weight: 700;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border: 1px solid rgba(199, 125, 255, 0.3);
+      box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn:hover {
+      background: #c77dff;
+      box-shadow: 0 0 25px rgba(199, 125, 255, 0.6);
+    }
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: #12091c;
+      border: 1px solid #3c096c;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      color: #e9d5ff;
+      transition: border-color 0.25s ease, color 0.25s ease;
+    }
+    .ghost:hover { border-color: #c77dff; color: #fff; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .policy-section { scroll-margin-top: 6rem; }
+    .toc-link {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.65rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #d8b4e2;
+      border: 1px solid transparent;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .toc-link:hover {
+      background: rgba(157, 78, 221, 0.14);
+      border-color: rgba(199, 125, 255, 0.3);
+      color: #ffffff;
+    }
+    .toc-link.is-active {
+      background: rgba(157, 78, 221, 0.25);
+      border-color: rgba(199, 125, 255, 0.55);
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .toc-badge {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #c77dff;
+      background: rgba(18, 9, 28, 0.85);
+      border: 1px solid rgba(157, 78, 221, 0.35);
+      border-radius: 0.4rem;
+      padding: 0.12rem 0.45rem;
+      margin-top: 0.05rem;
+    }
+    .code-inline {
+      display: inline-block;
+      background: #12091c;
+      border: 1px solid rgba(157, 78, 221, 0.35);
+      color: #c77dff;
+      padding: 0.05rem 0.4rem;
+      border-radius: 0.35rem;
+      font-size: 0.84em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-word;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto !important; }
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/shared.css">
+  <script src="assets/shared.js"></script>
+</head>
+<body class="bg-dark-bg antialiased flex flex-col min-h-screen">
+  <script src="assets/layout.js" data-part="nav"></script>
+
+  <main class="flex-grow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+
+      <!-- HEADER BANNER -->
+      <header class="card-container p-6 sm:p-8 mb-8 border-brand/30 shadow-purple-glow">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/20 border border-brand-light/40 text-brand-light text-xs font-bold tracking-wide">
+            <i class="fa-solid fa-file-contract"></i>
+            Hiệu lực: Tháng 11/2026 • Phiên bản v2.0 • 5GUYS Vault
+          </span>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 text-xs font-bold">
+            <i class="fa-solid fa-scale-balanced"></i>
+            Chuẩn Thương mại Điện tử &amp; Bản quyền Hybrid
+          </span>
+        </div>
+
+        <h1 class="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight border-l-4 border-brand pl-4">
+          ĐIỀU KHOẢN DỊCH VỤ &amp; QUY ĐỊNH SỬ DỤNG
+        </h1>
+        <p class="text-xs sm:text-sm font-semibold text-brand-light mt-2 pl-5 uppercase tracking-wider">
+          ĐIỀU KHOẢN DỊCH VỤ VÀ SỬ DỤNG NỀN TẢNG 5GUYS VAULT
+        </p>
+
+        <div class="mt-5 grid sm:grid-cols-2 gap-3 text-xs sm:text-sm text-on-surface-variant bg-dark-bg/70 border border-dark-border rounded-xl p-4">
+          <p><i class="fa-solid fa-tag text-brand-light mr-2"></i><strong class="text-white">Phiên bản:</strong> v2.0 — Chuẩn Thương mại Điện tử &amp; Phân phối Bản quyền Hybrid</p>
+          <p><i class="fa-solid fa-calendar-check text-brand-light mr-2"></i><strong class="text-white">Ngày ban hành và có hiệu lực:</strong> 18/11/2026</p>
+          <p class="sm:col-span-2"><i class="fa-solid fa-building-shield text-brand-light mr-2"></i><strong class="text-white">Đơn vị chủ quản và vận hành:</strong> Nhóm 5Guys — Lớp 26C01, Khoa Công nghệ Thông tin, Trường Đại học Khoa học Tự nhiên, Đại học Quốc gia TP.HCM (HCMUS)</p>
+        </div>
+
+        <!-- 3 THE TOM TAT NHANH -->
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+          <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+            <div class="flex items-center gap-3 mb-2.5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-user-check"></i>
+              </span>
+              <h2 class="font-bold text-white text-sm leading-snug">Quyền lợi Người dùng</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              Cấp mã <strong class="text-white">5GUYS DRM SAFE</strong> tức thì vào Kho game, nhận đĩa nguyên Seal 100%, tích điểm Loyalty và bảo vệ quyền khiếu nại / hoàn tiền theo đúng quy định.
+            </p>
+          </article>
+
+          <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+            <div class="flex items-center gap-3 mb-2.5">
+              <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 grid place-items-center text-emerald-400 flex-shrink-0">
+                <i class="fa-solid fa-cubes"></i>
+              </span>
+              <h2 class="font-bold text-white text-sm leading-snug">Minh bạch Giao dịch Hybrid</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              Niêm yết 100% VNĐ, tách bạch Tạm tính, Giảm giá, VAT 10%, Phí ship và xử lý giao nhận Digital, Physical &amp; Quà tặng bằng <strong class="text-white">ACID Transaction</strong>.
+            </p>
+          </article>
+
+          <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+            <div class="flex items-center gap-3 mb-2.5">
+              <span class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-400/35 grid place-items-center text-blue-300 flex-shrink-0">
+                <i class="fa-solid fa-copyright"></i>
+              </span>
+              <h2 class="font-bold text-white text-sm leading-snug">Bảo hộ Sở hữu Trí tuệ</h2>
+            </div>
+            <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+              Bảo vệ toàn vẹn bản quyền nền tảng 5GUYS, bản quyền thương mại của Studio / Publisher đối tác và quyền tác giả cho các bản Mod cộng đồng.
+            </p>
+          </article>
+        </div>
+
+        <!-- CAN CU PHAP LY XAY DUNG DIEU KHOAN -->
+        <div class="mt-7 pt-6 border-t border-brand/30">
+          <h2 class="text-base sm:text-lg font-extrabold text-white uppercase tracking-wide mb-3 flex items-center gap-2">
+            <i class="fa-solid fa-landmark text-brand-light"></i>
+            CĂN CỨ PHÁP LÝ XÂY DỰNG ĐIỀU KHOẢN
+          </h2>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-3">
+            Văn bản Điều khoản Dịch vụ này được biên soạn dựa trên các quy định hiện hành của pháp luật nước Cộng hòa Xã hội Chủ nghĩa Việt Nam, bao gồm:
+          </p>
+          <ol class="list-decimal pl-5 space-y-2 text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+            <li><strong class="text-white">Bộ luật Dân sự số 91/2015/QH13</strong> thông qua ngày 24/11/2015 về xác lập, thực hiện và chấm dứt giao dịch dân sự.</li>
+            <li><strong class="text-white">Luật Giao dịch điện tử số 20/2023/QH15</strong> quy định về thông điệp dữ liệu, chữ ký điện tử và hợp đồng điện tử.</li>
+            <li><strong class="text-white">Nghị định số 52/2013/NĐ-CP</strong> và <strong class="text-white">Nghị định số 85/2021/NĐ-CP</strong> của Chính phủ về hoạt động Thương mại điện tử.</li>
+            <li><strong class="text-white">Luật Sở hữu trí tuệ số 50/2005/QH11</strong> (sửa đổi, bổ sung các năm 2009, 2019, 2022) về bảo hộ quyền tác giả đối với chương trình máy tính và tác phẩm phái sinh.</li>
+            <li><strong class="text-white">Luật Bảo vệ quyền lợi người tiêu dùng số 19/2023/QH15</strong> về trách nhiệm cung cấp thông tin, bảo hành và hoàn trả hàng hóa, dịch vụ.</li>
+          </ol>
+        </div>
+      </header>
+
+      <!-- BO CUC 2 COT: 3/12 STICKY SIDEBAR + 9/12 MAIN CONTENT -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- COT TRAI: MUC LUC DIEU HUONG NHANH (3/12) -->
+        <aside class="lg:col-span-3 lg:sticky lg:top-24 space-y-4">
+          <nav aria-label="Mục lục Điều khoản dịch vụ" class="card-container p-4 sm:p-5 border-brand/30">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-brand-light mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-compass"></i>
+              Mục lục điều khoản
+            </h2>
+            <ul id="terms-toc" class="space-y-1.5">
+              <li>
+                <a href="#dieu-1" class="toc-link is-active" data-target="dieu-1">
+                  <span class="toc-badge">Đ1</span>
+                  <span>Chấp thuận &amp; Phạm vi áp dụng</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-2" class="toc-link" data-target="dieu-2">
+                  <span class="toc-badge">Đ2</span>
+                  <span>Quyền &amp; Nghĩa vụ Người dùng</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-3" class="toc-link" data-target="dieu-3">
+                  <span class="toc-badge">Đ3</span>
+                  <span>Quyền &amp; Trách nhiệm 5GUYS</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-4" class="toc-link" data-target="dieu-4">
+                  <span class="toc-badge">Đ4</span>
+                  <span>Quyền Sở hữu Trí tuệ</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-5" class="toc-link" data-target="dieu-5">
+                  <span class="toc-badge">Đ5</span>
+                  <span>Giao dịch, Vận chuyển &amp; Hoàn tiền</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-6" class="toc-link" data-target="dieu-6">
+                  <span class="toc-badge">Đ6</span>
+                  <span>Miễn trừ &amp; Giải quyết Tranh chấp</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="card-container p-4 sm:p-5 border-brand/30 space-y-2.5">
+            <p class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-brand-light"></i>
+              Tài liệu &amp; Hỗ trợ liên quan
+            </p>
+            <p class="text-xs text-outline leading-relaxed">
+              Tham khảo thêm Chính sách Bảo mật dữ liệu hoặc gửi Ticket tới Ban Quản trị.
+            </p>
+            <div class="flex flex-col gap-2 pt-1">
+              <a href="privacy.html" class="ghost text-xs w-full"><i class="fa-solid fa-shield-halved"></i> Chính sách Bảo mật (privacy.html)</a>
+              <a href="support.html" class="btn text-xs w-full"><i class="fa-solid fa-headset"></i> Trung tâm Hỗ trợ (support.html)</a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- COT PHAI: MAIN CONTENT (9/12) -->
+        <div class="lg:col-span-9 space-y-6">
+
+          <!-- DIEU 1 -->
+          <section id="dieu-1" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-handshake"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 01</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 1. CHẤP THUẬN ĐIỀU KHOẢN VÀ PHẠM VI ÁP DỤNG</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-file-signature text-brand-light"></i>
+                  1.1. Nguyên tắc chấp thuận hợp đồng điện tử
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    Chào mừng bạn đến với nền tảng phân phối trò chơi điện tử bản quyền <strong class="text-white">5GUYS (5GUYS Vault)</strong>. Bằng việc truy cập vào website, đánh dấu vào ô xác nhận tại trang Đăng ký tài khoản (<a href="register.html" class="text-brand-light underline hover:text-white"><code class="code-inline">register.html</code></a>), nhấn nút thanh toán tại trang Giỏ hàng (<a href="cart.html" class="text-brand-light underline hover:text-white"><code class="code-inline">cart.html</code></a>), hoặc sử dụng bất kỳ tính năng nào của hệ thống, bạn xác nhận đã đọc, hiểu rõ và đồng ý chịu sự ràng buộc pháp lý của toàn bộ <strong class="text-white">Điều khoản Dịch vụ (v2.0)</strong> này cùng với <strong class="text-white">Chính sách Bảo mật 5GUYS Vault (<a href="privacy.html" class="text-brand-light underline hover:text-white"><code class="code-inline">privacy.html</code></a>)</strong>.
+                  </li>
+                  <li>
+                    Nếu bạn không đồng ý với bất kỳ điều khoản hoặc điều kiện nào được nêu tại văn bản này, vui lòng ngừng truy cập và không thực hiện giao dịch trên hệ thống <strong class="text-white">5GUYS</strong>.
+                  </li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-users-gear text-brand-light"></i>
+                  1.2. Phạm vi và đối tượng áp dụng
+                </h3>
+                <p>
+                  Văn bản này điều chỉnh toàn bộ mối quan hệ pháp lý, quyền và nghĩa vụ giữa Ban Quản trị <strong class="text-white">5GUYS</strong> với bốn (04) nhóm chủ thể tham gia hệ thống:
+                </p>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    <strong class="text-white">Khách vãng lai (<code class="code-inline">Guest</code>):</strong> Người dùng truy cập website để tra cứu danh mục sản phẩm, xem chi tiết cấu hình, đọc đánh giá cộng đồng và sử dụng công cụ tư vấn phần cứng <code class="code-inline">PC2GAMES AI</code>.
+                  </li>
+                  <li>
+                    <strong class="text-white">Khách hàng (<code class="code-inline">Customer</code>):</strong> Người dùng đã đăng ký tài khoản <strong class="text-white">5GUYS ID</strong>, thực hiện mua sắm sản phẩm <strong class="text-white">Kỹ thuật số (<code class="code-inline">Digital</code>)</strong> hoặc <strong class="text-white">Vật lý (<code class="code-inline">Physical</code>)</strong>, sử dụng Kho game trực tuyến (<code class="code-inline">game_library</code>), tính năng Tặng quà (<code class="code-inline">Gifting</code>), tải xuống và chia sẻ bản mở rộng tại Cộng đồng Mod (<code class="code-inline">Mod Hub</code>), và tích lũy điểm thưởng (<code class="code-inline">Loyalty</code>).
+                  </li>
+                  <li>
+                    <strong class="text-white">Nhà phát hành / Studio (<code class="code-inline">Publisher</code>):</strong> Đối tác sáng tạo được cấp quyền <code class="code-inline">role = 'publisher'</code> để đăng tải trò chơi mới, thiết lập giá bán/khuyến mãi, phát hành bản vá (<code class="code-inline">Patch</code>) và nội dung mở rộng (<code class="code-inline">DLC</code>), cũng như phản hồi đánh giá của người chơi thông qua Cổng Nhà phát hành (<a href="publisher.html" class="text-brand-light underline hover:text-white"><code class="code-inline">publisher.html</code></a>).
+                  </li>
+                  <li>
+                    <strong class="text-white">Quản trị viên (<code class="code-inline">Admin</code>):</strong> Đội ngũ vận hành thuộc <strong class="text-white">Nhóm 5Guys 26C01</strong> có thẩm quyền kiểm duyệt nội dung, điều phối đơn hàng, xét duyệt hoàn tiền và xử lý yêu cầu hỗ trợ kỹ thuật.
+                  </li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-id-badge text-brand-light"></i>
+                  1.3. Điều kiện về độ tuổi và năng lực hành vi dân sự
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    Người dùng khi đăng ký tài khoản <strong class="text-white">5GUYS ID</strong> và thực hiện giao dịch thanh toán phải từ <strong class="text-white">đủ 15 tuổi trở lên</strong> và có năng lực hành vi dân sự phù hợp theo quy định của Bộ luật Dân sự Việt Nam.
+                  </li>
+                  <li>
+                    Đối với người dùng từ đủ 15 tuổi đến dưới 18 tuổi hoặc người tiếp cận các tựa game có nhãn phân loại độ tuổi <strong class="text-white">18+ (Mature / PEGI 18)</strong> như <em>Elden Ring</em>, <em>Sekiro: Shadows Die Twice</em>, <em>Red Dead Redemption II</em>, việc đăng ký tài khoản và thanh toán phải có sự đồng ý, giám sát của cha, mẹ hoặc người giám hộ hợp pháp.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 2 -->
+          <section id="dieu-2" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-user-shield"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 02</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 2. QUYỀN VÀ NGHĨA VỤ CỦA NGƯỜI DÙNG (KHÁCH HÀNG &amp; NHÀ PHÁT HÀNH)</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                  2.1. Quyền của Người dùng
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Được truy cập, tìm kiếm, lọc sản phẩm theo nền tảng/thể loại và sử dụng miễn phí trợ lý phân tích phần cứng <strong class="text-white">PC2GAMES AI</strong> để kiểm tra khả năng tương thích cấu hình trước khi mua.</li>
+                  <li>Được cấp mã bản quyền <strong class="text-white">5GUYS DRM SAFE (<code class="code-inline">5GUYS-XXXX-XXXX-XXXX</code>)</strong> ngay lập tức vào Kho game (<code class="code-inline">library.html</code>) kèm quyền tải xuống các bản cập nhật (<code class="code-inline">Auto-Patcher</code>) và <code class="code-inline">DLC</code> đối với sản phẩm Kỹ thuật số đã thanh toán.</li>
+                  <li>Được nhận sản phẩm đĩa vật lý nguyên niêm phong (<strong class="text-white">Nguyên Seal — Brand New 100%</strong>) đúng định dạng đã đặt mua (Blu-ray PS5, thẻ Nintendo Switch, đĩa Xbox) theo địa chỉ giao hàng đã đăng ký.</li>
+                  <li>Được tích lũy điểm thưởng <strong class="text-white">Loyalty</strong> sau mỗi giao dịch thành công để nâng hạng thành viên (<strong class="text-white">Đồng <code class="code-inline">Bronze</code></strong>, <strong class="text-white">Bạc <code class="code-inline">Silver</code></strong>, <strong class="text-white">Vàng <code class="code-inline">Gold</code></strong>) và hưởng các đặc quyền ưu đãi tương ứng.</li>
+                  <li>Được gửi đánh giá (<code class="code-inline">Review</code>), bình chọn đánh giá hữu ích (<code class="code-inline">Helpful Vote</code>), gửi yêu cầu hỗ trợ kỹ thuật (<code class="code-inline">Support Ticket</code>) và gửi yêu cầu hoàn tiền (<code class="code-inline">Refund Request</code>) theo đúng quy trình tại Điều 5.</li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-mobile-screen-button text-brand-light"></i>
+                  2.2. Nghĩa vụ bảo mật tài khoản và xác thực hai yếu tố (2FA TOTP)
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Người dùng có nghĩa vụ cung cấp thông tin chính xác, trung thực khi đăng ký tài khoản và đặt hàng, bao gồm: Họ và tên, Địa chỉ Email hoạt động, Số điện thoại liên hệ và Địa chỉ giao nhận đĩa vật lý (Tỉnh/Thành phố, Quận/Huyện, Phường/Xã, Số nhà/Đường).</li>
+                  <li>Nhằm bảo vệ tài sản số trong Kho game và điểm thưởng, <strong class="text-white">5GUYS</strong> áp dụng bắt buộc cơ chế <strong class="text-white">Xác thực hai yếu tố theo thời gian thực (2FA TOTP — Google Authenticator)</strong> theo chuẩn RFC 6238 cho toàn bộ tài khoản người dùng.</li>
+                  <li>Người dùng có trách nhiệm tự bảo mật mật khẩu, khóa bí mật <strong class="text-white">Base32 Secret</strong>, mã QR khởi tạo 2FA và thiết bị di động cài đặt ứng dụng Google Authenticator. Mọi thao tác đặt hàng, tặng quà hoặc tải game được thực hiện sau khi vượt qua bước xác thực mã OTP 6 chữ số hợp lệ đều được mặc nhiên coi là ý chí hợp pháp của chính chủ tài khoản.</li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3 border-red-500/30">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-ban text-red-400"></i>
+                  2.3. Các hành vi bị nghiêm cấm tuyệt đối
+                </h3>
+                <p>
+                  Người dùng cam kết không thực hiện (hoặc tiếp tay cho bên thứ ba thực hiện) bất kỳ hành vi nào sau đây trên hệ thống <strong class="text-white">5GUYS</strong>:
+                </p>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li><strong class="text-white">Xâm phạm an ninh hệ thống:</strong> Thực hiện tấn công từ chối dịch vụ (<strong class="text-white">DDoS / DoS</strong>), gửi lưu lượng bất thường làm quá tải API, dò quét lỗ hổng bảo mật, can thiệp trái phép vào cơ sở dữ liệu MySQL, hoặc chèn mã độc hại (<strong class="text-white">SQL Injection, Cross-Site Scripting - XSS, CSRF</strong>) vào các biểu mẫu nhập liệu, bình luận và hồ sơ cá nhân.</li>
+                  <li><strong class="text-white">Trục lợi và gian lận thương mại:</strong> Khai thác lỗi hệ thống (<code class="code-inline">bug/exploit</code>) để nhân bản mã giảm giá (như mã <code class="code-inline">SELL10</code>), can thiệp trái phép vào tham số giá tiền ở phía trình duyệt (<code class="code-inline">Client-side tampering</code>), hoặc tạo đơn hàng ảo nhằm trục lợi điểm thưởng <strong class="text-white">Loyalty</strong>.</li>
+                  <li><strong class="text-white">Gian lận hoàn tiền (Refund Abuse):</strong> Yêu cầu hoàn tiền đối với các sản phẩm Kỹ thuật số sau khi đã trích xuất, sao chép hoặc phát tán mã khóa bản quyền <strong class="text-white">5GUYS DRM SAFE</strong> cho bên thứ ba, hoặc tráo đổi ruột đĩa vật lý trước khi yêu cầu trả hàng.</li>
+                  <li><strong class="text-white">Vi phạm quy chuẩn Cộng đồng Mod (<code class="code-inline">Mod Hub</code>):</strong> Đăng tải lên hệ thống <code class="code-inline">mods.html</code> các tệp tin chứa virus, trojan, phần mềm gián điệp (spyware), công cụ gian lận trong chế độ chơi mạng (cheat/aimbot/wallhack), hoặc các bản Mod có nội dung đồi trụy, xuyên tạc lịch sử, vi phạm thuần phong mỹ tục và pháp luật Việt Nam.</li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-code-branch text-brand-light"></i>
+                  2.4. Nghĩa vụ riêng đối với Nhà phát hành / Studio (<code class="code-inline">Publisher</code>)
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Khi đăng tải trò chơi mới (<code class="code-inline">POST /api/publisher/products</code>) hoặc phát hành bản vá/DLC (<code class="code-inline">POST /api/publisher/products/:id/patches</code>), tài khoản <strong class="text-white">Nhà phát hành (<code class="code-inline">Publisher</code>)</strong> cam kết và chịu hoàn toàn trách nhiệm trước pháp luật rằng mình là chủ sở hữu hợp pháp hoặc đại diện được ủy quyền hợp lệ đối với toàn bộ mã nguồn, hình ảnh bìa (<code class="code-inline">cover_url</code>), nội dung trò chơi và nhãn hiệu liên quan.</li>
+                  <li>Nhà phát hành cam kết cung cấp trung thực thông số kỹ thuật tối thiểu (<code class="code-inline">min_requirements</code>) đối với bản số và quy cách đóng gói (<code class="code-inline">physical_specs</code>), số lượng tồn kho thực tế (<code class="code-inline">stock</code>) đối với bản đĩa vật lý.</li>
+                  <li>Nhà phát hành không được tự ý thay đổi giá bán theo hướng gian lận thương mại (nâng khống giá gốc <code class="code-inline">original_price</code> để tạo tỷ lệ giảm giá <code class="code-inline">discount_percent</code> ảo) và phải duy trì thái độ văn minh, chuyên nghiệp khi phản hồi đánh giá của khách hàng (<code class="code-inline">publisher_reply</code>).</li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 3 -->
+          <section id="dieu-3" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-gavel"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 03</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 3. QUYỀN VÀ TRÁCH NHIỆM CỦA WEBSITE 5GUYS</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-shield-halved text-brand-light"></i>
+                  3.1. Quyền của Ban Quản trị 5GUYS
+                </h3>
+                <ol class="list-decimal pl-5 space-y-3">
+                  <li>
+                    <strong class="text-white">Quyền kiểm duyệt sản phẩm và nội dung:</strong>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Mọi tựa game do Nhà phát hành đăng tải mới đều được khởi tạo ở trạng thái <strong class="text-white">Chờ duyệt (<code class="code-inline">status = 'draft'</code>)</strong>. Quản trị viên (<code class="code-inline">Admin</code>) có toàn quyền kiểm tra bản quyền, chất lượng nội dung và quyết định <strong class="text-white">Phê duyệt lên kệ (<code class="code-inline">status = 'active'</code>)</strong> hoặc <strong class="text-white">Từ chối (<code class="code-inline">status = 'inactive'</code>)</strong> kèm theo lý do từ chối cụ thể (<code class="code-inline">rejection_reason</code>).</li>
+                      <li>Ban Quản trị có quyền ẩn (<code class="code-inline">status = 'hidden'</code>) hoặc gỡ bỏ vĩnh viễn bất kỳ bản Mod nào trên <code class="code-inline">Mod Hub</code> hoặc đánh giá (<code class="code-inline">Review</code>) nào vi phạm quy chuẩn cộng đồng mà không cần báo trước.</li>
+                    </ul>
+                  </li>
+                  <li>
+                    <strong class="text-white">Quyền chế tài và quản lý tài khoản:</strong>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Tạm khóa (<code class="code-inline">status = 'locked'</code>) hoặc chấm dứt vĩnh viễn quyền truy cập đối với các tài khoản phát hiện có hành vi gian lận thanh toán, lạm dụng hoàn tiền, tấn công hệ thống hoặc vi phạm Điều 2.3 của văn bản này.</li>
+                      <li>Thu hồi mã bản quyền (<code class="code-inline">status = 'revoked'</code>) trong Kho game và khấu trừ số điểm Loyalty tương ứng đối với các giao dịch bị xác định là gian lận hoặc đã được chấp thuận hoàn tiền.</li>
+                    </ul>
+                  </li>
+                  <li>
+                    <strong class="text-white">Quyền bảo trì và sửa đổi dịch vụ:</strong>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Thực hiện bảo trì định kỳ hoặc đột xuất đối với máy chủ Backend Node.js và cơ sở dữ liệu MySQL để nâng cấp tính năng và vá lỗi bảo mật.</li>
+                      <li>Sửa đổi, bổ sung nội dung <strong class="text-white">Điều khoản Dịch vụ</strong> để phù hợp với quy định pháp luật mới hoặc sự thay đổi trong mô hình vận hành của <strong class="text-white">5GUYS</strong>. Phiên bản cập nhật sẽ được công bố công khai trên website kèm ngày hiệu lực mới.</li>
+                    </ul>
+                  </li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-clipboard-check text-emerald-400"></i>
+                  3.2. Trách nhiệm của Ban Quản trị 5GUYS
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Đảm bảo hệ thống vận hành ổn định, công khai và minh bạch đầy đủ thông tin sản phẩm (tên nhà phát triển, nhà phát hành, giá niêm yết, hình thức phân phối Kỹ thuật số / Vật lý, cấu hình yêu cầu và tình trạng tồn kho).</li>
+                  <li>Bảo vệ an toàn thông tin cá nhân và lịch sử giao dịch của người dùng theo đúng cam kết tại <strong class="text-white">Chính sách Bảo mật 5GUYS Vault</strong> (áp dụng mã hóa mật khẩu <code class="code-inline">bcryptjs</code>, xác thực <code class="code-inline">JWT</code>, kiểm soát đầu vào bằng <code class="code-inline">Zod</code> và tuyệt đối không lưu trữ số thẻ tín dụng hay mã CVV/CVC).</li>
+                  <li>Tiếp nhận và phản hồi kịp thời các yêu cầu hỗ trợ kỹ thuật (<code class="code-inline">Support Tickets</code>) và yêu cầu hoàn tiền của người dùng một cách khách quan, minh bạch.</li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 4 -->
+          <section id="dieu-4" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-copyright"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 04</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 4. QUYỀN SỞ HỮU TRÍ TUỆ (INTELLECTUAL PROPERTY)</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-2.5">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-laptop-code text-brand-light"></i>
+                  4.1. Bản quyền thuộc về nền tảng 5GUYS
+                </h3>
+                <p>
+                  Toàn bộ kiến trúc hệ thống, mã nguồn Frontend và Backend, cấu trúc cơ sở dữ liệu (<code class="code-inline">schema.sql</code>, <code class="code-inline">update_v2.sql</code>), thiết kế giao diện đồ họa phong cách Cyberpunk tím/đen (<code class="code-inline">#12091c</code>, <code class="code-inline">#2a1645</code>, <code class="code-inline">#9d4edd</code>, <code class="code-inline">#c77dff</code>), biểu trưng (<strong class="text-white">Logo 5GUYS</strong>), hệ thống cấp mã <strong class="text-white">5GUYS DRM SAFE</strong>, thuật toán ước tính hiệu năng <strong class="text-white">PC2GAMES AI</strong>, cũng như các trò chơi giải trí tích hợp trên nền tảng đều thuộc quyền sở hữu trí tuệ hợp pháp của <strong class="text-white">Nhóm 5Guys (Lớp 26C01 - Khoa CNTT - Trường ĐH Khoa học Tự nhiên, ĐHQG TP.HCM)</strong>. Nghiêm cấm mọi hành vi sao chép, dịch ngược mã nguồn hoặc sử dụng cho mục đích thương mại khi chưa có văn bản đồng ý của Nhóm phát triển.
+                </p>
+              </div>
+
+              <div class="card-container p-5 space-y-2.5">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-gamepad text-brand-light"></i>
+                  4.2. Bản quyền của các Nhà phát hành và Studio đối tác
+                </h3>
+                <p>
+                  Tên gọi thương mại, cốt truyện, nhân vật, âm nhạc, đoạn phim giới thiệu (<code class="code-inline">Trailer</code>), hình ảnh chụp màn hình (<code class="code-inline">Screenshots</code>) và mã thực thi của các tựa game được phân phối trên hệ thống (bao gồm nhưng không giới hạn ở các tác phẩm của <em>Team Cherry</em>, <em>FromSoftware</em>, <em>Game Science</em>, <em>Rockstar Games</em> và các Nhà phát hành tham gia Cổng Publisher) là tài sản trí tuệ độc quyền của các Studio và Nhà phát hành tương ứng. Khi mua game trên <strong class="text-white">5GUYS</strong>, Khách hàng được cấp <strong class="text-white">quyền sử dụng có giới hạn dành cho cá nhân (Personal Non-Exclusive License)</strong> để cài đặt và trải nghiệm trò chơi, không phải là sự chuyển giao quyền sở hữu bản quyền gốc của tác phẩm.
+                </p>
+              </div>
+
+              <div class="card-container p-5 space-y-2.5">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-puzzle-piece text-brand-light"></i>
+                  4.3. Bản quyền đối với nội dung do người dùng đóng góp (Bản Mod &amp; Đánh giá)
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2">
+                  <li>Người dùng giữ quyền tác giả đối với các bản Mod do chính mình tự phát triển và đăng tải lên <strong class="text-white">Cộng đồng Mod (<code class="code-inline">mods.html</code>)</strong>.</li>
+                  <li>Bằng việc nhấn nút <strong class="text-white">"+ Đăng tải Bản Mod"</strong>, tác giả đồng ý cấp cho <strong class="text-white">5GUYS</strong> và cộng đồng người chơi sở hữu bản game Kỹ thuật số hợp lệ một giấy phép miễn phí, không độc quyền và phi thương mại để lưu trữ, hiển thị, tải xuống (<code class="code-inline">POST /api/mods/:id/download</code>) và sử dụng bản Mod đó nhằm mục đích nâng cao trải nghiệm trò chơi.</li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 5 -->
+          <section id="dieu-5" class="policy-section card p-6 sm:p-8 border-emerald-500/35">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 grid place-items-center text-emerald-400 flex-shrink-0">
+                <i class="fa-solid fa-money-bill-wave"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Điều khoản 05</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 5. QUY ĐỊNH GIAO DỊCH, GIÁ CẢ, VẬN CHUYỂN VÀ HOÀN TIỀN</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-receipt text-brand-light"></i>
+                  5.1. Giá cả, Thuế và Phương thức Thanh toán
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li><strong class="text-white">Đồng tiền niêm yết:</strong> Toàn bộ giá sản phẩm và phí dịch vụ trên <strong class="text-white">5GUYS</strong> được niêm yết và thanh toán bằng <strong class="text-white">Việt Nam Đồng (VNĐ)</strong>.</li>
+                  <li>
+                    <strong class="text-white">Cấu thành chi phí đơn hàng:</strong> Trước khi người dùng xác nhận thanh toán tại <code class="code-inline">cart.html</code>, hệ thống hiển thị minh bạch bảng kê chi tiết bao gồm:
+                    <ul class="list-disc pl-5 mt-2 space-y-1.5">
+                      <li><strong class="text-white">Tạm tính (<code class="code-inline">subtotal</code>):</strong> Tổng giá bán của các sản phẩm theo phiên bản đã chọn (<code class="code-inline">Standard</code>, <code class="code-inline">Deluxe</code>, <code class="code-inline">Collector Edition</code>).</li>
+                      <li><strong class="text-white">Giảm giá (<code class="code-inline">discount</code>):</strong> Khoản khấu trừ khi áp dụng mã khuyến mãi hợp lệ (ví dụ: mã <code class="code-inline">SELL10</code> giảm 10% giá trị sản phẩm).</li>
+                      <li><strong class="text-white">Thuế Giá trị gia tăng (<code class="code-inline">tax</code>):</strong> Thuế VAT <strong class="text-white">10%</strong> tính trên giá trị sau giảm giá.</li>
+                      <li><strong class="text-white">Phí vận chuyển (<code class="code-inline">shipping_fee</code>):</strong> Chỉ áp dụng khi trong giỏ hàng có ít nhất một (01) sản phẩm thuộc loại <strong class="text-white">Vật lý (<code class="code-inline">Physical</code>)</strong>. Nếu đơn hàng chỉ bao gồm sản phẩm <strong class="text-white">Kỹ thuật số (<code class="code-inline">Digital</code>)</strong>, phí vận chuyển bằng <strong class="text-white">0đ</strong> và hệ thống tự động ẩn biểu mẫu địa chỉ giao nhận.</li>
+                      <li><strong class="text-white">Phí dịch vụ kênh thanh toán:</strong> Áp dụng theo biểu phí hiển thị trực tiếp cho từng phương thức thanh toán (<strong class="text-white">Thẻ tín dụng/ghi nợ Visa/Mastercard</strong>, <strong class="text-white">Ví điện tử MoMo</strong>, <strong class="text-white">ZaloPay</strong>, hoặc <strong class="text-white">Chuyển khoản Ngân hàng VietQR</strong>).</li>
+                    </ul>
+                  </li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-truck-fast text-blue-300"></i>
+                  5.2. Chính sách Giao nhận Sản phẩm và Cấp Bản quyền
+                </h3>
+                <p>
+                  Ngay sau khi giao dịch được xác nhận thanh toán thành công (<code class="code-inline">POST /api/orders/:id/pay</code>), hệ thống xử lý tự động trong một giao dịch cơ sở dữ liệu nguyên tử (<code class="code-inline">ACID Transaction</code>) như sau:
+                </p>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li><strong class="text-white">Đối với Game Kỹ thuật số (<code class="code-inline">Digital</code>):</strong> Hệ thống tự động cấp quyền sở hữu (<code class="code-inline">status = 'active'</code>) vào bảng <code class="code-inline">game_library</code> của người mua (hoặc người nhận quà), sinh mã bản quyền <strong class="text-white">5GUYS DRM SAFE</strong> kèm phiên bản mặc định <code class="code-inline">v1.0.0</code> và mở khóa tính năng tự động cập nhật bản vá (<code class="code-inline">Auto-Patcher</code>).</li>
+                  <li><strong class="text-white">Đối với Game Vật lý / Băng đĩa (<code class="code-inline">Physical</code>):</strong> Hệ thống tự động khấu trừ số lượng đĩa thực tế trong kho (<code class="code-inline">physical_inventory</code>), đóng băng (<code class="code-inline">snapshot</code>) địa chỉ giao nhận vào đơn hàng và chuyển đơn hàng sang quy trình điều phối vận chuyển của Admin (<code class="code-inline">Chờ lấy hàng</code> → <code class="code-inline">Đang giao</code> → <code class="code-inline">Đã giao</code>).</li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-gift text-brand-light"></i>
+                  5.3. Quy định về Hệ thống Tặng quà (<code class="code-inline">Gifting System</code>)
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Người mua có thể tích chọn <strong class="text-white">"Mua đơn hàng này làm quà tặng cho bạn bè"</strong> tại Giỏ hàng và nhập địa chỉ Email tài khoản <strong class="text-white">5GUYS</strong> của người nhận kèm lời nhắn (<code class="code-inline">gift_message</code>).</li>
+                  <li>
+                    <strong class="text-white">Điều kiện hợp lệ của giao dịch tặng quà:</strong>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Email người nhận phải thuộc một tài khoản <strong class="text-white">5GUYS</strong> đang hoạt động (<code class="code-inline">status = 'active'</code>) và <strong class="text-white">không được trùng</strong> với Email của chính người mua.</li>
+                      <li>Người nhận <strong class="text-white">chưa sở hữu</strong> tựa game Kỹ thuật số đó trong Kho game (<code class="code-inline">game_library</code>). Nếu người nhận đã sở hữu, hệ thống sẽ tự động chặn giao dịch (<code class="code-inline">409 Conflict — recipient_already_owns</code>) để bảo vệ quyền lợi tài chính của người mua.</li>
+                    </ul>
+                  </li>
+                  <li>Khi thanh toán hoàn tất, bản quyền trò chơi Kỹ thuật số được chuyển thẳng vào Kho game của người nhận, trong khi <strong class="text-white">Điểm thưởng Loyalty</strong> của giao dịch vẫn được cộng cho tài khoản của người thanh toán.</li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-rotate-left text-brand-light"></i>
+                  5.4. Chính sách Hoàn tiền và Thu hồi Bản quyền (<code class="code-inline">Refund &amp; Revocation Policy</code>)
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>Khách hàng có quyền gửi yêu cầu hoàn tiền (<code class="code-inline">POST /api/orders/:id/refund-request</code>) kèm lý do cụ thể đối với các đơn hàng ở trạng thái đủ điều kiện (<code class="code-inline">paid</code>, <code class="code-inline">processing</code>, <code class="code-inline">fulfilled</code>). Mỗi đơn hàng chỉ được phép tồn tại một yêu cầu hoàn tiền đang xử lý hoặc đã duyệt.</li>
+                  <li>
+                    Khi Quản trị viên (<code class="code-inline">Admin</code>) phê duyệt yêu cầu hoàn tiền (<code class="code-inline">action = 'approve'</code>), hệ thống sẽ tự động thực thi đồng bộ bốn (04) nghiệp vụ kỹ thuật sau:
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Chuyển trạng thái đơn hàng sang <strong class="text-white">Đã hoàn tiền (<code class="code-inline">status = 'refunded'</code>)</strong>.</li>
+                      <li><strong class="text-white">Thu hồi bản quyền số:</strong> Chuyển trạng thái các tựa game Kỹ thuật số thuộc đơn hàng đó trong <code class="code-inline">game_library</code> sang <strong class="text-white">Đã thu hồi (<code class="code-inline">status = 'revoked'</code>)</strong>, vô hiệu hóa mã Key DRM và quyền tải bản vá.</li>
+                      <li><strong class="text-white">Hoàn nhập kho vật lý:</strong> Cộng trả lại số lượng đĩa vào bảng <code class="code-inline">physical_inventory</code> đối với các sản phẩm Vật lý chưa xuất kho giao thành công.</li>
+                      <li><strong class="text-white">Khấu trừ điểm thưởng (<code class="code-inline">Loyalty Clawback</code>):</strong> Tự động tính toán và trừ lại số điểm Loyalty đã cộng trước đó từ đơn hàng hoàn tiền (đảm bảo số dư điểm không âm) và cập nhật lại hạng thành viên (<code class="code-inline">Bronze</code> / <code class="code-inline">Silver</code> / <code class="code-inline">Gold</code>).</li>
+                    </ul>
+                  </li>
+                </ol>
+              </div>
+
+              <!-- 5.5 BANG TOM TAT -->
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-white mb-3 flex items-center gap-2">
+                  <i class="fa-solid fa-table text-brand-light"></i>
+                  5.5. Bảng Tóm tắt Quy định Giao nhận, Vận chuyển và Hoàn tiền
+                </h3>
+                <div class="overflow-x-auto rounded-xl border border-dark-border bg-[#1f1032]">
+                  <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-dark-bg text-brand-light uppercase text-[11px] tracking-wider border-b border-dark-border">
+                      <tr>
+                        <th class="px-4 py-3 font-bold">Tiêu chí</th>
+                        <th class="px-4 py-3 font-bold">Sản phẩm Kỹ thuật số (Digital)</th>
+                        <th class="px-4 py-3 font-bold">Sản phẩm Vật lý / Băng đĩa (Physical)</th>
+                        <th class="px-4 py-3 font-bold">Đơn hàng Quà tặng (Gifting)</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-dark-border/70">
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Hình thức bàn giao</td>
+                        <td class="px-4 py-3 align-top">Cấp ngay vào Kho game (<code class="code-inline">game_library</code>) + Mã Key <code class="code-inline">5GUYS-XXXX</code></td>
+                        <td class="px-4 py-3 align-top">Giao hộp đĩa nguyên Seal qua đơn vị vận chuyển</td>
+                        <td class="px-4 py-3 align-top">Chuyển thẳng vào Kho game của Email người nhận</td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Phí vận chuyển</td>
+                        <td class="px-4 py-3 align-top"><strong class="text-white">0 VNĐ</strong> (Miễn phí hoàn toàn)</td>
+                        <td class="px-4 py-3 align-top"><strong class="text-white">30.000 VNĐ</strong> (Tiêu chuẩn 2–3 ngày) hoặc <strong class="text-white">60.000 VNĐ</strong> (Hỏa tốc nội thành)</td>
+                        <td class="px-4 py-3 align-top"><strong class="text-white">0 VNĐ</strong> đối với bản số; tính theo biểu phí đĩa nếu kèm bản vật lý</td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Thời gian nhận hàng</td>
+                        <td class="px-4 py-3 align-top">Tức thì (dưới 5 giây sau khi thanh toán)</td>
+                        <td class="px-4 py-3 align-top">Nội thành: 2–24 giờ (Hỏa tốc) / Toàn quốc: 2–3 ngày làm việc</td>
+                        <td class="px-4 py-3 align-top">Tức thì vào tài khoản <code class="code-inline">recipient_user_id</code></td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Cập nhật Patch &amp; DLC</td>
+                        <td class="px-4 py-3 align-top">Hỗ trợ tự động qua <strong class="text-white">Auto-Patcher</strong> trên <code class="code-inline">library.html</code></td>
+                        <td class="px-4 py-3 align-top">Cập nhật trực tiếp qua hệ thống máy console (PS5/Switch/Xbox)</td>
+                        <td class="px-4 py-3 align-top">Người nhận được hưởng đầy đủ quyền cập nhật <strong class="text-white">Auto-Patcher</strong></td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Điều kiện Hoàn tiền</td>
+                        <td class="px-4 py-3 align-top">Gửi yêu cầu hợp lệ và được Admin phê duyệt; chưa vi phạm chính sách lạm dụng Key</td>
+                        <td class="px-4 py-3 align-top">Đĩa còn nguyên Seal (chưa bóc vỏ nhựa) hoặc đơn hàng chưa chuyển sang trạng thái Đã giao</td>
+                        <td class="px-4 py-3 align-top"><strong class="text-white">Không áp dụng hoàn tiền</strong> sau khi bản quyền đã được chuyển giao vào Kho của người nhận</td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">Hệ quả sau Hoàn tiền</td>
+                        <td class="px-4 py-3 align-top">Khóa quyền truy cập game (<code class="code-inline">revoked</code>) + Trừ lại điểm Loyalty đã tích</td>
+                        <td class="px-4 py-3 align-top">Hoàn trả số lượng tồn kho (<code class="code-inline">physical_inventory</code>) + Trừ lại điểm Loyalty</td>
+                        <td class="px-4 py-3 align-top">Không áp dụng (trừ trường hợp lỗi kỹ thuật hệ thống không cấp được game)</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 6 -->
+          <section id="dieu-6" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-5">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-circle-exclamation"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 06</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 6. MIỄN TRỪ TRÁCH NHIỆM VÀ GIẢI QUYẾT TRANH CHẤP</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-triangle-exclamation text-amber-300"></i>
+                  6.1. Giới hạn và Miễn trừ trách nhiệm
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    <strong class="text-white">Tính chất tham khảo của công cụ tư vấn cấu hình <code class="code-inline">PC2GAMES AI</code>:</strong> Các thông số ước tính tốc độ khung hình (<code class="code-inline">FPS Estimate</code>), mức thiết lập đồ họa khuyến nghị và điểm tương thích phần cứng do trợ lý <strong class="text-white">PC2GAMES AI</strong> đưa ra được tính toán dựa trên dữ liệu tiêu chuẩn và thông tin cấu hình do người dùng nhập vào. <strong class="text-white">5GUYS</strong> không cam kết mức FPS thực tế trên máy tính của người dùng luôn trùng khớp tuyệt đối do sự khác biệt về trình điều khiển (<code class="code-inline">Driver</code>), nhiệt độ phần cứng và các tiến trình chạy ngầm trên hệ điều hành của người dùng.
+                  </li>
+                  <li>
+                    <strong class="text-white">Sự cố từ hạ tầng bên thứ ba và Bất khả kháng: 5GUYS</strong> được miễn trừ trách nhiệm bồi thường thiệt hại gián tiếp phát sinh từ các sự kiện bất khả kháng nằm ngoài tầm kiểm soát hợp lý, bao gồm: thiên tai, đứt cáp quang biển, sự cố mất điện diện rộng, hoặc sự gián đoạn tạm thời của các dịch vụ tích hợp bên thứ ba (như máy chủ phân phối ảnh bìa/trailer của Steam CDN, dịch vụ bản đồ địa giới hành chính <code class="code-inline">provinces.open-api.vn</code>, hoặc dịch vụ mô hình ngôn ngữ Google Gemini API).
+                  </li>
+                  <li>
+                    <strong class="text-white">Lỗi phát sinh từ phía người dùng: 5GUYS</strong> không chịu trách nhiệm đối với các thiệt hại phát sinh do người dùng tự ý chia sẻ mật khẩu, làm lộ mã khóa <strong class="text-white">5GUYS DRM SAFE</strong>, làm mất thiết bị di động chứa ứng dụng <strong class="text-white">Google Authenticator</strong> mà không thông báo kịp thời cho bộ phận Hỗ trợ, hoặc cố tình cài đặt cấu hình phần cứng không đạt mức tối thiểu (<code class="code-inline">min_requirements</code>) đã được cảnh báo công khai trên trang chi tiết sản phẩm.
+                  </li>
+                </ol>
+              </div>
+
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-scale-balanced text-brand-light"></i>
+                  6.2. Luật áp dụng và Cơ chế giải quyết tranh chấp
+                </h3>
+                <ol class="list-decimal pl-5 space-y-2.5">
+                  <li>
+                    <strong class="text-white">Luật áp dụng:</strong> Toàn bộ <strong class="text-white">Điều khoản Dịch vụ</strong> này và mọi giao dịch phát sinh trên nền tảng <strong class="text-white">5GUYS</strong> được điều chỉnh và giải thích theo pháp luật của <strong class="text-white">nước Cộng hòa Xã hội Chủ nghĩa Việt Nam</strong>.
+                  </li>
+                  <li>
+                    <strong class="text-white">Quy trình thương lượng và giải quyết khiếu nại nội bộ:</strong>
+                    <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                      <li>Khi phát sinh bất kỳ thắc mắc, khiếu nại hoặc tranh chấp nào liên quan đến đơn hàng, mã bản quyền hoặc chất lượng đĩa vật lý, Người dùng ưu tiên gửi yêu cầu qua <strong class="text-white">Trung tâm Hỗ trợ Khách hàng (<a href="support.html" class="text-brand-light underline hover:text-white"><code class="code-inline">support.html</code></a> — Hệ thống Support Tickets)</strong> hoặc liên hệ trực tiếp với Ban Quản trị.</li>
+                      <li>Bộ phận Quản trị viên (<code class="code-inline">Admin</code>) của <strong class="text-white">5GUYS</strong> có trách nhiệm tiếp nhận, xác minh nhật ký giao dịch trên hệ thống và phản hồi phương án giải quyết trực tiếp trên Ticket trong vòng <strong class="text-white">24 đến 72 giờ làm việc</strong>.</li>
+                    </ul>
+                  </li>
+                  <li>
+                    <strong class="text-white">Cơ quan giải quyết tranh chấp:</strong> Trong trường hợp các bên không thể đạt được thỏa thuận thông qua thương lượng trên tinh thần thiện chí trong vòng ba mươi (30) ngày kể từ ngày phát sinh khiếu nại, vụ việc sẽ được đưa ra giải quyết tại cơ quan bảo vệ quyền lợi người tiêu dùng hoặc Tòa án nhân dân có thẩm quyền tại <strong class="text-white">Thành phố Hồ Chí Minh, Việt Nam</strong> theo quy định của pháp luật.
+                  </li>
+                </ol>
+              </div>
+            </div>
+          </section>
+
+          <!-- THONG TIN LIEN HE BAN QUAN TRI -->
+          <section class="card p-6 sm:p-8 border-brand/40">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-address-book"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Liên hệ Pháp lý</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">THÔNG TIN LIÊN HỆ BAN QUẢN TRỊ NỀN TẢNG 5GUYS</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Mọi câu hỏi liên quan đến Điều khoản Dịch vụ, bản quyền xuất bản game hoặc hỗ trợ giao dịch, xin vui lòng liên hệ:
+              </p>
+              <div class="card-container p-5 border-brand/40 space-y-2.5 text-xs sm:text-sm">
+                <p><i class="fa-solid fa-users text-brand-light mr-2"></i><strong class="text-white">Đơn vị vận hành:</strong> Nhóm 5Guys — Lớp 26C01, Khoa Công nghệ Thông tin</p>
+                <p><i class="fa-solid fa-graduation-cap text-brand-light mr-2"></i><strong class="text-white">Trường:</strong> Trường Đại học Khoa học Tự nhiên, Đại học Quốc gia TP.HCM (HCMUS)</p>
+                <p><i class="fa-solid fa-location-dot text-brand-light mr-2"></i><strong class="text-white">Địa chỉ:</strong> 227 Nguyễn Văn Cừ, Phường 4, Quận 5, Thành phố Hồ Chí Minh</p>
+                <p><i class="fa-solid fa-ticket text-brand-light mr-2"></i><strong class="text-white">Kênh hỗ trợ trực tuyến:</strong> Mục <strong class="text-white">Hỗ trợ &amp; Gửi Ticket (<a href="support.html" class="text-brand-light underline hover:text-white"><code class="code-inline">support.html</code></a>)</strong> trên website <strong class="text-white">5GUYS</strong></p>
+                <p><i class="fa-solid fa-envelope text-brand-light mr-2"></i><strong class="text-white">Email quản trị hệ thống:</strong> <code class="code-inline">support@5guys.vn</code> / <code class="code-inline">admin@5guys.com</code></p>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/layout.js" data-part="footer"></script>
+  <script>
+    (function () {
+      var links = Array.prototype.slice.call(document.querySelectorAll('#terms-toc a[data-target]'));
+      var sections = links
+        .map(function (a) { return document.getElementById(a.getAttribute('data-target')); })
+        .filter(Boolean);
+      if (!links.length || !sections.length) return;
+
+      function setActive(id) {
+        links.forEach(function (a) {
+          a.classList.toggle('is-active', a.getAttribute('data-target') === id);
+        });
+      }
+
+      links.forEach(function (a) {
+        a.addEventListener('click', function () {
+          setActive(a.getAttribute('data-target'));
+        });
+      });
+
+      if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) setActive(entry.target.id);
+          });
+        }, { rootMargin: '-18% 0px -65% 0px', threshold: 0.01 });
+        sections.forEach(function (sec) { obs.observe(sec); });
+      }
+    })();
+  </script>
+</body>
+</html>

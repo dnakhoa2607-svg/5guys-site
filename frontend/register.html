@@ -660,7 +660,11 @@
 <span id="strength-hint">Chuẩn mã hóa AES-256</span>
 </div>
 </div>
-<p style="font-size:12px;color:#a8b2d1;text-align:center;margin:10px 0 4px 0;">Bằng việc thiết lập tài khoản, bạn đồng ý với <a href="privacy.html" target="_blank" style="color:#c77dff;font-weight:700;text-decoration:underline;">Chính sách bảo mật</a> của 5GUYS.</p>
+<label for="agree-terms" style="display:flex;align-items:flex-start;gap:10px;margin:14px 0 6px 0;cursor:pointer;font-size:12.5px;color:#d8b4e2;line-height:1.5;user-select:none;">
+  <input type="checkbox" id="agree-terms" required style="margin-top:3px;width:16px;height:16px;accent-color:#9d4edd;cursor:pointer;flex-shrink:0;">
+  <span>Tôi đã đọc và đồng ý tuân thủ <a href="terms.html" target="_blank" style="color:#c77dff;font-weight:700;text-decoration:underline;">Điều khoản dịch vụ</a> và <a href="privacy.html" target="_blank" style="color:#c77dff;font-weight:700;text-decoration:underline;">Chính sách bảo mật</a> của 5GUYS.</span>
+</label>
+<p id="terms-error-msg" style="display:none;color:#f87171;font-size:12px;margin:0 0 8px 0;font-weight:600;">Vui lòng đánh dấu đồng ý với Điều khoản dịch vụ và Chính sách bảo mật trước khi tạo tài khoản.</p>
 <button class="btn-submit" type="submit">
 <i class="fa-solid fa-fingerprint"></i> THIẾT LẬP TÀI KHOẢN
                 </button>
@@ -721,6 +725,13 @@
   const modalFormContent = document.getElementById('modal-form-content');
   const modalSuccessContent = document.getElementById('modal-success-content');
   const otpErrorMsg = document.getElementById('otp-error-msg');
+  const agreeTermsBox = document.getElementById('agree-terms');
+  const termsErrorMsg = document.getElementById('terms-error-msg');
+  if (agreeTermsBox) {
+    agreeTermsBox.addEventListener('change', function () {
+      if (agreeTermsBox.checked && termsErrorMsg) termsErrorMsg.style.display = 'none';
+    });
+  }
   let countdownTimer = null;
   let pendingReg = null;   // { displayName, email, password, secret, totp }
   let verifying = false;
@@ -733,6 +744,14 @@
 
   async function handleRegister(e) {
     e.preventDefault();
+    const agreeBox = document.getElementById('agree-terms');
+    const termsErr = document.getElementById('terms-error-msg');
+    if (agreeBox && !agreeBox.checked) {
+      if (termsErr) termsErr.style.display = 'block';
+      agreeBox.focus();
+      return;
+    }
+    if (termsErr) termsErr.style.display = 'none';
     if (typeof OTPAuth === 'undefined' || typeof QRCode === 'undefined') {
       alert('Không tải được thư viện Google Authenticator. Hãy kiểm tra kết nối mạng rồi tải lại trang.');
       return;

@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
@@ -8,10 +10,13 @@ import { errorHandler, notFound } from './middleware/errors.js';
 
 const app=express();
 app.disable('x-powered-by');
-app.use(helmet());
+app.set('trust proxy',1);
+app.use(helmet({contentSecurityPolicy:false,crossOriginEmbedderPolicy:false,crossOriginResourcePolicy:{policy:'cross-origin'}}));
 app.use(cors({origin:env.FRONTEND_ORIGIN.split(',').map(x=>x.trim()),methods:['GET','POST','PUT','DELETE'],allowedHeaders:['Content-Type','Authorization']}));
 app.use(express.json({limit:'32kb'}));
 app.use('/api/auth',rateLimit({windowMs:15*60*1000,limit:30,standardHeaders:true,legacyHeaders:false}));
 app.use('/api',api);
+const frontendDir=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'../../frontend');
+app.use(express.static(frontendDir));
 app.use(notFound);app.use(errorHandler);
 export default app;

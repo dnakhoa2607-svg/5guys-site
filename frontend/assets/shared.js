@@ -6,7 +6,7 @@
 (function () {
   var K = { user: '5guys_user', cartPrefix: '5guys_cart_', ordersPrefix: '5guys_orders_', walletPrefix: '5guys_wallet_', redeemedPrefix: '5guys_redeemed_codes_', pointsPrefix: '5guys_points_', pointHistoryPrefix: '5guys_point_history_' };
   var RATE = 25000; // 1 USD (đơn vị giá nội bộ) = 25.000đ, khớp với trang giỏ hàng
-  var API_BASE = window.G5_API_BASE || 'http://localhost:3000/api';
+  var API_BASE = window.G5_API_BASE || ((/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port !== '3000') ? 'http://localhost:3000/api' : '/api');
   var apiToken = localStorage.getItem('5guys_api_token');
   var apiMode = !!apiToken;
   function api(path, options) {

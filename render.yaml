@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: 5guys-site
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - {key: NODE_ENV, value: production}
+      - {key: DB_SSL, value: "true"}
+      - {key: DB_HOST, sync: false}
+      - {key: DB_PORT, value: "4000"}
+      - {key: DB_NAME, sync: false}
+      - {key: DB_USER, sync: false}
+      - {key: DB_PASSWORD, sync: false}
+      - {key: JWT_SECRET, generateValue: true}
+      - {key: FRONTEND_ORIGIN, value: "http://localhost:5500"}

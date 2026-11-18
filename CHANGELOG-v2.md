@@ -1,5 +1,14 @@
 # Thay đổi bản v2
 
+## Trang Chính sách Bảo mật & Tích hợp Liên kết (`frontend/privacy.html`, `frontend/assets/layout.js`, `frontend/register.html`, `frontend/cart.html`)
+- **Tạo mới `frontend/privacy.html`:**
+  - Chuyển đổi đầy đủ 100% nội dung từ văn bản *Chính sách Bảo mật & An toàn Dữ liệu (v2.0)* của 5GUYS Vault gồm phần Mở đầu pháp lý, Bản tóm tắt Cam kết cốt lõi (03 thẻ tóm tắt) và trọn vẹn **Điều 1 đến Điều 7** (kèm bảng phân loại dữ liệu MySQL, bảng khóa `localStorage`/`sessionStorage`, các tiểu mục a–d, công thức Bcrypt & TOTP RFC 6238, và thông tin Ban Quản trị Nhóm 5Guys 26C01 - FIT HCMUS).
+  - Đồng bộ hoàn toàn giao diện Cyberpunk (`#12091c`, `#2a1645`, `#1f1032`, `#9d4edd`, `#c77dff`), nhúng `assets/shared.css`, `assets/tailwind-config.js`, `assets/shared.js`, `assets/layout.js` (`nav` + `footer`), và bố cục 2 cột (Sticky Sidebar Mục lục 3/12 cột với `scroll-behavior: smooth` + Main Content 9/12 cột).
+- **Cập nhật liên kết trên 3 file hiện có:**
+  - `frontend/assets/layout.js`: Đổi đường dẫn mục `Chính sách bảo mật` trong `L.footer` từ `href="support.html"` sang `href="privacy.html"`.
+  - `frontend/register.html`: Thêm dòng chú thích đồng ý *Chính sách bảo mật* dẫn tới `privacy.html` (`target="_blank"`) ngay phía trên nút **THIẾT LẬP TÀI KHOẢN**.
+  - `frontend/cart.html`: Bổ sung liên kết *Chính sách bảo mật giao dịch* dẫn tới `privacy.html` (`target="_blank"`) vào dòng ghi chú bảo mật ngay bên dưới nút **THANH TOÁN**.
+
 ## Rà soát QA, Tăng cường Bảo mật (XSS, 2FA, Double-Submit) & Tối ưu Hiệu năng (`frontend/login.html`, `frontend/register.html`, `frontend/assets/shared.js`, `frontend/cart.html`, `frontend/support.html`, `frontend/orders.html`, `frontend/loyalty.html`, `frontend/index.html`, `frontend/admin.html`, `frontend/publisher.html`, `frontend/assets/hub.js`, `frontend/assets/catalog.js`, `backend/src/api/store.routes.js`, `backend/src/api/admin.routes.js`, `database/seed.sql`, `database/update_v2.sql`, `backend/src/db.js`)
 - **Chính sách Xác thực 2 Bước (2FA) & Đặc cách duy nhất `admin@5guys.com` (`frontend/login.html`, `database/seed.sql`, `database/update_v2.sql`, `backend/src/db.js`):**
   - Cập nhật `handleSignInSubmit()` trong `frontend/login.html`: **Chỉ duy nhất** tài khoản `admin@5guys.com` được phép bỏ qua xác thực 2 bước (`normalizedEmail === 'admin@5guys.com'`) và đăng nhập thẳng sau khi xác thực mật khẩu. Tất cả các tài khoản khác (kể cả `admin@5guys.vn` hay bất kỳ tài khoản được tạo thêm / đăng nhập) đều bắt buộc phải qua bước xác thực mã 6 số Google Authenticator (TOTP).

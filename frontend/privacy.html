@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>5GUYS - Chính sách Bảo mật &amp; An toàn Dữ liệu</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="assets/tailwind-config.js"></script>
+  <style>
+    html { scroll-behavior: smooth; }
+    body {
+      background-color: #12091c;
+      color: #f3e8ff;
+      overflow-x: hidden;
+      font-family: 'Inter', sans-serif;
+    }
+    h1, h2, h3, h4 { letter-spacing: -0.02em; }
+    ::-webkit-scrollbar { width: 8px; }
+    ::-webkit-scrollbar-track { background: #12091c; }
+    ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 4px; }
+    ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
+    .card {
+      background: #2a1645;
+      border: 1px solid #3c096c;
+      border-radius: 1rem;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .card-container {
+      background: #1f1032;
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      border-radius: 1rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: #9d4edd;
+      color: #fff;
+      font-weight: 700;
+      border-radius: 0.5rem;
+      padding: 0.6rem 1.25rem;
+      border: 1px solid rgba(199, 125, 255, 0.3);
+      box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
+      transition: background 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn:hover {
+      background: #c77dff;
+      box-shadow: 0 0 25px rgba(199, 125, 255, 0.6);
+    }
+    .ghost {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: #12091c;
+      border: 1px solid #3c096c;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      color: #e9d5ff;
+      transition: border-color 0.25s ease, color 0.25s ease;
+    }
+    .ghost:hover { border-color: #c77dff; color: #fff; }
+    .mono { font-variant-numeric: tabular-nums; }
+    .policy-section { scroll-margin-top: 6rem; }
+    .toc-link {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.65rem;
+      padding: 0.6rem 0.75rem;
+      border-radius: 0.65rem;
+      font-size: 0.85rem;
+      line-height: 1.4;
+      color: #d8b4e2;
+      border: 1px solid transparent;
+      transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+    .toc-link:hover {
+      background: rgba(157, 78, 221, 0.14);
+      border-color: rgba(199, 125, 255, 0.3);
+      color: #ffffff;
+    }
+    .toc-link.is-active {
+      background: rgba(157, 78, 221, 0.25);
+      border-color: rgba(199, 125, 255, 0.55);
+      color: #ffffff;
+      font-weight: 700;
+    }
+    .toc-badge {
+      flex-shrink: 0;
+      font-size: 0.7rem;
+      font-weight: 800;
+      color: #c77dff;
+      background: rgba(18, 9, 28, 0.85);
+      border: 1px solid rgba(157, 78, 221, 0.35);
+      border-radius: 0.4rem;
+      padding: 0.12rem 0.45rem;
+      margin-top: 0.05rem;
+    }
+    .code-inline {
+      display: inline-block;
+      background: #12091c;
+      border: 1px solid rgba(157, 78, 221, 0.35);
+      color: #c77dff;
+      padding: 0.05rem 0.4rem;
+      border-radius: 0.35rem;
+      font-size: 0.84em;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      word-break: break-word;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto !important; }
+      * { transition: none !important; animation: none !important; }
+    }
+  </style>
+  <link rel="stylesheet" href="assets/shared.css">
+  <script src="assets/shared.js"></script>
+</head>
+<body class="bg-dark-bg antialiased flex flex-col min-h-screen">
+  <script src="assets/layout.js" data-part="nav"></script>
+
+  <main class="flex-grow">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 w-full">
+
+      <!-- HEADER BANNER -->
+      <header class="card-container p-6 sm:p-8 mb-8 border-brand/30 shadow-purple-glow">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+          <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand/20 border border-brand-light/40 text-brand-light text-xs font-bold tracking-wide">
+            <i class="fa-solid fa-shield-halved"></i>
+            Cập nhật: Tháng 11/2026 • Chuẩn Bảo Mật 5GUYS Vault
+          </span>
+          <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/15 border border-emerald-400/35 text-emerald-300 text-xs font-bold">
+            <i class="fa-solid fa-file-shield"></i>
+            v2.0 (Bản chính thức)
+          </span>
+        </div>
+
+        <h1 class="text-2xl sm:text-4xl font-black text-white uppercase tracking-tight border-l-4 border-brand pl-4">
+          CHÍNH SÁCH BẢO MẬT &amp; AN TOÀN DỮ LIỆU
+        </h1>
+        <p class="text-xs sm:text-sm font-semibold text-brand-light mt-2 pl-5 uppercase tracking-wider">
+          (PRIVACY POLICY) — Nền tảng Phân phối Game Bản quyền Kỹ thuật số &amp; Vật lý — 5GUYS VAULT
+        </p>
+
+        <div class="mt-5 grid sm:grid-cols-2 gap-3 text-xs sm:text-sm text-on-surface-variant bg-dark-bg/70 border border-dark-border rounded-xl p-4">
+          <p><i class="fa-solid fa-tag text-brand-light mr-2"></i><strong class="text-white">Phiên bản tài liệu:</strong> v2.0 (Bản chính thức)</p>
+          <p><i class="fa-solid fa-calendar-check text-brand-light mr-2"></i><strong class="text-white">Ngày ban hành &amp; có hiệu lực:</strong> Tháng 11 năm 2026</p>
+          <p class="sm:col-span-2"><i class="fa-solid fa-building-shield text-brand-light mr-2"></i><strong class="text-white">Đơn vị vận hành &amp; kiểm soát dữ liệu:</strong> Nhóm 5Guys — Lớp 26C01, Khoa Công nghệ Thông tin, Trường Đại học Khoa học Tự nhiên, ĐHQG-HCM (FIT - HCMUS)</p>
+          <p class="sm:col-span-2"><i class="fa-solid fa-scale-balanced text-brand-light mr-2"></i><strong class="text-white">Căn cứ pháp lý tham chiếu:</strong> Nghị định số 13/2023/NĐ-CP của Chính phủ về Bảo vệ dữ liệu cá nhân và các tiêu chuẩn an toàn thông tin thương mại điện tử quốc tế.</p>
+        </div>
+
+        <!-- BAN TOM TAT CAM KET COT LOI -->
+        <div class="mt-7 pt-6 border-t border-brand/30">
+          <h2 class="text-base sm:text-lg font-extrabold text-white uppercase tracking-wide mb-2 flex items-center gap-2">
+            <i class="fa-solid fa-vault text-brand-light"></i>
+            BẢN TÓM TẮT CAM KẾT CỐT LÕI (EXECUTIVE SUMMARY)
+          </h2>
+          <p class="text-sm text-on-surface-variant leading-relaxed mb-5">
+            Tại <strong class="text-white">5GUYS Vault</strong>, sự riêng tư và an toàn tài sản số của game thủ là ưu tiên tối thượng trong mọi quyết định thiết kế kiến trúc hệ thống của chúng tôi. Trước khi đi vào chi tiết từng điều khoản kỹ thuật, chúng tôi khẳng định <strong class="text-white">03 cam kết bất khả xâm phạm</strong> sau đây:
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 grid place-items-center text-emerald-400 flex-shrink-0">
+                  <i class="fa-solid fa-credit-card"></i>
+                </span>
+                <h3 class="font-bold text-white text-sm leading-snug">
+                  1. Tuyệt đối không lưu trữ thông tin thẻ ngân hàng:
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                Hệ thống cơ sở dữ liệu của 5GUYS không bao giờ thu thập, xử lý hay lưu giữ số thẻ thanh toán (PAN), ngày hết hạn hay mã bảo mật CVV/CVC của người dùng. Mọi giao dịch đều được đối soát thông qua mã tham chiếu ẩn danh theo tiêu chuẩn <strong class="text-white">PCI-DSS SAQ-A</strong>.
+              </p>
+            </article>
+
+            <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                  <i class="fa-solid fa-key"></i>
+                </span>
+                <h3 class="font-bold text-white text-sm leading-snug">
+                  2. Mã hóa mật khẩu một chiều &amp; Xác thực 2 lớp (2FA) cấp độ Vault:
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                Mật khẩu người dùng được băm bất đối xứng bằng thuật toán <strong class="text-white">Bcrypt (Cost factor 12)</strong> kết hợp cơ chế <strong class="text-white">Xác thực 2 bước TOTP (Google Authenticator chuẩn RFC 6238)</strong> hoạt động độc lập, đảm bảo ngay cả Quản trị viên hệ thống cũng không thể đọc được mật khẩu gốc của bạn.
+              </p>
+            </article>
+
+            <article class="bg-dark-surface border border-brand/30 rounded-2xl p-5 shadow-md">
+              <div class="flex items-center gap-3 mb-3">
+                <span class="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-400/35 grid place-items-center text-blue-300 flex-shrink-0">
+                  <i class="fa-solid fa-user-shield"></i>
+                </span>
+                <h3 class="font-bold text-white text-sm leading-snug">
+                  3. Không thương mại hóa hoặc bán dữ liệu cho bên thứ ba:
+                </h3>
+              </div>
+              <p class="text-xs sm:text-sm text-on-surface-variant leading-relaxed">
+                Dữ liệu cá nhân, lịch sử mua game và cấu hình phần cứng của bạn chỉ phục vụ duy nhất cho trải nghiệm mua sắm, cấp phát bản quyền số (<strong class="text-white">DRM Safe</strong>) và tư vấn cấu hình trên 5GUYS; tuyệt đối không bị chia sẻ cho các mạng quảng cáo hay bên thứ ba vì mục đích thương mại.
+              </p>
+            </article>
+          </div>
+        </div>
+      </header>
+
+      <!-- BO CUC 2 COT: 3/12 MUC LUC DINH + 9/12 NOI DUNG CHINH -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+        <!-- COT TRAI: STICKY SIDEBAR (3/12) -->
+        <aside class="lg:col-span-3 lg:sticky lg:top-24 space-y-4">
+          <nav aria-label="Mục lục Chính sách bảo mật" class="card-container p-4 sm:p-5 border-brand/30">
+            <h2 class="text-xs font-extrabold uppercase tracking-wider text-brand-light mb-3 flex items-center gap-2">
+              <i class="fa-solid fa-compass"></i>
+              Mục lục điều khoản
+            </h2>
+            <ul id="privacy-toc" class="space-y-1.5">
+              <li>
+                <a href="#dieu-1" class="toc-link is-active" data-target="dieu-1">
+                  <span class="toc-badge">Đ1</span>
+                  <span>Phạm vi &amp; Dữ liệu thu thập</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-2" class="toc-link" data-target="dieu-2">
+                  <span class="toc-badge">Đ2</span>
+                  <span>Mục đích xử lý dữ liệu</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-3" class="toc-link" data-target="dieu-3">
+                  <span class="toc-badge">Đ3</span>
+                  <span>Bảo mật Thanh toán (PCI-DSS SAQ-A)</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-4" class="toc-link" data-target="dieu-4">
+                  <span class="toc-badge">Đ4</span>
+                  <span>Kiến trúc Bảo mật &amp; Phòng thủ</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-5" class="toc-link" data-target="dieu-5">
+                  <span class="toc-badge">Đ5</span>
+                  <span>Chia sẻ dữ liệu &amp; Bên thứ ba</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-6" class="toc-link" data-target="dieu-6">
+                  <span class="toc-badge">Đ6</span>
+                  <span>Quyền của Chủ thể dữ liệu</span>
+                </a>
+              </li>
+              <li>
+                <a href="#dieu-7" class="toc-link" data-target="dieu-7">
+                  <span class="toc-badge">Đ7</span>
+                  <span>Hiệu lực &amp; Liên hệ</span>
+                </a>
+              </li>
+            </ul>
+          </nav>
+
+          <div class="card-container p-4 sm:p-5 border-brand/30 space-y-2.5">
+            <p class="text-xs font-bold text-white flex items-center gap-2">
+              <i class="fa-solid fa-sliders text-brand-light"></i>
+              Công cụ tự phục vụ
+            </p>
+            <p class="text-xs text-outline leading-relaxed">
+              Xem, cập nhật hồ sơ, xóa địa chỉ giao hàng hoặc gửi ticket hỗ trợ.
+            </p>
+            <div class="flex flex-col gap-2 pt-1">
+              <a href="profile.html" class="ghost text-xs w-full"><i class="fa-solid fa-user-gear"></i> Hồ sơ &amp; Địa chỉ (profile.html)</a>
+              <a href="support.html" class="btn text-xs w-full"><i class="fa-solid fa-headset"></i> Trung tâm Hỗ trợ (support.html)</a>
+            </div>
+          </div>
+        </aside>
+
+        <!-- COT PHAI: MAIN CONTENT (9/12) -->
+        <div class="lg:col-span-9 space-y-6">
+
+          <!-- DIEU 1 -->
+          <section id="dieu-1" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-database"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 01</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 1. PHẠM VI VÀ CÁC LOẠI DỮ LIỆU CHÚNG TÔI THU THẬP</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Để vận hành mô hình thương mại điện tử lai (<strong class="text-white">Hybrid Storefront</strong> — kết hợp phân phối mã game kỹ thuật số tức thì và giao nhận băng đĩa vật lý sưu tầm), hệ thống <strong class="text-white">5GUYS Vault</strong> thu thập và xử lý có giới hạn <strong class="text-white">04 nhóm dữ liệu</strong> được phân định minh bạch dưới đây:
+              </p>
+
+              <!-- 1.1 -->
+              <div>
+                <h3 class="text-base sm:text-lg font-bold text-white mb-3 flex items-center gap-2">
+                  <i class="fa-solid fa-table-list text-brand-light"></i>
+                  1.1. Bảng phân loại tổng quan các nhóm dữ liệu thu thập trên hệ thống
+                </h3>
+                <div class="overflow-x-auto rounded-xl border border-dark-border bg-[#1f1032]">
+                  <table class="w-full text-left text-xs sm:text-sm">
+                    <thead class="bg-dark-bg text-brand-light uppercase text-[11px] tracking-wider border-b border-dark-border">
+                      <tr>
+                        <th class="px-4 py-3 font-bold">Nhóm dữ liệu</th>
+                        <th class="px-4 py-3 font-bold">Trường dữ liệu cụ thể trong CSDL</th>
+                        <th class="px-4 py-3 font-bold">Bảng lưu trữ (MySQL)</th>
+                        <th class="px-4 py-3 font-bold">Cơ chế thu thập &amp; Điều kiện phát sinh</th>
+                      </tr>
+                    </thead>
+                    <tbody class="divide-y divide-dark-border/70">
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">1. Định danh Tài khoản</td>
+                        <td class="px-4 py-3 align-top">
+                          <code class="code-inline">email</code>, <code class="code-inline">display_name</code> (GamerTag), <code class="code-inline">password_hash</code>, <code class="code-inline">phone</code>, <code class="code-inline">role</code>, <code class="code-inline">status</code>, <code class="code-inline">last_login_at</code>
+                        </td>
+                        <td class="px-4 py-3 align-top whitespace-nowrap"><code class="code-inline">users</code></td>
+                        <td class="px-4 py-3 align-top">
+                          Thu thập trực tiếp khi người dùng đăng ký tại <code class="code-inline">register.html</code> hoặc cập nhật tại <code class="code-inline">profile.html</code>.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">2. Giao vận Vật lý</td>
+                        <td class="px-4 py-3 align-top">
+                          <code class="code-inline">recipient_name</code>, <code class="code-inline">phone</code>, <code class="code-inline">city</code>, <code class="code-inline">ward</code>, <code class="code-inline">address_line</code>, <code class="code-inline">is_default</code>, <code class="code-inline">shipping_address</code> (JSON Snapshot)
+                        </td>
+                        <td class="px-4 py-3 align-top whitespace-nowrap"><code class="code-inline">user_addresses</code>, <code class="code-inline">orders</code></td>
+                        <td class="px-4 py-3 align-top">
+                          Chỉ thu thập khi người dùng thêm địa chỉ giao hàng hoặc đặt mua sản phẩm có định dạng Đĩa Vật lý (<code class="code-inline">physical</code>).
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">3. Kỹ thuật &amp; Dịch vụ</td>
+                        <td class="px-4 py-3 align-top">
+                          Cấu hình PC (<code class="code-inline">CPU</code>, <code class="code-inline">GPU</code>, <code class="code-inline">RAM</code>), lịch sử sở hữu game, mã Key DRM, điểm thưởng, bài đánh giá, bản Mod
+                        </td>
+                        <td class="px-4 py-3 align-top"><code class="code-inline">game_library</code>, <code class="code-inline">reviews</code>, <code class="code-inline">loyalty_accounts</code>, <code class="code-inline">game_mods</code></td>
+                        <td class="px-4 py-3 align-top">
+                          Phát sinh khi người dùng tương tác với trợ lý <strong class="text-white">PC2GAMES AI</strong>, mua game, viết đánh giá hoặc tải lên bản Mod.
+                        </td>
+                      </tr>
+                      <tr>
+                        <td class="px-4 py-3 font-bold text-white align-top whitespace-nowrap">4. Lưu trữ Trình duyệt</td>
+                        <td class="px-4 py-3 align-top">
+                          Phiên đăng nhập JWT, bộ đệm giỏ hàng, khóa bí mật TOTP 2FA, tùy chọn ổ đĩa NVMe, hiệu ứng Easter Egg
+                        </td>
+                        <td class="px-4 py-3 align-top whitespace-nowrap"><code class="code-inline">localStorage</code>, <code class="code-inline">sessionStorage</code></td>
+                        <td class="px-4 py-3 align-top">
+                          Lưu trữ cục bộ ngay trên trình duyệt của thiết bị người dùng để duy trì trạng thái giao diện.
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <!-- 1.2 -->
+              <div class="space-y-4 pt-2">
+                <h3 class="text-base sm:text-lg font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-layer-group text-brand-light"></i>
+                  1.2. Chi tiết từng nhóm dữ liệu thu thập
+                </h3>
+
+                <!-- a -->
+                <div class="card-container p-5 space-y-2.5">
+                  <h4 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-id-card text-brand-light"></i>
+                    a) Nhóm dữ liệu định danh tài khoản (Account Identity Data)
+                  </h4>
+                  <p>
+                    Khi bạn khởi tạo tài khoản (<strong class="text-white">5GUYS Hybrid ID</strong>) tại trang Đăng ký (<code class="code-inline">register.html</code>) hoặc cập nhật tại trang Hồ sơ cá nhân (<code class="code-inline">profile.html</code>), hệ thống ghi nhận vào bảng <code class="code-inline">users</code> trong cơ sở dữ liệu:
+                  </p>
+                  <ul class="list-disc pl-5 space-y-1.5">
+                    <li><strong class="text-white">Địa chỉ thư điện tử (<code class="code-inline">email</code>):</strong> Dùng làm định danh duy nhất để đăng nhập, nhận thông báo đơn hàng, khôi phục mật khẩu và nhận quà tặng game từ bạn bè.</li>
+                    <li><strong class="text-white">Tên hiển thị (<code class="code-inline">display_name</code> / GamerTag):</strong> Tên định danh công khai của bạn khi viết đánh giá (Review), thảo luận trên Cộng đồng Hub hoặc đăng tải bản Mod.</li>
+                    <li><strong class="text-white">Mật khẩu đã băm (<code class="code-inline">password_hash</code>):</strong> Chuỗi băm mật mã học dài 60 ký tự sinh ra từ thuật toán Bcrypt (tuyệt đối không lưu mật khẩu dạng văn bản thuần).</li>
+                    <li><strong class="text-white">Số điện thoại liên hệ (<code class="code-inline">phone</code>):</strong> Chuỗi 10 chữ số chuẩn hóa theo đầu số viễn thông Việt Nam (<code class="code-inline">03</code>, <code class="code-inline">05</code>, <code class="code-inline">07</code>, <code class="code-inline">08</code>, <code class="code-inline">09</code>), phục vụ xác minh chủ tài khoản và liên hệ hỗ trợ.</li>
+                    <li><strong class="text-white">Vai trò phân quyền (<code class="code-inline">role</code>) &amp; Trạng thái (<code class="code-inline">status</code>):</strong> Phân định quyền hạn hệ thống gồm Khách hàng (<code class="code-inline">customer</code>), Nhà phát hành (<code class="code-inline">publisher</code>), Nhân viên (<code class="code-inline">staff</code>), hoặc Quản trị viên (<code class="code-inline">admin</code>), cùng dấu thời gian đăng nhập gần nhất (<code class="code-inline">last_login_at</code>).</li>
+                  </ul>
+                </div>
+
+                <!-- b -->
+                <div class="card-container p-5 space-y-2.5">
+                  <h4 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-truck-fast text-blue-300"></i>
+                    b) Nhóm dữ liệu giao vận vật lý (Physical Fulfillment &amp; Address Data)
+                  </h4>
+                  <p>
+                    Nhóm dữ liệu này <strong class="text-white">chỉ bắt buộc thu thập khi bạn đặt mua các sản phẩm có định dạng Đĩa Vật lý (<code class="code-inline">product_type = 'physical'</code>)</strong> như đĩa Blu-ray PlayStation 4/5, Xbox Series X hoặc thẻ game Nintendo Switch:
+                  </p>
+                  <ul class="list-disc pl-5 space-y-1.5">
+                    <li><strong class="text-white">Sổ địa chỉ người dùng (Bảng <code class="code-inline">user_addresses</code>):</strong> Lưu trữ tối đa 10 địa chỉ giao nhận gồm Họ tên người nhận (<code class="code-inline">recipient_name</code>), Số điện thoại nhận hàng (<code class="code-inline">phone</code>), Tỉnh/Thành phố (<code class="code-inline">city</code>), Phường/Xã (<code class="code-inline">ward</code>) theo địa giới hành chính mới, và Số nhà/Tên đường (<code class="code-inline">address_line</code>).</li>
+                    <li><strong class="text-white">Bản chụp địa chỉ độc lập trong đơn hàng (<code class="code-inline">shipping_address</code> JSON Snapshot):</strong> Khi bạn nhấn xác nhận đặt đơn hàng vật lý tại <code class="code-inline">cart.html</code>, hệ thống sẽ tạo một bản chụp tĩnh (<strong class="text-white">JSON Snapshot</strong>) chứa thông tin người nhận, địa chỉ và phương thức vận chuyển (<code class="code-inline">standard</code> hoặc <code class="code-inline">express</code>) lưu trực tiếp vào dòng đơn hàng đó trong bảng <code class="code-inline">orders</code>. Cơ chế kỹ thuật này đảm bảo rằng nếu sau này bạn chỉnh sửa hoặc xóa địa chỉ trong Sổ địa chỉ cá nhân, lịch sử chứng từ và lộ trình của các đơn hàng cũ vẫn được bảo toàn nguyên vẹn, không bị sai lệch dữ liệu.</li>
+                  </ul>
+                </div>
+
+                <!-- c -->
+                <div class="card-container p-5 space-y-2.5">
+                  <h4 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-microchip text-emerald-400"></i>
+                    c) Nhóm dữ liệu kỹ thuật &amp; Tương tác dịch vụ (Service &amp; Telemetry Data)
+                  </h4>
+                  <ul class="list-disc pl-5 space-y-1.5">
+                    <li><strong class="text-white">Thông số cấu hình phần cứng gửi tới trợ lý PC2GAMES AI:</strong> Khi bạn trò chuyện với trợ lý ảo <strong class="text-white">PC2GAMES AI</strong>, bộ phân tích ngữ nghĩa (<code class="code-inline">advisor.js</code>) sẽ trích xuất các thông số phần cứng bạn cung cấp trong nội dung tin nhắn (bao gồm loại thiết bị PC/Laptop/Console, dòng vi xử lý <strong class="text-white">CPU</strong>, card đồ họa rời hoặc tích hợp <strong class="text-white">GPU/iGPU</strong>, dung lượng bộ nhớ <strong class="text-white">RAM</strong>, sở thích thể loại và ngân sách dự kiến) để đối chiếu với bảng <code class="code-inline">game_requirements</code>.</li>
+                    <li><strong class="text-white">Dữ liệu Thư viện bản quyền số &amp; Bản vá (Bảng <code class="code-inline">game_library</code> &amp; <code class="code-inline">digital_licenses</code>):</strong> Lưu trữ danh sách tựa game kỹ thuật số bạn sở hữu, thời điểm kích hoạt (<code class="code-inline">acquired_at</code>), trạng thái bản quyền (<code class="code-inline">active</code> hoặc <code class="code-inline">revoked</code>), phiên bản bản vá đang cài đặt (<code class="code-inline">installed_version</code>) và trạng thái mở khóa nội dung tải thêm (<code class="code-inline">dlc_installed</code>).</li>
+                    <li><strong class="text-white">Đóng góp Cộng đồng &amp; Đánh giá (Bảng <code class="code-inline">reviews</code>, <code class="code-inline">review_votes</code>, <code class="code-inline">game_mods</code>):</strong> Điểm số xếp hạng (1–5 sao), nội dung bài đánh giá, nhãn xác minh đã mua hàng (<code class="code-inline">verified_purchase</code>), lượt bình chọn hữu ích và thông tin các gói bản Mod do bạn tải lên.</li>
+                    <li><strong class="text-white">Lịch sử Điểm thưởng Thân thiết &amp; Ví nội bộ (Bảng <code class="code-inline">loyalty_accounts</code>, <code class="code-inline">loyalty_transactions</code>, <code class="code-inline">wallets</code>):</strong> Ghi nhận số dư điểm thưởng, hạng thành viên (<code class="code-inline">Bronze</code>, <code class="code-inline">Silver</code>, <code class="code-inline">Gold</code>) và biến động điểm phát sinh từ từng đơn hàng.</li>
+                  </ul>
+                </div>
+
+                <!-- d -->
+                <div class="card-container p-5 space-y-3">
+                  <h4 class="font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-laptop-code text-brand-light"></i>
+                    d) Nhóm dữ liệu lưu trữ cục bộ trên trình duyệt (Browser LocalStorage &amp; SessionStorage)
+                  </h4>
+                  <p>
+                    Hệ thống <strong class="text-white">5GUYS Vault</strong> không sử dụng Cookie theo dõi quảng cáo liên trang (Third-party Tracking Cookies). Thay vào đó, chúng tôi sử dụng bộ nhớ cục bộ của trình duyệt (<code class="code-inline">localStorage</code> và <code class="code-inline">sessionStorage</code>) để duy trì trạng thái ứng dụng mượt mà:
+                  </p>
+                  <div class="overflow-x-auto rounded-xl border border-dark-border bg-dark-bg/70">
+                    <table class="w-full text-left text-xs sm:text-sm">
+                      <thead class="bg-dark-bg text-brand-light uppercase text-[11px] tracking-wider border-b border-dark-border">
+                        <tr>
+                          <th class="px-4 py-3 font-bold">Tên khóa lưu trữ (Storage Key)</th>
+                          <th class="px-4 py-3 font-bold">Loại bộ nhớ</th>
+                          <th class="px-4 py-3 font-bold">Mục đích sử dụng kỹ thuật cụ thể</th>
+                          <th class="px-4 py-3 font-bold">Thời hạn lưu trữ</th>
+                        </tr>
+                      </thead>
+                      <tbody class="divide-y divide-dark-border/70">
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_api_token</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Lưu chuỗi <strong class="text-white">JWT (JSON Web Token)</strong> dùng để xác thực người dùng trong Header <code class="code-inline">Authorization: Bearer</code> khi gọi API.</td>
+                          <td class="px-4 py-3">Cho đến khi Đăng xuất hoặc Token hết hạn (2 giờ).</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_user</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Lưu thông tin hiển thị cơ bản (<code class="code-inline">id</code>, <code class="code-inline">email</code>, <code class="code-inline">name</code>, <code class="code-inline">role</code>) để dựng giao diện Header tức thì không bị nháy trang.</td>
+                          <td class="px-4 py-3">Xóa ngay lập tức khi người dùng nhấn <strong class="text-white">Đăng xuất</strong>.</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">g5_totp_secrets</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Lưu khóa bí mật <strong class="text-white">Base32</strong> phục vụ kiểm tra mã 6 số <strong class="text-white">Google Authenticator (TOTP)</strong> trên môi trường trình duyệt.</td>
+                          <td class="px-4 py-3">Lưu cục bộ theo từng tài khoản trên thiết bị.</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_api_cart_cache</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Bộ nhớ đệm danh sách sản phẩm trong giỏ hàng đã đồng bộ từ máy chủ MySQL để hiển thị nhanh số lượng trên biểu tượng giỏ hàng.</td>
+                          <td class="px-4 py-3">Tự động làm mới mỗi khi thêm/xóa sản phẩm hoặc thanh toán.</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_library_drive</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Lưu lựa chọn ổ đĩa cài đặt giả lập của người dùng trong Kho game (<code class="code-inline">Ổ C: Kingston SSD</code> hoặc <code class="code-inline">Ổ D: Samsung 990 Pro</code>).</td>
+                          <td class="px-4 py-3">Lưu lâu dài theo tùy chọn giao diện của người dùng.</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_favorites</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">localStorage</code></td>
+                          <td class="px-4 py-3">Lưu danh sách mã định danh (<code class="code-inline">slug</code>) các tựa game người dùng đã đánh dấu Yêu thích (<code class="code-inline">♥</code>) trên trang chi tiết.</td>
+                          <td class="px-4 py-3">Lưu lâu dài cho đến khi người dùng bỏ yêu thích.</td>
+                        </tr>
+                        <tr>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">5guys_konami</code></td>
+                          <td class="px-4 py-3 whitespace-nowrap"><code class="code-inline">sessionStorage</code></td>
+                          <td class="px-4 py-3">Lưu trạng thái bật/tắt hiệu ứng con trỏ tay cầm chơi game khi người dùng kích hoạt tổ hợp phím Easter Egg Konami Code.</td>
+                          <td class="px-4 py-3">Tự động xóa sạch ngay khi đóng tab trình duyệt.</td>
+                        </tr>
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 2 -->
+          <section id="dieu-2" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-gears"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 02</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 2. MỤC ĐÍCH XỬ LÝ DỮ LIỆU</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Mọi trường dữ liệu thu thập tại Điều 1 đều gắn liền với một mục đích vận hành kỹ thuật cụ thể trong mã nguồn hệ thống, bao gồm:
+              </p>
+              <ol class="list-decimal pl-5 space-y-3">
+                <li>
+                  <strong class="text-white">Cấp phát và Xác thực Bản quyền Kỹ thuật số (DRM Safe Key Provisioning):</strong> Ngay khi đơn hàng chứa sản phẩm kỹ thuật số (<code class="code-inline">digital</code>) được thanh toán thành công, hệ thống tự động ghi nhận quyền sở hữu vào bảng <code class="code-inline">game_library</code> và sử dụng hàm băm định danh kết hợp bộ sinh số giả ngẫu nhiên (<code class="code-inline">FNV-1a 32-bit hash</code> + <code class="code-inline">xorshift32 PRNG</code>) dựa trên tổ hợp <code class="code-inline">(ID Tài khoản + Slug Game)</code> để cấp phát mã khóa bản quyền định dạng <code class="code-inline">5GUYS-XXXX-XXXX-XXXX</code> độc nhất cho từng người dùng, hoặc chuyển thẳng bản quyền vào kho của bạn bè nếu đơn hàng được đánh dấu là <strong class="text-white">Quà tặng (Gift Order)</strong>.
+                </li>
+                <li>
+                  <strong class="text-white">Điều phối Kho vận &amp; Giao nhận Đĩa Vật lý:</strong> Kiểm tra tồn kho khả dụng (<code class="code-inline">quantity_on_hand - quantity_reserved</code>) trong bảng <code class="code-inline">physical_inventory</code>, giữ chỗ sản phẩm khi tạo đơn, tính toán chính xác biểu phí vận chuyển (<code class="code-inline">30.000đ</code> cho Giao tiêu chuẩn hoặc <code class="code-inline">60.000đ</code> cho Giao hỏa tốc) và cung cấp phiếu thông tin giao nhận cho bộ phận kho vận thông qua Bảng Quản trị (<code class="code-inline">admin.html</code>).
+                </li>
+                <li>
+                  <strong class="text-white">Phân tích Tương thích Phần cứng &amp; Đề xuất Game Thông minh:</strong> Dữ liệu cấu hình máy người dùng nhập vào khung chat <strong class="text-white">PC2GAMES AI</strong> được sử dụng để phân loại sức mạnh hệ thống thành 3 phân khúc (<em>Cấu hình Nhẹ 🟢</em>, <em>Cấu hình Tầm trung 🟡</em>, <em>Cấu hình Cao cấp 🔴</em>), từ đó lọc ra các tựa game đang có sẵn trong danh mục cửa hàng phù hợp với nền tảng, ngân sách và ước tính mức thiết lập đồ họa (Low/Medium/High/Ultra) kèm chỉ số FPS dự kiến.
+                </li>
+                <li>
+                  <strong class="text-white">Quản trị Rủi ro, Chống Gian lận &amp; Xử lý Hoàn tiền Tự động (Transactional Refund Processing):</strong> Khi người dùng gửi yêu cầu hoàn tiền (<code class="code-inline">POST /api/orders/:id/refund</code>) và được Quản trị viên phê duyệt trong một <strong class="text-white">Database Transaction</strong> cô lập (<code class="code-inline">admin.routes.js</code>), hệ thống sử dụng dữ liệu liên kết đơn hàng để thực hiện đồng thời 3 tác vụ: (i) Thu hồi ngay lập tức quyền truy cập game số trong thư viện (<code class="code-inline">SET gl.status = 'revoked'</code>), (ii) Hoàn trả số lượng đĩa vật lý về kho nếu đơn chưa xuất bến, và (iii) Khấu trừ chính xác số điểm thưởng Loyalty đã cộng trước đó để ngăn chặn hành vi trục lợi điểm thưởng.
+                </li>
+                <li>
+                  <strong class="text-white">Hỗ trợ Kỹ thuật &amp; Giải quyết Khiếu nại:</strong> Liên kết mã phiếu hỗ trợ (<code class="code-inline">#TK-XXXX</code> trong bảng <code class="code-inline">support_tickets</code>) với mã đơn hàng thực tế của người dùng nhằm giúp Quản trị viên tra cứu và phản hồi nhanh các sự cố về mã kích hoạt hoặc thay đổi địa chỉ giao nhận.
+                </li>
+              </ol>
+            </div>
+          </section>
+
+          <!-- DIEU 3 -->
+          <section id="dieu-3" class="policy-section card p-6 sm:p-8 border-emerald-500/35">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-400/35 grid place-items-center text-emerald-400 flex-shrink-0">
+                <i class="fa-solid fa-credit-card"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-emerald-300">Điều khoản 03</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 3. BẢO MẬT GIAO DỊCH THANH TOÁN (TUÂN THỦ NGUYÊN TẮC PCI-DSS SAQ-A)</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Hệ thống thanh toán của <strong class="text-white">5GUYS Vault</strong> được thiết kế tuân thủ nghiêm ngặt nguyên tắc <strong class="text-white">Zero Card-Data Retention</strong> (Không lưu giữ dữ liệu thẻ thanh toán) theo chuẩn <strong class="text-white">PCI-DSS SAQ-A (Payment Card Industry Data Security Standard)</strong>:
+              </p>
+              <ul class="list-disc pl-5 space-y-3">
+                <li>
+                  <strong class="text-white">Loại bỏ hoàn toàn bề mặt tấn công tài chính:</strong> Trong cấu trúc bảng <code class="code-inline">payments</code> của cơ sở dữ liệu MySQL (<code class="code-inline">database/schema.sql</code>), chúng tôi <strong class="text-white">không thiết kế bất kỳ cột dữ liệu nào</strong> để lưu số thẻ tín dụng/ghi nợ (Primary Account Number - PAN), tên chủ thẻ, ngày hết hạn hay mã bảo mật CVV/CVC.
+                </li>
+                <li>
+                  <strong class="text-white">Cơ chế đối soát qua Mã tham chiếu (Tokenized Reference):</strong> Khi người dùng lựa chọn các phương thức thanh toán quốc tế (<code class="code-inline">Visa / Mastercard</code>, <code class="code-inline">PayPal</code>, <code class="code-inline">Apple / Google Pay</code>) hoặc nội địa (<code class="code-inline">MoMo</code>, <code class="code-inline">ZaloPay</code>, <code class="code-inline">VNPay QR</code>, <code class="code-inline">Chuyển khoản ngân hàng</code>), máy chủ 5GUYS chỉ lưu trữ:
+                  <ol class="list-decimal pl-5 mt-2 space-y-1.5">
+                    <li>Tên kênh thanh toán (<code class="code-inline">provider</code>).</li>
+                    <li>Mã tham chiếu giao dịch duy nhất (<code class="code-inline">provider_reference</code>) do cổng thanh toán hoặc bộ mô phỏng sinh ra.</li>
+                    <li>Tổng số tiền thanh toán đã được tính toán lại độc lập trên máy chủ (<code class="code-inline">amount</code>) và trạng thái giao dịch (<code class="code-inline">pending</code>, <code class="code-inline">paid</code>, <code class="code-inline">failed</code>, <code class="code-inline">refunded</code>).</li>
+                  </ol>
+                </li>
+                <li>
+                  <strong class="text-white">Chống can thiệp giá từ phía trình duyệt (Server-Side Price Calculation):</strong> Mọi thông số tiền tệ gồm Tạm tính (<code class="code-inline">subtotal</code>), Giảm giá Coupon (<code class="code-inline">discount_total</code>), Thuế giá trị gia tăng VAT 10% (<code class="code-inline">tax_total</code>), Phí cổng thanh toán và Phí vận chuyển (<code class="code-inline">shipping_total</code>) đều được tính toán lại 100% tại tầng Backend (<code class="code-inline">computeTotals</code> trong <code class="code-inline">store.routes.js</code>) dựa trên đơn giá gốc trong cơ sở dữ liệu trước khi ghi nhận thanh toán, loại bỏ hoàn toàn nguy cơ người dùng chỉnh sửa mã HTML/JavaScript trên trình duyệt để gian lận giá mua.
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- DIEU 4 -->
+          <section id="dieu-4" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-shield-virus"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 04</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 4. KIẾN TRÚC BẢO MẬT KỸ THUẬT &amp; PHÒNG THỦ HỆ THỐNG</h2>
+              </div>
+            </div>
+
+            <div class="space-y-5 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Để bảo vệ dữ liệu cá nhân của người dùng trước các mối đe dọa an ninh mạng hiện đại, <strong class="text-white">5GUYS Vault</strong> triển khai kiến trúc phòng thủ đa lớp (<strong class="text-white">Defense-in-Depth</strong>) xuyên suốt từ tầng Giao diện (Frontend), tầng Giao tiếp API (Middleware) xuống đến tầng Cơ sở dữ liệu (Database):
+              </p>
+
+              <!-- 4.1 -->
+              <div class="card-container p-5 space-y-2.5">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-lock text-brand-light"></i>
+                  4.1. Bảo mật Mật khẩu, Phiên đăng nhập &amp; Khôi phục Tài khoản
+                </h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>
+                    <strong class="text-white">Thuật toán băm Bcrypt (Cost Factor 12):</strong> Ngay khi người dùng đăng ký hoặc đổi mật khẩu, mật khẩu được truyền qua hàm <code class="code-inline">bcrypt.hash(password, 12)</code> tích hợp sẵn chuỗi muối ngẫu nhiên (<strong class="text-white">Cryptographic Salt</strong>). Với hệ số vòng lặp <span class="mono font-semibold text-white">2<sup>12</sup> = 4.096</span> vòng băm, việc dò mật khẩu bằng tấn công vét cạn (Brute-force / Rainbow Table) là bất khả thi về mặt tính toán.
+                  </li>
+                  <li>
+                    <strong class="text-white">Chữ ký số JWT &amp; Kiểm tra Quyền hạn Thời gian thực:</strong> Phiên đăng nhập được ký số bằng khóa bí mật <code class="code-inline">JWT_SECRET</code> (tối thiểu 32 ký tự) với thời hạn hiệu lực ngắn (<code class="code-inline">2h</code>). Đặc biệt, tại middleware <code class="code-inline">requireRole</code> (<code class="code-inline">backend/src/middleware/auth.js</code>), hệ thống <strong class="text-white">không tin tưởng mù quáng vào trường <code class="code-inline">role</code> bên trong JWT payload</strong>, mà luôn truy vấn trực tiếp vào bảng <code class="code-inline">users</code> trong MySQL ở mỗi yêu cầu nhạy cảm để kiểm tra xem tài khoản còn hoạt động (<code class="code-inline">status = 'active'</code>) và còn giữ đúng quyền hạn hay không.
+                  </li>
+                  <li>
+                    <strong class="text-white">Khôi phục mật khẩu chống Tấn công Định thời (Timing-Attack Resistant Reset):</strong> Trong luồng Quên mật khẩu (<code class="code-inline">auth.routes.js</code>), mã xác nhận 6 chữ số chỉ có hiệu lực trong 15 phút, giới hạn tối đa 5 lần nhập sai và chỉ được lưu trong bộ nhớ máy chủ dưới dạng bản băm <strong class="text-white">SHA-256</strong>. Khi người dùng gửi mã xác nhận, hệ thống sử dụng hàm <code class="code-inline">crypto.timingSafeEqual()</code> của Node.js để so sánh hai bộ đệm byte trong thời gian hằng số (<span class="mono font-semibold text-white"><i>O</i>(1)</span>), ngăn chặn triệt để kỹ thuật đo thời gian phản hồi để đoán từng chữ số của mã OTP.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 4.2 -->
+              <div class="card-container p-5 space-y-3">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-mobile-screen-button text-brand-light"></i>
+                  4.2. Xác thực Hai yếu tố bằng Thuật toán TOTP (Google Authenticator - RFC 6238)
+                </h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>Khi kích hoạt bảo mật 2 bước, mỗi tài khoản được cấp một khóa bí mật chuẩn <strong class="text-white">Base32</strong> dài 16 ký tự và hiển thị dưới dạng mã QR (<code class="code-inline">otpauth://totp/5GUYS:...</code>).</li>
+                  <li>
+                    Quá trình sinh và kiểm tra mã 6 chữ số diễn ra dựa trên thuật toán <strong class="text-white">TOTP (Time-based One-Time Password - Chuẩn quốc tế RFC 6238)</strong> sử dụng hàm băm mật mã <strong class="text-white">HMAC-SHA1</strong> trên bộ đếm chu kỳ thời gian thực 30 giây:
+                    <div class="my-3 flex justify-center">
+                      <div class="bg-dark-bg border border-brand/40 rounded-xl px-5 py-3 inline-flex items-center gap-2 text-sm sm:text-base font-mono text-white">
+                        <span><i>T</i> =</span>
+                        <span class="text-2xl font-light text-brand-light leading-none">⌊</span>
+                        <span class="inline-flex flex-col items-center leading-tight px-1">
+                          <span class="border-b border-white/60 pb-1 px-2 text-xs sm:text-sm">Unix Timestamp</span>
+                          <span class="pt-1 text-xs sm:text-sm text-brand-light font-bold">30</span>
+                        </span>
+                        <span class="text-2xl font-light text-brand-light leading-none">⌋</span>
+                      </div>
+                    </div>
+                  </li>
+                  <li>
+                    Toàn bộ quá trình xác thực TOTP diễn ra độc lập bằng toán học giữa ứng dụng <strong class="text-white">Google Authenticator</strong> trên điện thoại của bạn và hệ thống 5GUYS mà không cần truyền mật khẩu hay email của bạn qua bất kỳ máy chủ trung gian bên thứ ba nào. Phiên đăng nhập (<code class="code-inline">G5.setApiSession</code>) chỉ chính thức được thiết lập sau khi người dùng vượt qua bước kiểm tra <code class="code-inline">totp.validate()</code> hợp lệ.
+                  </li>
+                </ul>
+              </div>
+
+              <!-- 4.3 -->
+              <div class="card-container p-5 space-y-2.5">
+                <h3 class="text-base font-bold text-white flex items-center gap-2">
+                  <i class="fa-solid fa-fire-flame-curved text-brand-light"></i>
+                  4.3. Phòng chống Tấn công Tầng Ứng dụng (WAF, Rate Limiting, SQLi &amp; XSS)
+                </h3>
+                <ul class="list-disc pl-5 space-y-2">
+                  <li>
+                    <strong class="text-white">HTTP Security Headers (<code class="code-inline">Helmet</code>):</strong> Máy chủ Express kích hoạt middleware <code class="code-inline">helmet()</code> và vô hiệu hóa nhãn <code class="code-inline">x-powered-by</code>, tự động thiết lập các tiêu đề bảo mật tiêu chuẩn (như <code class="code-inline">Content-Security-Policy</code>, <code class="code-inline">X-Content-Type-Options: nosniff</code>, <code class="code-inline">X-Frame-Options: SAMEORIGIN</code>, <code class="code-inline">Strict-Transport-Security</code>) nhằm chặn đứng tấn công Clickjacking và MIME-sniffing.
+                  </li>
+                  <li>
+                    <strong class="text-white">Chính sách CORS Nghiêm ngặt &amp; Giới hạn Kích thước Gói tin:</strong> Chỉ chấp nhận các yêu cầu API từ nguồn tên miền được cấu hình trong <code class="code-inline">FRONTEND_ORIGIN</code> (<code class="code-inline">cors</code>) và giới hạn dung lượng thân gói tin JSON ở mức tối đa <code class="code-inline">32kb</code> (<code class="code-inline">express.json({ limit: '32kb' })</code>), ngăn chặn tấn công làm tràn bộ nhớ máy chủ (Payload Flood).
+                  </li>
+                  <li>
+                    <strong class="text-white">Giới hạn Tần suất Truy cập (<code class="code-inline">Express Rate Limit</code>):</strong> Áp dụng bộ giới hạn tối đa <strong class="text-white">30 yêu cầu / 15 phút</strong> đối với toàn bộ cụm đường dẫn xác thực <code class="code-inline">/api/auth</code> (chống dò mật khẩu tự động) và <strong class="text-white">15 yêu cầu / 1 phút</strong> đối với cụm trí tuệ nhân tạo <code class="code-inline">/api/ai</code> (chống lạm dụng tài nguyên tính toán).
+                  </li>
+                  <li>
+                    <strong class="text-white">Chống SQL Injection &amp; Cross-Site Scripting (XSS):</strong> 100% dữ liệu đầu vào từ phía khách hàng đều được kiểm tra kiểu dữ liệu, độ dài và biểu thức chính quy bằng thư viện <strong class="text-white">Zod</strong> trước khi xử lý; đồng thời mọi truy vấn xuống cơ sở dữ liệu MySQL đều sử dụng <strong class="text-white">Prepared Statements</strong> (<code class="code-inline">db.execute('SELECT ... WHERE id = ?', [id])</code>). Ở phía giao diện người dùng, dữ liệu hiển thị động được gán qua thuộc tính an toàn <code class="code-inline">textContent</code> hoặc hàm lọc ký tự đặc biệt (<code class="code-inline">escapeHtml</code>), loại bỏ hoàn toàn nguy cơ thực thi mã độc XSS.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <!-- DIEU 5 -->
+          <section id="dieu-5" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-share-nodes"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 05</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 5. CHÍNH SÁCH CHIA SẺ DỮ LIỆU &amp; DỊCH VỤ BÊN THỨ BA</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                <strong class="text-white">5GUYS Vault</strong> hoạt động theo nguyên tắc khép kín và chỉ thực hiện kết nối với <strong class="text-white">03 nhóm dịch vụ bên ngoài</strong> trong những trường hợp thật sự cần thiết dưới đây:
+              </p>
+              <ol class="list-decimal pl-5 space-y-3">
+                <li>
+                  <strong class="text-white">Đối tác Vận chuyển &amp; Giao nhận (Chỉ áp dụng cho Đơn hàng Đĩa Vật lý):</strong>
+                  <ul class="list-disc pl-5 mt-1.5 space-y-1">
+                    <li>Khi và chỉ khi đơn hàng của bạn có chứa sản phẩm vật lý (<code class="code-inline">physical</code>), thông tin Họ tên người nhận, Số điện thoại và Địa chỉ nhận hàng mới được trích xuất để in phiếu giao vận và bàn giao cho đơn vị chuyển phát nhằm đưa hộp đĩa đến tận tay bạn. Đối với các đơn hàng chỉ mua Game Kỹ thuật số (<code class="code-inline">digital</code>), không có bất kỳ thông tin cá nhân nào được chuyển ra ngoài hệ thống.</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong class="text-white">Dịch vụ Tra cứu Địa giới Hành chính Công khai (<code class="code-inline">provinces.open-api.vn</code>):</strong>
+                  <ul class="list-disc pl-5 mt-1.5 space-y-1">
+                    <li>Khi bạn mở biểu mẫu Thêm/Sửa địa chỉ giao hàng tại <code class="code-inline">profile.html</code> hoặc <code class="code-inline">cart.html</code>, trình duyệt sẽ gửi yêu cầu <code class="code-inline">GET</code> ẩn danh tới API công khai <code class="code-inline">https://provinces.open-api.vn/api/v2</code> chỉ để tải danh mục 34 Tỉnh/Thành phố và các Phường/Xã của Việt Nam (sau sáp nhập hành chính). Yêu cầu này hoàn toàn không đính kèm Token đăng nhập, Email hay dữ liệu cá nhân của bạn.</li>
+                  </ul>
+                </li>
+                <li>
+                  <strong class="text-white">Dịch vụ Trí tuệ Nhân tạo Google Gemini API &amp; CDN Tài nguyên Media (<code class="code-inline">steampowered.com</code>):</strong>
+                  <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                    <li>Khi bạn sử dụng trợ lý <strong class="text-white">PC2GAMES AI</strong> (và hệ thống đang bật khóa <code class="code-inline">GEMINI_API_KEY</code>), máy chủ Backend (<code class="code-inline">ai.routes.js</code>) chỉ gửi đi: (i) Đoạn văn bản mô tả cấu hình phần cứng/sở thích bạn vừa gõ và (ii) Danh mục tên game, giá bán đang có tại cửa hàng 5GUYS tới điểm cuối <code class="code-inline">generativelanguage.googleapis.com</code> để tổng hợp câu trả lời tư vấn. <strong class="text-white">Hệ thống tuyệt đối không gửi Địa chỉ Email, Tên tài khoản, Số điện thoại hay Lịch sử đơn hàng của bạn cho Google Gemini.</strong></li>
+                    <li>Tương tự, khi bạn mở trình xem Trailer &amp; Ảnh chụp màn hình trên trang chi tiết game, máy chủ Backend (<code class="code-inline">products.routes.js</code>) đóng vai trò là một <strong class="text-white">Reverse Proxy có bộ nhớ đệm 6 giờ (<code class="code-inline">galleryCache</code>)</strong> để lấy đường dẫn ảnh/video từ CDN Akamai (<code class="code-inline">shared.akamai.steamstatic.com</code>), giúp trình duyệt của bạn xem media mượt mà mà không bị lộ thông tin định danh cá nhân cho bên thứ ba.</li>
+                  </ul>
+                </li>
+              </ol>
+            </div>
+          </section>
+
+          <!-- DIEU 6 -->
+          <section id="dieu-6" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-user-check"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 06</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 6. QUYỀN CỦA CHỦ THỂ DỮ LIỆU (NGƯỜI DÙNG)</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <p>
+                Theo quy định tại Điều 9 Nghị định 13/2023/NĐ-CP, với tư cách là Chủ thể dữ liệu, bạn có toàn quyền kiểm soát thông tin cá nhân của mình thông qua các công cụ tự phục vụ trực quan đã được tích hợp sẵn trên giao diện <strong class="text-white">5GUYS Vault</strong>:
+              </p>
+              <ul class="list-disc pl-5 space-y-2.5">
+                <li>
+                  <strong class="text-white">1. Quyền được biết và Quyền truy cập dữ liệu:</strong> Bạn có thể xem toàn bộ thông tin định danh, ngày tạo tài khoản, hạng thành viên, tổng số đơn hàng, danh sách game sở hữu và lịch sử biến động điểm thưởng bất kỳ lúc nào tại trang <strong class="text-white">Hồ sơ cá nhân (<a href="profile.html" class="text-brand-light underline hover:text-white"><code class="code-inline">profile.html</code></a>)</strong>, <strong class="text-white">Kho game (<a href="library.html" class="text-brand-light underline hover:text-white"><code class="code-inline">library.html</code></a>)</strong> và <strong class="text-white">Khách hàng thân thiết (<a href="loyalty.html" class="text-brand-light underline hover:text-white"><code class="code-inline">loyalty.html</code></a>)</strong>.
+                </li>
+                <li>
+                  <strong class="text-white">2. Quyền chỉnh sửa và cập nhật dữ liệu:</strong> Tại mục <em>Thông tin cá nhân</em> và <em>Bảo mật</em> trên trang <code class="code-inline">profile.html</code>, bạn có thể chủ động bấm nút <strong class="text-white">"Chỉnh sửa"</strong> để thay đổi Tên hiển thị (GamerTag), cập nhật Số điện thoại mới hoặc thực hiện <strong class="text-white">"Đổi mật khẩu"</strong> bất kỳ lúc nào.
+                </li>
+                <li>
+                  <strong class="text-white">3. Quyền quản lý và xóa dữ liệu địa chỉ giao vận:</strong> Trong mục <em>Địa chỉ giao hàng</em> tại <code class="code-inline">profile.html</code>, bạn có toàn quyền thêm mới, chỉnh sửa, đổi địa chỉ mặc định hoặc nhấn nút <strong class="text-white">"Xóa"</strong> (<code class="code-inline">DELETE /api/profile/addresses/:id</code>) để gỡ bỏ vĩnh viễn địa chỉ của mình khỏi bảng <code class="code-inline">user_addresses</code>.
+                </li>
+                <li>
+                  <strong class="text-white">4. Quyền rút lại sự đồng ý, khiếu nại và yêu cầu xóa/khóa tài khoản:</strong>
+                  <ul class="list-disc pl-5 mt-1.5 space-y-1.5">
+                    <li>Bạn có thể gửi yêu cầu hoàn tiền trực tiếp trên từng đơn hàng tại trang <strong class="text-white">Đơn hàng của tôi (<a href="orders.html" class="text-brand-light underline hover:text-white"><code class="code-inline">orders.html</code></a>)</strong>.</li>
+                    <li>Nếu phát hiện bất kỳ dấu hiệu bất thường nào về bảo mật hoặc muốn yêu cầu khóa/xóa tài khoản khỏi hệ thống, bạn có thể gửi phiếu yêu cầu trực tiếp qua trang <strong class="text-white">Chăm sóc khách hàng (<a href="support.html" class="text-brand-light underline hover:text-white"><code class="code-inline">support.html</code></a>)</strong> hoặc nút Trung tâm Hỗ trợ nổi trên góc phải màn hình để Quản trị viên xử lý trong vòng 24 giờ.</li>
+                  </ul>
+                </li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- DIEU 7 -->
+          <section id="dieu-7" class="policy-section card p-6 sm:p-8 border-brand/30">
+            <div class="flex items-start gap-3 mb-4">
+              <span class="w-10 h-10 rounded-xl bg-brand/20 border border-brand-light/40 grid place-items-center text-brand-light flex-shrink-0">
+                <i class="fa-solid fa-address-book"></i>
+              </span>
+              <div>
+                <span class="text-xs font-bold uppercase tracking-wider text-brand-light">Điều khoản 07</span>
+                <h2 class="text-xl sm:text-2xl font-black text-white">ĐIỀU 7. HIỆU LỰC, CẬP NHẬT &amp; THÔNG TIN LIÊN HỆ</h2>
+              </div>
+            </div>
+
+            <div class="space-y-4 text-sm sm:text-[15px] text-on-surface-variant leading-relaxed">
+              <ol class="list-decimal pl-5 space-y-2.5">
+                <li>
+                  <strong class="text-white">Hiệu lực và Sửa đổi Chính sách:</strong> Chính sách Bảo mật này có hiệu lực kể từ <strong class="text-white">Tháng 11 năm 2026</strong>. Trong quá trình nâng cấp các tính năng mới của nền tảng <strong class="text-white">5GUYS Vault</strong>, Ban Quản trị có thể cập nhật nội dung văn bản này. Mọi thay đổi quan trọng sẽ được thông báo công khai trên thanh trạng thái của trang chủ và cập nhật ngày hiệu lực mới ở đầu trang.
+                </li>
+                <li>
+                  <strong class="text-white">Thông tin Liên hệ Đơn vị Quản trị Dữ liệu:</strong> Mọi câu hỏi, góp ý kỹ thuật hoặc yêu cầu liên quan đến quyền riêng tư và bảo mật dữ liệu trên nền tảng <strong class="text-white">5GUYS Vault</strong>, xin vui lòng liên hệ trực tiếp với nhóm phát triển dự án:
+                </li>
+              </ol>
+
+              <div class="card-container p-5 space-y-3 border-brand/40">
+                <ul class="space-y-2 text-sm">
+                  <li><i class="fa-solid fa-users text-brand-light mr-2"></i><strong class="text-white">Đơn vị thực hiện:</strong> Nhóm 5Guys — Lớp 26C01</li>
+                  <li><i class="fa-solid fa-graduation-cap text-brand-light mr-2"></i><strong class="text-white">Khoa / Trường:</strong> Khoa Công nghệ Thông tin — Trường Đại học Khoa học Tự nhiên, Đại học Quốc gia TP. Hồ Chí Minh (VNUHCM - University of Science)</li>
+                  <li>
+                    <p class="mb-2"><i class="fa-solid fa-user-tie text-brand-light mr-2"></i><strong class="text-white">Ban Quản trị &amp; Phát triển Hệ thống:</strong></p>
+                    <ul class="list-disc pl-6 space-y-1.5 text-xs sm:text-sm">
+                      <li><strong class="text-white">Đào Nguyễn Anh Khoa</strong> (MSSV: <code class="code-inline">26127217</code> — Trưởng nhóm): <code class="code-inline">dnakhoa2607@clc.fitus.edu.vn</code></li>
+                      <li><strong class="text-white">Lâm Thiên Bảo</strong> (MSSV: <code class="code-inline">26127041</code> — Thành viên): <code class="code-inline">ltbao2637@clc.fitus.edu.vn</code></li>
+                      <li><strong class="text-white">Nguyễn Việt Hùng</strong> (MSSV: <code class="code-inline">26127143</code> — Thành viên): <code class="code-inline">nvhung2625@clc.fitus.edu.vn</code></li>
+                      <li><strong class="text-white">Phan Gia Toàn</strong> (MSSV: <code class="code-inline">26127469</code> — Thành viên): <code class="code-inline">pgtoan2625@clc.fitus.edu.vn</code></li>
+                      <li><strong class="text-white">Vũ Minh Tuấn</strong> (MSSV: <code class="code-inline">26127493</code> — Thành viên): <code class="code-inline">vmtuan2622@clc.fitus.edu.vn</code></li>
+                    </ul>
+                  </li>
+                  <li class="pt-1">
+                    <i class="fa-solid fa-ticket text-brand-light mr-2"></i><strong class="text-white">Kênh hỗ trợ trực tuyến:</strong> Hệ thống Ticket tại trang <a href="support.html" class="text-brand-light underline hover:text-white"><code class="code-inline">support.html</code></a> trên nền tảng <strong class="text-white">5GUYS Game Store</strong>.
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="assets/layout.js" data-part="footer"></script>
+  <script>
+    (function () {
+      var links = Array.prototype.slice.call(document.querySelectorAll('#privacy-toc a[data-target]'));
+      var sections = links
+        .map(function (a) { return document.getElementById(a.getAttribute('data-target')); })
+        .filter(Boolean);
+      if (!links.length || !sections.length) return;
+
+      function setActive(id) {
+        links.forEach(function (a) {
+          a.classList.toggle('is-active', a.getAttribute('data-target') === id);
+        });
+      }
+
+      links.forEach(function (a) {
+        a.addEventListener('click', function () {
+          setActive(a.getAttribute('data-target'));
+        });
+      });
+
+      if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) setActive(entry.target.id);
+          });
+        }, { rootMargin: '-18% 0px -65% 0px', threshold: 0.01 });
+        sections.forEach(function (sec) { obs.observe(sec); });
+      }
+    })();
+  </script>
+</body>
+</html>

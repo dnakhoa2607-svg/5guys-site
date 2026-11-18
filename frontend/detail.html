@@ -13,28 +13,263 @@
 </head>
 <body class="antialiased flex flex-col min-h-screen bg-dark-bg text-white">
   <!-- ================= NAVBAR ================= -->
-<script src="assets/layout.js" data-part="nav"></script>
+  <script src="assets/layout.js" data-part="nav"></script>
+
   <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-    <p class="text-xs uppercase tracking-wider text-outline mb-6"><a href="index.html" class="hover:text-brand-light">Cửa hàng</a> / <a href="search.html" class="hover:text-brand-light">Game</a> / <span id="crumb-title">Chi tiết</span></p>
+    <p class="text-xs uppercase tracking-wider text-outline mb-6">
+      <a href="index.html" class="hover:text-brand-light">Cửa hàng</a> /
+      <a href="search.html" class="hover:text-brand-light">Game</a> /
+      <span id="crumb-title">Chi tiết</span>
+    </p>
+
     <div id="detail-loading" class="text-center py-24 text-outline">Đang tải thông tin game…</div>
+
     <article id="game-detail" class="hidden">
       <section class="grid lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,.8fr)] gap-8 lg:gap-12 items-start">
-        <div class="relative"><div class="relative min-h-[360px] sm:min-h-[520px] grid place-items-center overflow-hidden rounded-3xl bg-dark-surface border border-dark-border"><img id="game-cover" class="absolute inset-0 h-full w-full object-contain" alt="Ảnh bìa game"><div id="game-cover-fallback" class="hidden p-8 text-center text-2xl font-black text-brand-light"></div></div><div id="game-media" class="grid sm:grid-cols-2 gap-3 mt-4"></div><div id="trailer-slot"></div></div>
-        <div class="lg:sticky lg:top-24"><span class="chip dg">5GUYS GAME DETAIL</span><h1 id="game-title" class="text-3xl sm:text-5xl font-black tracking-tight mt-4"></h1><p id="game-byline" class="text-sm text-outline mt-3"></p><p id="game-description" class="text-gray-300 leading-7 mt-7"></p>
-          <div class="card p-5 mt-7"><div id="game-formats" class="hidden mb-5"><p class="text-xs text-outline uppercase tracking-wider mb-2">Chọn hình thức</p><div class="grid sm:grid-cols-2 gap-2"></div></div><div class="flex items-center justify-between gap-3"><div class="min-w-0 flex-none"><p class="text-xs text-outline uppercase tracking-wider">Giá bán</p><del id="game-original-price" class="hidden text-xs text-outline"></del><p id="game-price" class="text-2xl sm:text-3xl font-black text-primary-container mt-1 whitespace-nowrap leading-none"></p></div><p id="game-stock" class="ml-auto max-w-[48%] shrink-0 text-right text-xs sm:text-sm leading-snug text-emerald-300"></p></div><div id="game-editions" class="space-y-2 mt-5"></div><div class="grid grid-cols-2 gap-3 mt-5"><button id="game-add" class="min-h-12 rounded-full border border-brand/50 bg-dark-surface px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand/20 transition-colors disabled:opacity-50" type="button"><i class="fa-solid fa-cart-plus mr-1 sm:mr-2"></i>Thêm giỏ</button><button id="buy-now" class="min-h-12 rounded-full bg-brand px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand-light transition-colors" type="button">Mua ngay</button></div><button id="favorite" class="min-h-11 rounded-full border border-brand/30 px-4 py-2 ghost w-full mt-3 hover:bg-brand/10 transition-colors" type="button">♡ Yêu thích</button></div>
-          <section class="mt-8"><h2 class="text-xl font-bold border-l-4 border-brand pl-3">Thông số</h2><div id="game-specs" class="mt-3"></div></section>
+        <div class="relative">
+          <div class="relative min-h-[360px] sm:min-h-[520px] grid place-items-center overflow-hidden rounded-3xl bg-dark-surface border border-dark-border">
+            <img id="game-cover" class="absolute inset-0 h-full w-full object-contain" alt="Ảnh bìa game">
+            <div id="game-cover-fallback" class="hidden p-8 text-center text-2xl font-black text-brand-light"></div>
+          </div>
+          <div id="game-media" class="grid sm:grid-cols-2 gap-3 mt-4"></div>
+          <div id="trailer-slot"></div>
+        </div>
+
+        <div class="lg:sticky lg:top-24">
+          <span class="chip dg">5GUYS GAME DETAIL</span>
+          <h1 id="game-title" class="text-3xl sm:text-5xl font-black tracking-tight mt-4"></h1>
+          <p id="game-byline" class="text-sm text-outline mt-3"></p>
+          <p id="game-description" class="text-gray-300 leading-7 mt-7"></p>
+
+          <div class="card p-5 mt-7">
+            <div id="game-formats" class="hidden mb-5">
+              <p class="text-xs text-outline uppercase tracking-wider mb-2">Chọn hình thức</p>
+              <div class="grid sm:grid-cols-2 gap-2"></div>
+            </div>
+            <div class="flex items-center justify-between gap-3">
+              <div class="min-w-0 flex-none">
+                <p class="text-xs text-outline uppercase tracking-wider">Giá bán</p>
+                <del id="game-original-price" class="hidden text-xs text-outline"></del>
+                <p id="game-price" class="text-2xl sm:text-3xl font-black text-primary-container mt-1 whitespace-nowrap leading-none"></p>
+              </div>
+              <p id="game-stock" class="ml-auto max-w-[48%] shrink-0 text-right text-xs sm:text-sm leading-snug text-emerald-300"></p>
+            </div>
+            <div id="game-editions" class="space-y-2 mt-5"></div>
+            <div class="grid grid-cols-2 gap-3 mt-5">
+              <button id="game-add" class="min-h-12 rounded-full border border-brand/50 bg-dark-surface px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand/20 transition-colors disabled:opacity-50" type="button">
+                <i class="fa-solid fa-cart-plus mr-1 sm:mr-2"></i>Thêm giỏ
+              </button>
+              <button id="buy-now" class="min-h-12 rounded-full bg-brand px-3 py-3 text-xs sm:text-sm font-bold text-white hover:bg-brand-light transition-colors" type="button">
+                Mua ngay
+              </button>
+            </div>
+            <button id="favorite" class="min-h-11 rounded-full border border-brand/30 px-4 py-2 ghost w-full mt-3 hover:bg-brand/10 transition-colors" type="button">
+              ♡ Yêu thích
+            </button>
+          </div>
+
+          <section class="mt-8">
+            <h2 class="text-xl font-bold border-l-4 border-brand pl-3">Thông số</h2>
+            <div id="game-specs" class="mt-3"></div>
+          </section>
         </div>
       </section>
-      <section class="mt-14"><p class="text-xs text-amber-200 mb-3">Cấu hình trong database demo chỉ để minh họa; hãy xác minh yêu cầu chính thức của từng game trước khi mua.</p><div class="grid lg:grid-cols-2 gap-6"><div class="card p-5"><h2 class="text-xl font-bold">Cấu hình tối thiểu</h2><div id="minimum-requirements" class="mt-4 text-sm text-gray-300"><p>Đang cập nhật cấu hình theo từng game.</p></div></div><div class="card p-5"><h2 class="text-xl font-bold">Cấu hình đề nghị</h2><div id="recommended-requirements" class="mt-4 text-sm text-gray-300"><p>Đang cập nhật cấu hình theo từng game.</p></div></div></div></section>
-      <section class="mt-14"><div class="flex flex-wrap items-end justify-between gap-4"><div><h2 class="text-2xl font-black">Đánh giá người chơi</h2><p class="text-sm text-outline mt-1">Chỉ hiển thị đánh giá đã được duyệt.</p></div><a href="reviews.html" class="ghost">Cộng đồng &amp; đánh giá</a></div><div id="game-reviews" class="grid md:grid-cols-2 gap-4 mt-5"></div></section>
+
+      <!-- ================= CẤU HÌNH HỆ THỐNG ================= -->
+      <section id="system-requirements-section" class="mt-14" aria-labelledby="sysreq-heading">
+        <p class="text-xs text-amber-200 mb-3 flex items-center gap-1.5">
+          <i class="fa-solid fa-circle-info"></i> Cấu hình hiển thị chỉ là demo.
+        </p>
+
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 id="sysreq-heading" class="text-2xl font-black border-l-4 border-brand pl-3">Cấu hình hệ thống</h2>
+            <p class="text-sm text-outline mt-1">Thông số phần cứng, dung lượng lưu trữ, hệ điều hành và yêu cầu kết nối mạng.</p>
+          </div>
+          <div class="flex items-center gap-2 bg-dark-surface border border-dark-border p-1 rounded-full">
+            <button type="button" data-req-tab="all" class="req-tab-btn px-3.5 py-1.5 rounded-full text-xs font-bold bg-brand text-white transition-colors">Tất cả</button>
+            <button type="button" data-req-tab="min" class="req-tab-btn px-3.5 py-1.5 rounded-full text-xs font-bold text-outline hover:text-white transition-colors">Tối thiểu</button>
+            <button type="button" data-req-tab="rec" class="req-tab-btn px-3.5 py-1.5 rounded-full text-xs font-bold text-outline hover:text-white transition-colors">Đề xuất</button>
+          </div>
+        </div>
+
+        <!-- 3 thẻ tóm tắt nhanh: Hệ điều hành, Dung lượng lưu trữ, Yêu cầu kết nối -->
+        <div class="grid sm:grid-cols-3 gap-4 mt-5">
+          <div class="card p-4 flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-dark-surface border border-brand/40 grid place-items-center text-brand-light shrink-0">
+              <i class="fa-brands fa-windows"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] uppercase tracking-wider text-outline">Hệ điều hành</p>
+              <p id="sys-os-summary" class="text-sm font-bold text-white truncate mt-0.5">Windows 10/11 (64-bit)</p>
+            </div>
+          </div>
+
+          <div class="card p-4 flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-dark-surface border border-brand/40 grid place-items-center text-brand-light shrink-0">
+              <i class="fa-solid fa-hard-drive"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] uppercase tracking-wider text-outline">Dung lượng lưu trữ</p>
+              <p id="sys-storage-summary" class="text-sm font-bold text-white truncate mt-0.5">Đang cập nhật</p>
+            </div>
+          </div>
+
+          <div class="card p-4 flex items-center gap-3.5">
+            <div class="w-10 h-10 rounded-xl bg-dark-surface border border-brand/40 grid place-items-center text-brand-light shrink-0">
+              <i class="fa-solid fa-wifi"></i>
+            </div>
+            <div class="min-w-0">
+              <p class="text-[11px] uppercase tracking-wider text-outline">Yêu cầu kết nối</p>
+              <p id="sys-network-summary" class="text-sm font-bold text-emerald-300 truncate mt-0.5">Kết nối Internet băng thông rộng</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bảng chi tiết Cấu hình tối thiểu & Cấu hình đề xuất -->
+        <div id="sysreq-grid" class="grid lg:grid-cols-2 gap-6 mt-5">
+          <div id="req-card-min" class="card p-6 hover:border-brand/60 transition-colors">
+            <div class="flex items-center justify-between gap-2 pb-4 border-b border-dark-border">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-microchip text-outline"></i>Cấu hình tối thiểu
+              </h3>
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-dark-surface border border-dark-border text-outline">Minimum</span>
+            </div>
+            <div id="minimum-requirements" class="mt-4 text-sm text-gray-300 space-y-2.5">
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Hệ điều hành</span><span class="font-medium text-right text-white">Windows 10 (64-bit)</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Vi xử lý (CPU)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Bộ nhớ (RAM)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Đồ họa (GPU)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Dung lượng lưu trữ</span><span class="font-medium text-right text-brand-light">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5"><span class="text-outline">Yêu cầu kết nối</span><span class="font-medium text-right text-emerald-300">Kết nối Internet để kích hoạt &amp; tải game</span></div>
+            </div>
+          </div>
+
+          <div id="req-card-rec" class="card p-6 border-brand/40 shadow-[0_0_20px_rgba(157,78,221,0.12)] hover:border-brand transition-colors">
+            <div class="flex items-center justify-between gap-2 pb-4 border-b border-dark-border">
+              <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                <i class="fa-solid fa-bolt text-brand-light"></i>Cấu hình đề xuất
+              </h3>
+              <span class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-brand/20 border border-brand/40 text-brand-light">Recommended</span>
+            </div>
+            <div id="recommended-requirements" class="mt-4 text-sm text-gray-300 space-y-2.5">
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Hệ điều hành</span><span class="font-medium text-right text-white">Windows 10 / 11 (64-bit)</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Vi xử lý (CPU)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Bộ nhớ (RAM)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Đồ họa (GPU)</span><span class="font-medium text-right">Đang cập nhật</span></div>
+              <div class="flex justify-between gap-4 py-1.5 border-b border-dark-border/50"><span class="text-outline">Dung lượng lưu trữ</span><span class="font-medium text-right text-brand-light">Đang cập nhật (Khuyến nghị SSD)</span></div>
+              <div class="flex justify-between gap-4 py-1.5"><span class="text-outline">Yêu cầu kết nối</span><span class="font-medium text-right text-emerald-300">Internet băng thông rộng (ổn định cho chế độ trực tuyến)</span></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="mt-14">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <h2 class="text-2xl font-black">Đánh giá người chơi</h2>
+            <p class="text-sm text-outline mt-1">Chỉ hiển thị đánh giá đã được duyệt.</p>
+          </div>
+          <a href="reviews.html" class="ghost">Cộng đồng &amp; đánh giá</a>
+        </div>
+        <div id="game-reviews" class="grid md:grid-cols-2 gap-4 mt-5"></div>
+      </section>
     </article>
   </main>
+
   <script src="assets/layout.js" data-part="footer"></script>
   <script src="assets/detail.js"></script>
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('.req-tab-btn');
+      var minCard = document.getElementById('req-card-min');
+      var recCard = document.getElementById('req-card-rec');
+      var grid = document.getElementById('sysreq-grid');
+
+      tabs.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var mode = btn.getAttribute('data-req-tab');
+          tabs.forEach(function (b) {
+            b.classList.remove('bg-brand', 'text-white');
+            b.classList.add('text-outline');
+          });
+          btn.classList.add('bg-brand', 'text-white');
+          btn.classList.remove('text-outline');
+
+          if (mode === 'min') {
+            minCard.classList.remove('hidden');
+            recCard.classList.add('hidden');
+            grid.classList.remove('lg:grid-cols-2');
+          } else if (mode === 'rec') {
+            recCard.classList.remove('hidden');
+            minCard.classList.add('hidden');
+            grid.classList.remove('lg:grid-cols-2');
+          } else {
+            minCard.classList.remove('hidden');
+            recCard.classList.remove('hidden');
+            grid.classList.add('lg:grid-cols-2');
+          }
+        });
+      });
+
+      function syncSummaryFromDetail() {
+        var minEl = document.getElementById('minimum-requirements');
+        var recEl = document.getElementById('recommended-requirements');
+        if (!minEl && !recEl) return;
+
+        var combinedText = ((recEl && recEl.innerText) || '') + '\n' + ((minEl && minEl.innerText) || '');
+        var lines = combinedText.split('\n').map(function (l) { return l.trim(); }).filter(Boolean);
+
+        function extractValue(keywords) {
+          for (var i = 0; i < lines.length; i++) {
+            var lower = lines[i].toLowerCase();
+            for (var k = 0; k < keywords.length; k++) {
+              if (lower.indexOf(keywords[k]) !== -1) {
+                var parts = lines[i].split(':');
+                if (parts.length > 1 && parts[1].trim() && parts[1].trim() !== 'Đang cập nhật') {
+                  return parts.slice(1).join(':').trim();
+                }
+                if (lines[i + 1] && lines[i + 1] !== 'Đang cập nhật') {
+                  return lines[i + 1];
+                }
+              }
+            }
+          }
+          return null;
+        }
+
+        var osVal = extractValue(['hệ điều hành', 'os']);
+        var storageVal = extractValue(['dung lượng', 'lưu trữ', 'storage', 'ổ cứng']);
+        var netVal = extractValue(['kết nối', 'mạng', 'network', 'internet']);
+
+        if (osVal) document.getElementById('sys-os-summary').textContent = osVal;
+        if (storageVal) document.getElementById('sys-storage-summary').textContent = storageVal;
+        if (netVal) document.getElementById('sys-network-summary').textContent = netVal;
+
+        [minEl, recEl].forEach(function (box, idx) {
+          if (!box) return;
+          var txt = box.innerText.toLowerCase();
+          if (txt.indexOf('kết nối') === -1 && txt.indexOf('internet') === -1 && txt.indexOf('network') === -1) {
+            var row = document.createElement('div');
+            row.className = 'flex justify-between gap-4 py-1.5 mt-2 pt-2 border-t border-dark-border/50 text-sm';
+            row.innerHTML = '<span class="text-outline">Yêu cầu kết nối</span><span class="font-medium text-right text-emerald-300">' +
+              (idx === 0 ? 'Kết nối Internet để kích hoạt & tải game' : 'Internet băng thông rộng (khuyến nghị ổn định)') + '</span>';
+            box.appendChild(row);
+          }
+        });
+      }
+
+      var target = document.getElementById('game-detail');
+      if (target && window.MutationObserver) {
+        var obs = new MutationObserver(function () {
+          if (!target.classList.contains('hidden')) {
+            syncSummaryFromDetail();
+            obs.disconnect();
+          }
+        });
+        obs.observe(target, { attributes: true, attributeFilter: ['class'] });
+      }
+    })();
+  </script>
 </body>
 </html>
-
-
-
-
-

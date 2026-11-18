@@ -636,9 +636,6 @@ button, input, select, textarea { font-family: inherit; }
             Mở ứng dụng <b style="color:#fff">Google Authenticator</b> và nhập mã 6 chữ số của tài khoản <b id="twofa-email" style="color:#c77dff"></b>.
         </p>
 <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:8px;">
-<button class="quick-autofill-btn" id="btn-autofill-otp" onclick="autofillOTP()" type="button">
-<i class="fa-solid fa-bolt"></i> Tự động điền mã
-        </button>
 <button class="quick-autofill-btn" id="btn-show-qr" onclick="toggleLoginQR()" type="button" style="display:none">
 <i class="fa-solid fa-qrcode"></i> Hiện mã QR Google Authenticator
         </button>
@@ -892,31 +889,12 @@ button, input, select, textarea { font-family: inherit; }
     function startCountdown() {
         if (countdownTimer) clearInterval(countdownTimer);
         const timerEl = document.getElementById('timer-count');
-        const autoBtn = document.getElementById('btn-autofill-otp');
         const tick = () => {
             const left = 30 - (Math.floor(Date.now() / 1000) % 30);
             if (timerEl) timerEl.textContent = left + ' giây';
-            if (autoBtn && currentTotp) {
-                autoBtn.innerHTML = '<i class="fa-solid fa-bolt"></i> Tự động điền mã (' + currentTotp.generate() + ')';
-            }
         };
         tick();
         countdownTimer = setInterval(tick, 1000);
-    }
-
-    // Tu dong dien ma that cua khung 30 giay hien tai
-    function autofillOTP() {
-        if (!currentTotp) return;
-        const code = currentTotp.generate();
-        const digits = document.querySelectorAll('.otp-digit');
-        digits.forEach((input, index) => {
-            input.value = code[index] || '';
-        });
-        if (digits.length > 0) {
-            digits[digits.length - 1].focus();
-        }
-        hide2FAError();
-        showToast('Đã tự động điền mã Google Authenticator hiện tại.');
     }
 
     // Setup 6-digit OTP Input Auto Jump and Navigation

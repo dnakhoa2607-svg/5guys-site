@@ -1,5 +1,9 @@
 # Thay đổi bản v2
 
+## Gỡ bỏ nút Điền nhanh mã xác thực 2FA (`frontend/login.html`, `frontend/register.html`)
+- **`frontend/login.html`:** Gỡ bỏ nút `#btn-autofill-otp` (*Tự động điền mã*), hàm `autofillOTP()` và đoạn cập nhật mã tự động trong `startCountdown()` ở modal xác thực 2 bước (2FA); giữ nguyên nút **Hiện mã QR Google Authenticator** (`#btn-show-qr`), đồng hồ đếm ngược 30 giây, cơ chế xác thực TOTP và đặc cách duy nhất tài khoản `admin@5guys.com`.
+- **`frontend/register.html`:** Gỡ bỏ nút `#demo-code-pill` (*Điền nhanh mã hiện tại*), CSS `.demo-code-pill`, hàm `fillDemoOtp()` và đoạn cập nhật `#demo-code` trong `startCountdown()`; giữ nguyên mã QR quét Google Authenticator, sao chép khóa bí mật, đồng hồ 30 giây và kiểm tra OTP 6 số.
+
 ## Trang Chính sách Bảo mật & Tích hợp Liên kết (`frontend/privacy.html`, `frontend/assets/layout.js`, `frontend/register.html`, `frontend/cart.html`)
 - **Tạo mới `frontend/privacy.html`:**
   - Chuyển đổi đầy đủ 100% nội dung từ văn bản *Chính sách Bảo mật & An toàn Dữ liệu (v2.0)* của 5GUYS Vault gồm phần Mở đầu pháp lý, Bản tóm tắt Cam kết cốt lõi (03 thẻ tóm tắt) và trọn vẹn **Điều 1 đến Điều 7** (kèm bảng phân loại dữ liệu MySQL, bảng khóa `localStorage`/`sessionStorage`, các tiểu mục a–d, công thức Bcrypt & TOTP RFC 6238, và thông tin Ban Quản trị Nhóm 5Guys 26C01 - FIT HCMUS).

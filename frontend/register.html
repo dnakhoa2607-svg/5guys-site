@@ -542,34 +542,6 @@
             box-shadow: 0 0 16px rgba(199, 125, 255, 0.45), inset 0 2px 4px rgba(0,0,0,0.4);
             transform: translateY(-2px);
         }
-        .demo-code-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(157, 78, 221, 0.15);
-            border: 1px dashed rgba(199, 125, 255, 0.5);
-            padding: 8px 14px;
-            border-radius: 9999px;
-            font-size: 12px;
-            color: #edddf8;
-            margin-top: 10px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .demo-code-pill:hover {
-            background: rgba(157, 78, 221, 0.3);
-            border-color: #c77dff;
-            color: #ffffff;
-            transform: scale(1.02);
-            box-shadow: 0 0 14px rgba(199, 125, 255, 0.35);
-        }
-        .demo-code-pill code {
-            font-family: 'Inter', sans-serif; font-variant-numeric: tabular-nums;
-            font-weight: 800;
-            color: #c77dff;
-            font-size: 14px;
-            letter-spacing: 2px;
-        }
         .success-overlay-content {
             display: none;
             text-align: center;
@@ -717,9 +689,6 @@
 <code id="totp-secret-text" style="font-family:'Inter',monospace;font-weight:800;color:#c77dff;letter-spacing:2px;font-size:14px;background:rgba(18,9,28,0.85);border:1px solid rgba(157,78,221,0.4);padding:6px 12px;border-radius:10px;word-break:break-all;"></code>
 <button type="button" onclick="copySecret()" title="Sao chép khóa" aria-label="Sao chép khóa bí mật" style="background:rgba(157,78,221,0.15);border:1px solid rgba(199,125,255,0.45);color:#c77dff;width:34px;height:34px;border-radius:10px;cursor:pointer;"><i class="fa-solid fa-copy"></i></button>
 </div>
-<button type="button" class="demo-code-pill" id="demo-code-pill" onclick="fillDemoOtp()" title="Chế độ demo: điền mã 6 số hợp lệ của chu kỳ 30 giây hiện tại">
-<i class="fa-solid fa-bolt" style="color:#c77dff"></i> Điền nhanh mã hiện tại: <code id="demo-code">------</code>
-</button>
 <div class="otp-inputs">
 <input class="otp-box" type="text" inputmode="numeric" maxlength="1" autocomplete="one-time-code" aria-label="Chữ số 1">
 <input class="otp-box" type="text" inputmode="numeric" maxlength="1" aria-label="Chữ số 2">
@@ -850,15 +819,6 @@
     btn.innerHTML = '<i class="fa-solid fa-lock-open"></i> Xác nhận &amp; Kích hoạt tài khoản';
   }
 
-  // 3. Nut .demo-code-pill: lay ma 6 so hop le cua chu ky 30 giay hien tai (totp.generate())
-  function fillDemoOtp() {
-    if (!pendingReg) return;
-    const code = pendingReg.totp.generate();
-    code.split('').forEach((c, idx) => { if (otpInputs[idx]) otpInputs[idx].value = c; });
-    if (otpInputs[5]) otpInputs[5].focus();
-    hideOtpError();
-  }
-
   function copySecret() {
     if (!pendingReg) return;
     const done = () => { const el = document.getElementById('totp-secret-text'); const old = el.style.color; el.style.color = '#4ade80'; setTimeout(() => el.style.color = old, 900); };
@@ -914,14 +874,12 @@
     }
   }
 
-  // Dong ho + ma demo chay theo dung nhip 30 giay cua TOTP
+  // Dong ho dem nguoc chay theo dung nhip 30 giay cua TOTP
   function startCountdown() {
     clearInterval(countdownTimer);
     const timerEl = document.getElementById('timer-count');
-    const demoEl = document.getElementById('demo-code');
     const tick = () => {
-      timerEl.textContent = (30 - (Math.floor(Date.now() / 1000) % 30)) + ' giây';
-      if (pendingReg) demoEl.textContent = pendingReg.totp.generate();
+      if (timerEl) timerEl.textContent = (30 - (Math.floor(Date.now() / 1000) % 30)) + ' giây';
     };
     tick();
     countdownTimer = setInterval(tick, 1000);

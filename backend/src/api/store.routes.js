@@ -121,6 +121,14 @@ router.post('/orders', async (req, res, next) => {
     }).default({}).parse(req.body || {});
 
     await conn.beginTransaction();
+    const [[pendingCnt]] = await conn.execute(
+      "SELECT COUNT(*) AS cnt FROM orders WHERE user_id=? AND status='pending_payment'",
+      [req.user.sub]
+    );
+    if (Number(pendingCnt?.cnt || 0) >= 5) {
+      await conn.rollback();
+      return res.status(429).json({ error: 'too_many_pending_orders' });
+    }
     const [cartRows] = await conn.execute('SELECT c.id FROM carts c WHERE c.user_id=? FOR UPDATE', [req.user.sub]);
     if (!cartRows.length) {
       await conn.rollback();

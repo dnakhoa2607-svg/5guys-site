@@ -15,11 +15,17 @@ router.get('/', async (req, res, next) => {
       limit: z.coerce.number().int().min(1).max(100).default(24),
       offset: z.coerce.number().int().min(0).default(0),
     }).parse(req.query);
+    const uniqueWhere = ["status='active'"];
+    const uniqueValues = [];
+    if (q.type) {
+      uniqueWhere.push('product_type=?');
+      uniqueValues.push(q.type);
+    }
     const where = ["p.status='active'"];
     const values = [];
     if (q.q) { where.push('p.title LIKE ?'); values.push(`%${q.q}%`); }
     if (q.type) {
-      where.push('EXISTS (SELECT 1 FROM products pf_type WHERE pf_type.title = p.title AND pf_type.product_type = ? AND pf_type.status = "active")');
+      where.push('p.product_type = ?');
       values.push(q.type);
     }
     if (q.platform) {
@@ -27,20 +33,23 @@ router.get('/', async (req, res, next) => {
       values.push(q.platform);
     }
     if (q.genre) { where.push('p.genre=?'); values.push(q.genre); }
+    const priceExpr = q.type
+      ? 'p.price'
+      : "(SELECT MIN(pf.price) FROM products pf WHERE pf.title=p.title AND pf.status='active') AS price";
     const [products] = await db.execute(
       `SELECT p.id,p.slug,p.title,p.description,p.publisher,p.developer,p.release_date,
               (SELECT GROUP_CONCAT(DISTINCT pf.platform SEPARATOR ' / ') FROM products pf WHERE pf.title=p.title AND pf.status='active') AS platform,
               p.genre,p.cover_url,p.product_type,
-              (SELECT MIN(pf.price) FROM products pf WHERE pf.title=p.title AND pf.status='active') AS price,
+              ${priceExpr},
               p.original_price,p.discount_percent,p.currency,p.rating,
               IF(p.product_type='physical',COALESCE(i.quantity_on_hand-i.quantity_reserved,0),NULL) AS available_stock,
               (SELECT GROUP_CONCAT(DISTINCT pf.product_type ORDER BY FIELD(pf.product_type,'digital','physical') SEPARATOR ',') FROM products pf WHERE pf.title=p.title AND pf.status='active') AS available_formats
        FROM products p
        LEFT JOIN physical_inventory i ON i.product_id=p.id
-       INNER JOIN (SELECT MIN(id) AS min_id FROM products WHERE status='active' GROUP BY title) unique_titles ON p.id = unique_titles.min_id
+       INNER JOIN (SELECT MIN(id) AS min_id FROM products WHERE ${uniqueWhere.join(' AND ')} GROUP BY title) unique_titles ON p.id = unique_titles.min_id
        WHERE ${where.join(' AND ')}
        ORDER BY p.title LIMIT ? OFFSET ?`,
-      [...values, q.limit, q.offset]
+      [...uniqueValues, ...values, q.limit, q.offset]
     );
     res.json({ products });
   } catch (e) {

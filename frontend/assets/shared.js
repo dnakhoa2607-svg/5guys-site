@@ -268,7 +268,7 @@
             : api('/orders/' + o.id);
           return getDetail.then(function (detail) {
             var stage = ({ pending_payment: 0, paid: 1, processing: 1, shipped: 2, fulfilled: 3, cancelled: 0, refunded: 0, partially_refunded: 0 })[o.status] || 0;
-            var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : '';
+            var label = o.status === 'refunded' ? 'Đã hoàn tiền' : o.status === 'cancelled' ? 'Đã hủy' : o.status === 'pending_payment' ? 'Chờ thanh toán' : o.refund_status === 'requested' ? 'Đã gửi yêu cầu hoàn tiền' : o.refund_status === 'rejected' ? 'Hoàn tiền bị từ chối' : (o.recipient_user_id && o.status === 'fulfilled' ? 'Quà tặng đã trao' : '');
             var od = detail.order || o || {}, sa = od.shipping_address || null;
             if (typeof sa === 'string') { try { sa = JSON.parse(sa); } catch (e) { sa = null; } }
             var ship = sa ? (od.recipient_name + ' · ' + od.recipient_phone + ' — ' + [sa.addressLine, sa.ward, sa.district, sa.city].filter(Boolean).join(', ')) : '';
@@ -289,6 +289,7 @@
         already_owned: 'Bạn đã sở hữu game kỹ thuật số này (xem trong Kho game).',
         authentication_required: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
         invalid_or_expired_token: 'Phiên đăng nhập đã hết, vui lòng đăng nhập lại.',
+        account_locked: 'Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.',
         forbidden: 'Bạn không có quyền thực hiện thao tác này.',
         not_found: 'Không tìm thấy tài nguyên hoặc API yêu cầu.',
         internal_server_error: 'Lỗi máy chủ nội bộ. Vui lòng thử lại sau.',
@@ -296,6 +297,8 @@
         refund_not_found: 'Không tìm thấy yêu cầu hoàn tiền.',
         refund_already_handled: 'Yêu cầu hoàn tiền này đã được xử lý trước đó.',
         order_not_refundable: 'Đơn này chưa thanh toán nên không thể hoàn tiền.',
+        gift_order_not_refundable: 'Đơn hàng quà tặng đã chuyển vào Kho game người nhận nên không hỗ trợ hoàn tiền (Điều 5.5).',
+        too_many_pending_orders: 'Bạn đang có quá nhiều đơn chờ thanh toán. Vui lòng hoàn tất thanh toán trước khi đặt đơn mới.',
         order_not_found: 'Không tìm thấy đơn hàng.',
         order_not_payable: 'Đơn hàng này không ở trạng thái chờ thanh toán.',
         invalid_transition: 'Không thể chuyển sang trạng thái đơn hàng này.',

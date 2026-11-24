@@ -6,6 +6,9 @@ document.addEventListener('DOMContentLoaded', async function () {
   // Lấy các khu vực giao diện để bộ lọc và kết quả có thể cập nhật mà không tải lại trang.
   const box = document.getElementById('search-games-grid');
   if (!box) return;
+  const resultsSection = document.getElementById('search-results-section') || box.closest('section');
+  const resultsToolbar = document.getElementById('search-results-toolbar');
+  const filterAside = document.getElementById('search-filter-aside') || document.querySelector('.search-filter');
   const genreBox = document.getElementById('fg');
   const platformBox = document.getElementById('fp');
   const priceRange = document.getElementById('pr');
@@ -19,11 +22,13 @@ document.addEventListener('DOMContentLoaded', async function () {
   const pagination = document.getElementById('results-pagination');
   const count = document.getElementById('cnt');
   const searchInput = document.getElementById('game-search-input');
+  const resetButton = document.getElementById('rs');
   const selectedGenres = new Set();
   const selectedPlatforms = new Set();
   let format = 'all';
   let currentPage = 1;
   let query = new URLSearchParams(location.search).get('q') || '';
+  let sessionPeakHeight = 0;
   searchInput.value = query;
 
   // Chuẩn hóa dữ liệu dùng làm bộ lọc và định dạng giá theo tiền Việt Nam.
@@ -31,6 +36,83 @@ document.addEventListener('DOMContentLoaded', async function () {
     return String(value || '').split(/[,/]/).map(function (item) { return item.trim(); }).filter(Boolean);
   }
   function vnd(value) { return new Intl.NumberFormat('vi-VN').format(Number(value) || 0) + 'đ'; }
+
+  function isDesktopLayout() {
+    return window.matchMedia('(min-width: 1024px)').matches;
+  }
+
+  // Giữ chiều cao tối thiểu ổn định cho cột kết quả trên Desktop để ngăn sụp đổ layout đẩy Footer lên.
+  function syncResultsMinHeight(preserveForScrollY) {
+    if (!resultsSection) return;
+    if (!isDesktopLayout()) {
+      resultsSection.style.minHeight = '';
+      return;
+    }
+    const vhFloor = Math.round(window.innerHeight * 0.75);
+    const asideHeight = filterAside ? Math.ceil(filterAside.offsetHeight) : 0;
+    let targetMin = Math.max(vhFloor, asideHeight, sessionPeakHeight);
+
+    if (typeof preserveForScrollY === 'number' && preserveForScrollY > 0) {
+      const sectionTop = resultsSection.getBoundingClientRect().top + window.scrollY;
+      const neededForViewport = Math.ceil(preserveForScrollY + window.innerHeight - sectionTop);
+      if (neededForViewport > targetMin) {
+        targetMin = neededForViewport;
+      }
+      sessionPeakHeight = Math.max(sessionPeakHeight, targetMin);
+    }
+
+    resultsSection.style.minHeight = targetMin + 'px';
+  }
+
+  // Tắt tạm scroll-behavior: smooth để khôi phục vị trí cuộn tức thì không bị giật khung hình.
+  function restoreInstantScroll(targetWinY, anchorEl, prevAnchorTop, prevAsideScroll) {
+    const root = document.documentElement;
+    const prevBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = 'auto';
+
+    if (filterAside && typeof prevAsideScroll === 'number' && filterAside.scrollTop !== prevAsideScroll) {
+      filterAside.scrollTop = prevAsideScroll;
+    }
+
+    if (anchorEl && typeof prevAnchorTop === 'number') {
+      const currentTop = anchorEl.getBoundingClientRect().top;
+      const delta = currentTop - prevAnchorTop;
+      if (Math.abs(delta) > 0.5) {
+        window.scrollTo(0, Math.max(0, window.scrollY + delta));
+      }
+    } else if (typeof targetWinY === 'number' && Math.abs(window.scrollY - targetWinY) > 0.5) {
+      window.scrollTo(0, Math.max(0, targetWinY));
+    }
+
+    requestAnimationFrame(function () {
+      if (filterAside && typeof prevAsideScroll === 'number' && filterAside.scrollTop !== prevAsideScroll) {
+        filterAside.scrollTop = prevAsideScroll;
+      }
+      if (anchorEl && typeof prevAnchorTop === 'number') {
+        const afterTop = anchorEl.getBoundingClientRect().top;
+        const afterDelta = afterTop - prevAnchorTop;
+        if (Math.abs(afterDelta) > 0.5) {
+          window.scrollTo(0, Math.max(0, window.scrollY + afterDelta));
+        }
+      } else if (typeof targetWinY === 'number' && Math.abs(window.scrollY - targetWinY) > 0.5) {
+        window.scrollTo(0, Math.max(0, targetWinY));
+      }
+      root.style.scrollBehavior = prevBehavior;
+    });
+  }
+
+  // Thực thi thay đổi bộ lọc kèm khóa vị trí phần tử dưới con trỏ chuột.
+  function runWithScrollLock(anchorEl, updateFn, games) {
+    const prevWinY = window.scrollY;
+    const prevAsideScroll = filterAside ? filterAside.scrollTop : 0;
+    const prevAnchorTop = anchorEl ? anchorEl.getBoundingClientRect().top : null;
+
+    syncResultsMinHeight(prevWinY);
+    updateFn();
+    render(games);
+    syncResultsMinHeight(prevWinY);
+    restoreInstantScroll(prevWinY, anchorEl, prevAnchorTop, prevAsideScroll);
+  }
 
   // Tạo một lựa chọn thể loại dạng checkbox hoặc nền tảng dạng nút bật/tắt.
   function makeFacet(value, type) {
@@ -90,6 +172,14 @@ document.addEventListener('DOMContentLoaded', async function () {
     });
   }
 
+  // Cuộn mượt lên đầu danh sách kết quả khi người dùng chuyển trang phân trang.
+  function scrollToResultsTop() {
+    const anchor = resultsToolbar || resultsSection || box;
+    if (!anchor) return;
+    const targetTop = Math.max(0, anchor.getBoundingClientRect().top + window.scrollY - 92);
+    window.scrollTo({ top: targetTop, behavior: 'smooth' });
+  }
+
   // Lọc, sắp xếp, đếm và chia trang cho danh sách game hiện tại.
   function render(games) {
     const maxPrice = Number(priceRange.value);
@@ -101,7 +191,8 @@ document.addEventListener('DOMContentLoaded', async function () {
       const genreMatches = !selectedGenres.size || gameGenres.some(function (genre) { return selectedGenres.has(genre); });
       const platformMatches = !selectedPlatforms.size || gamePlatforms.some(function (platform) { return selectedPlatforms.has(platform); });
       const priceMatches = Number(game.price) <= maxPrice;
-      const formatMatches = format === 'all' || game.product_type === format;
+      const gameFormats = splitValues(game.available_formats || game.product_type);
+      const formatMatches = format === 'all' || gameFormats.includes(format);
       return titleMatches && genreMatches && platformMatches && priceMatches && formatMatches;
     });
     if (sortSelect.value === 'a') rows.sort(function (a, b) { return Number(a.price) - Number(b.price); });
@@ -116,20 +207,39 @@ document.addEventListener('DOMContentLoaded', async function () {
     const pageSize = Number(pageSizeSelect.value) || 20;
     const pages = Math.ceil(rows.length / pageSize);
     currentPage = Math.min(currentPage, pages);
-    G5Catalog.renderGrid(box, rows.slice((currentPage - 1) * pageSize, currentPage * pageSize), false);
+    const pageRows = rows.slice((currentPage - 1) * pageSize, currentPage * pageSize).map(function (g) {
+      if (format === 'all' || g.product_type === format) return g;
+      return Object.assign({}, g, { product_type: format, id: '', available_stock: null });
+    });
+    G5Catalog.renderGrid(box, pageRows, false);
     pagination.replaceChildren();
     if (pages < 2) return;
     function pageButton(label, target, disabled, active) {
       const button = document.createElement('button');
-      button.type = 'button'; button.textContent = label; button.disabled = disabled;
+      button.type = 'button';
+      button.textContent = label;
+      button.disabled = disabled;
       button.className = 'min-w-10 rounded-xl border px-3 py-2 text-sm font-semibold transition-colors disabled:opacity-40 ' + (active ? 'border-brand bg-brand text-white' : 'border-brand/30 bg-dark-surface text-gray-200 hover:border-brand-light');
-      button.addEventListener('click', function () { currentPage = target; render(games); });
+      button.addEventListener('click', function () {
+        currentPage = target;
+        sessionPeakHeight = 0;
+        syncResultsMinHeight(0);
+        render(games);
+        scrollToResultsTop();
+      });
       pagination.appendChild(button);
     }
     pageButton('‹', currentPage - 1, currentPage === 1, false);
     for (let page = 1; page <= pages; page++) pageButton(String(page), page, false, page === currentPage);
     pageButton('›', currentPage + 1, currentPage === pages, false);
   }
+
+  window.addEventListener('resize', function () {
+    if (!isDesktopLayout()) {
+      sessionPeakHeight = 0;
+    }
+    syncResultsMinHeight(0);
+  });
 
   // Lấy dữ liệu từ API rồi tạo các lựa chọn dựa trên thể loại/nền tảng có trong catalog.
   try {
@@ -147,41 +257,75 @@ document.addEventListener('DOMContentLoaded', async function () {
 
     // Áp dụng từ khóa hiện tại, làm mới từ trang đầu và giữ URL đồng bộ với ô tìm kiếm.
     function applySearchQuery() {
-      query = searchInput.value.trim();
-      currentPage = 1;
-      const url = new URL(location.href);
-      if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
-      history.replaceState({}, '', url);
-      render(games);
+      runWithScrollLock(searchInput, function () {
+        query = searchInput.value.trim();
+        currentPage = 1;
+        const url = new URL(location.href);
+        if (query) url.searchParams.set('q', query); else url.searchParams.delete('q');
+        history.replaceState({}, '', url);
+      }, games);
     }
+
     // Hỗ trợ cả Enter/nút tìm kiếm lẫn cập nhật trực tiếp khi nhập hoặc xóa chữ.
     document.getElementById('game-search-form').addEventListener('submit', function (event) {
       event.preventDefault();
       applySearchQuery();
     });
     searchInput.addEventListener('input', applySearchQuery);
-    // Các sự kiện bộ lọc đều gọi render để cập nhật danh sách ngay lập tức.
+
+    // Các sự kiện bộ lọc đều khóa vị trí cuộn, đặt lại trang 1 và cập nhật danh sách ngay lập tức.
     genreBox.addEventListener('change', function (event) {
       if (!event.target.matches('.cg')) return;
-      if (event.target.checked) selectedGenres.add(event.target.value); else selectedGenres.delete(event.target.value);
-      render(games);
+      const labelEl = event.target.closest('label') || event.target;
+      runWithScrollLock(labelEl, function () {
+        if (event.target.checked) selectedGenres.add(event.target.value);
+        else selectedGenres.delete(event.target.value);
+        currentPage = 1;
+      }, games);
     });
+
     platformBox.addEventListener('click', function (event) {
       const button = event.target.closest('.cp');
       if (!button) return;
-      if (selectedPlatforms.has(button.dataset.v)) selectedPlatforms.delete(button.dataset.v); else selectedPlatforms.add(button.dataset.v);
-      const active = selectedPlatforms.has(button.dataset.v);
-      button.setAttribute('aria-pressed', String(active));
-      button.classList.toggle('bg-brand', active);
-      button.classList.toggle('text-white', active);
-      button.classList.toggle('bg-dark-bg', !active);
-      button.classList.toggle('text-gray-200', !active);
-      render(games);
+      runWithScrollLock(button, function () {
+        if (selectedPlatforms.has(button.dataset.v)) selectedPlatforms.delete(button.dataset.v);
+        else selectedPlatforms.add(button.dataset.v);
+        const active = selectedPlatforms.has(button.dataset.v);
+        button.setAttribute('aria-pressed', String(active));
+        button.classList.toggle('bg-brand', active);
+        button.classList.toggle('text-white', active);
+        button.classList.toggle('bg-dark-bg', !active);
+        button.classList.toggle('text-gray-200', !active);
+        currentPage = 1;
+      }, games);
     });
-    document.querySelectorAll('.ft').forEach(function (button) { button.addEventListener('click', function () { setFormat(button.dataset.f); render(games); }); });
-    priceRange.addEventListener('input', function () { render(games); });
-    sortSelect.addEventListener('change', function () { render(games); });
-    pageSizeSelect.addEventListener('change', function () { currentPage = 1; render(games); });
+
+    document.querySelectorAll('.ft').forEach(function (button) {
+      button.addEventListener('click', function () {
+        runWithScrollLock(button, function () {
+          setFormat(button.dataset.f);
+          currentPage = 1;
+        }, games);
+      });
+    });
+
+    priceRange.addEventListener('input', function () {
+      runWithScrollLock(priceRange, function () {
+        currentPage = 1;
+      }, games);
+    });
+
+    sortSelect.addEventListener('change', function () {
+      runWithScrollLock(sortTrigger, function () {}, games);
+    });
+
+    pageSizeSelect.addEventListener('change', function () {
+      sessionPeakHeight = 0;
+      runWithScrollLock(pageSizeTrigger, function () {
+        currentPage = 1;
+      }, games);
+    });
+
     // Mở/đóng menu số lượng hiển thị và đồng bộ lựa chọn với select nền.
     pageSizeTrigger.addEventListener('click', function () {
       pageSizeMenu.hidden = !pageSizeMenu.hidden;
@@ -205,6 +349,7 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (event.key === 'Escape') closePageSizeMenu();
     });
     syncPageSizeMenu();
+
     // Menu sắp xếp dùng chung cách mở/đóng và trạng thái chọn như menu số lượng.
     sortTrigger.addEventListener('click', function () {
       sortMenu.hidden = !sortMenu.hidden;
@@ -224,28 +369,42 @@ document.addEventListener('DOMContentLoaded', async function () {
       if (event.key === 'Escape') closeSortMenu();
     });
     syncSortMenu();
+
     // Đưa toàn bộ bộ lọc, từ khóa, giá và sắp xếp về trạng thái ban đầu.
-    document.getElementById('rs').addEventListener('click', function () {
-      selectedGenres.clear();
-      selectedPlatforms.clear();
-      genreBox.querySelectorAll('.cg').forEach(function (input) { input.checked = false; });
-      platformBox.querySelectorAll('.cp').forEach(function (button) {
-        button.setAttribute('aria-pressed', 'false');
-        button.classList.remove('bg-brand', 'text-white');
-        button.classList.add('bg-dark-bg', 'text-gray-200');
-      });
-      query = '';
-      searchInput.value = '';
-      history.replaceState({}, '', 'search.html');
-      priceRange.value = priceRange.max;
-      sortSelect.value = 'r';
-      syncSortMenu();
-      setFormat('all');
-      render(games);
+    resetButton.addEventListener('click', function () {
+      sessionPeakHeight = 0;
+      runWithScrollLock(resetButton, function () {
+        selectedGenres.clear();
+        selectedPlatforms.clear();
+        genreBox.querySelectorAll('.cg').forEach(function (input) { input.checked = false; });
+        platformBox.querySelectorAll('.cp').forEach(function (button) {
+          button.setAttribute('aria-pressed', 'false');
+          button.classList.remove('bg-brand', 'text-white');
+          button.classList.add('bg-dark-bg', 'text-gray-200');
+        });
+        query = '';
+        currentPage = 1;
+        searchInput.value = '';
+        history.replaceState({}, '', 'search.html');
+        priceRange.value = priceRange.max;
+        sortSelect.value = 'r';
+        syncSortMenu();
+        setFormat('all');
+      }, games);
     });
+
+    // Đồng bộ chiều cao nền khi mở/đóng các thẻ <details> trong sidebar bộ lọc.
+    if (filterAside) {
+      filterAside.addEventListener('toggle', function () {
+        syncResultsMinHeight(window.scrollY);
+      }, true);
+    }
+
     render(games);
+    syncResultsMinHeight(0);
   } catch {
     // Thông báo rõ nguyên nhân chung khi API hoặc cơ sở dữ liệu chưa sẵn sàng.
     box.replaceChildren(Object.assign(document.createElement('p'), { className: 'col-span-full py-12 text-center text-amber-200', textContent: 'Không tải được catalog. Hãy khởi động API và MySQL.' }));
+    syncResultsMinHeight(0);
   }
 });

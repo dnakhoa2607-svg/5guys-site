@@ -539,7 +539,10 @@
             div.className = sender === 'user' ? 'flex gap-3 justify-end' : 'flex gap-3';
             
             if (sender === 'user') {
-                div.innerHTML = `<div class="bg-brand text-white p-3.5 rounded-2xl rounded-tr-sm max-w-[85%] text-[13px] shadow-[0_5px_15px_rgba(157,78,221,0.3)] font-medium">${text}</div>`;
+                const bubble = document.createElement('div');
+                bubble.className = 'bg-brand text-white p-3.5 rounded-2xl rounded-tr-sm max-w-[85%] text-[13px] shadow-[0_5px_15px_rgba(157,78,221,0.3)] font-medium';
+                bubble.textContent = text;
+                div.appendChild(bubble);
             } else {
                 div.innerHTML = `
                     <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-1 shadow-[0_0_15px_rgba(157,78,221,0.5)] border border-brand-light/30">

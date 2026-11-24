@@ -25,12 +25,15 @@ CREATE TABLE categories (id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, name VAR
 CREATE TABLE products (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, slug VARCHAR(180) NOT NULL UNIQUE,
   title VARCHAR(200) NOT NULL, description TEXT, publisher VARCHAR(150), developer VARCHAR(150),
+  publisher_user_id BIGINT UNSIGNED NULL,
   release_date DATE, platform VARCHAR(80) NOT NULL, genre VARCHAR(80), cover_url VARCHAR(1000),
   product_type ENUM('digital','physical') NOT NULL, price DECIMAL(12,2) NOT NULL,
   original_price DECIMAL(12,2), discount_percent TINYINT UNSIGNED NOT NULL DEFAULT 0,
   currency CHAR(3) NOT NULL DEFAULT 'VND', status ENUM('draft','active','inactive') NOT NULL DEFAULT 'draft',
+  rejection_reason VARCHAR(500) NULL,
   rating DECIMAL(3,2) NOT NULL DEFAULT 0, created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  CONSTRAINT fk_products_publisher FOREIGN KEY (publisher_user_id) REFERENCES users(id) ON DELETE SET NULL,
   INDEX(product_type,status), INDEX(title), CHECK(price >= 0), CHECK(rating BETWEEN 0 AND 5)
 ) ENGINE=InnoDB;
 CREATE TABLE product_categories (
@@ -87,13 +90,17 @@ CREATE TABLE cart_items (
 
 CREATE TABLE orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, order_number VARCHAR(32) NOT NULL UNIQUE,
-  user_id BIGINT UNSIGNED NOT NULL, status ENUM('pending_payment','paid','processing','shipped','fulfilled','cancelled','refunded','partially_refunded') NOT NULL DEFAULT 'pending_payment',
+  user_id BIGINT UNSIGNED NOT NULL, recipient_user_id BIGINT UNSIGNED NULL,
+  status ENUM('pending_payment','paid','processing','shipped','fulfilled','cancelled','refunded','partially_refunded') NOT NULL DEFAULT 'pending_payment',
   subtotal DECIMAL(12,2) NOT NULL, discount_total DECIMAL(12,2) NOT NULL DEFAULT 0,
   tax_total DECIMAL(12,2) NOT NULL DEFAULT 0, shipping_total DECIMAL(12,2) NOT NULL DEFAULT 0,
   total DECIMAL(12,2) NOT NULL, currency CHAR(3) NOT NULL DEFAULT 'VND',
   recipient_name VARCHAR(100), recipient_phone VARCHAR(32), shipping_address JSON,
+  gift_email VARCHAR(254) NULL, gift_message VARCHAR(500) NULL,
   placed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, paid_at DATETIME,
-  FOREIGN KEY(user_id) REFERENCES users(id), INDEX(user_id,placed_at), CHECK(total >= 0)
+  FOREIGN KEY(user_id) REFERENCES users(id),
+  CONSTRAINT fk_orders_recipient FOREIGN KEY (recipient_user_id) REFERENCES users(id) ON DELETE SET NULL,
+  INDEX(user_id,placed_at), CHECK(total >= 0)
 ) ENGINE=InnoDB;
 CREATE TABLE order_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, order_id BIGINT UNSIGNED NOT NULL,
@@ -126,6 +133,7 @@ CREATE TABLE game_library (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL, product_id BIGINT UNSIGNED NOT NULL,
   order_item_id BIGINT UNSIGNED NOT NULL, license_id BIGINT UNSIGNED,
   acquired_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, status ENUM('active','revoked') NOT NULL DEFAULT 'active',
+  installed_version VARCHAR(32) NOT NULL DEFAULT '1.0.0', dlc_installed BOOLEAN NOT NULL DEFAULT FALSE,
   UNIQUE(user_id,product_id), FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(product_id) REFERENCES products(id),
   FOREIGN KEY(order_item_id) REFERENCES order_items(id), FOREIGN KEY(license_id) REFERENCES digital_licenses(id), INDEX(user_id,acquired_at)
 ) ENGINE=InnoDB;
@@ -163,13 +171,44 @@ CREATE TABLE gift_redemptions (
 
 CREATE TABLE reviews (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED NOT NULL, product_id BIGINT UNSIGNED NOT NULL,
-  rating TINYINT UNSIGNED NOT NULL, title VARCHAR(180), body TEXT NOT NULL, verified_purchase BOOLEAN NOT NULL DEFAULT FALSE,
+  rating TINYINT UNSIGNED NOT NULL, title VARCHAR(180), body TEXT NOT NULL,
+  publisher_reply TEXT NULL, publisher_replied_at DATETIME NULL,
+  verified_purchase BOOLEAN NOT NULL DEFAULT FALSE,
   status ENUM('published','hidden','pending') NOT NULL DEFAULT 'pending', created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   UNIQUE(user_id,product_id), FOREIGN KEY(user_id) REFERENCES users(id), FOREIGN KEY(product_id) REFERENCES products(id), CHECK(rating BETWEEN 1 AND 5)
 ) ENGINE=InnoDB;
 CREATE TABLE review_votes (
   review_id BIGINT UNSIGNED NOT NULL, user_id BIGINT UNSIGNED NOT NULL, helpful BOOLEAN NOT NULL DEFAULT TRUE,
   PRIMARY KEY(review_id,user_id), FOREIGN KEY(review_id) REFERENCES reviews(id) ON DELETE CASCADE, FOREIGN KEY(user_id) REFERENCES users(id)
+) ENGINE=InnoDB;
+CREATE TABLE game_patches (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,
+  version VARCHAR(32) NOT NULL,
+  title VARCHAR(200) NOT NULL,
+  patch_notes TEXT NOT NULL,
+  size_mb INT UNSIGNED NOT NULL DEFAULT 150,
+  is_dlc BOOLEAN NOT NULL DEFAULT FALSE,
+  released_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  INDEX(product_id, released_at)
+) ENGINE=InnoDB;
+CREATE TABLE game_mods (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  product_id BIGINT UNSIGNED NOT NULL,
+  author_user_id BIGINT UNSIGNED NOT NULL,
+  title VARCHAR(180) NOT NULL,
+  category VARCHAR(60) NOT NULL DEFAULT 'LỐI CHƠI',
+  version VARCHAR(32) NOT NULL DEFAULT '1.0.0',
+  size_label VARCHAR(32) NOT NULL DEFAULT '15 MB',
+  description TEXT NOT NULL,
+  downloads_count INT UNSIGNED NOT NULL DEFAULT 0,
+  rating DECIMAL(3,2) NOT NULL DEFAULT 4.80,
+  status ENUM('published','hidden') NOT NULL DEFAULT 'published',
+  created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (product_id) REFERENCES products(id) ON DELETE CASCADE,
+  FOREIGN KEY (author_user_id) REFERENCES users(id) ON DELETE CASCADE,
+  INDEX(product_id, status)
 ) ENGINE=InnoDB;
 CREATE TABLE support_tickets (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY, user_id BIGINT UNSIGNED, order_id BIGINT UNSIGNED,

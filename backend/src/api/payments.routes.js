@@ -50,6 +50,14 @@ router.post('/:id/pay', async (req, res, next) => {
     const ownerUserId = order.recipient_user_id || req.user.sub;
     for (const item of items) {
       if (item.product_type === 'digital') {
+        const [owned] = await conn.execute(
+          "SELECT 1 FROM game_library WHERE user_id=? AND product_id=? AND status='active' FOR UPDATE",
+          [ownerUserId, item.product_id]
+        );
+        if (owned.length) {
+          await conn.rollback();
+          return res.status(409).json({ error: order.recipient_user_id ? 'recipient_already_owns' : 'already_owned', productId: item.product_id });
+        }
         await conn.execute(
           "INSERT INTO game_library(user_id,product_id,order_item_id) VALUES(?,?,?) ON DUPLICATE KEY UPDATE status='active', order_item_id=VALUES(order_item_id)",
           [ownerUserId, item.product_id, item.id]
@@ -79,9 +87,15 @@ router.post('/:id/pay', async (req, res, next) => {
         'INSERT INTO loyalty_transactions(user_id,order_id,points_delta,description) VALUES(?,?,?,?)',
         [req.user.sub, id, points, 'Tich diem tu don hang']
       );
+      const spend = Number(order.total);
+      const initTier = spend >= 12500000 ? 'gold' : spend >= 5000000 ? 'silver' : 'bronze';
       await conn.execute(
-        'INSERT INTO loyalty_accounts(user_id,points_balance,lifetime_spend) VALUES(?,?,?) ON DUPLICATE KEY UPDATE points_balance=points_balance+VALUES(points_balance), lifetime_spend=lifetime_spend+VALUES(lifetime_spend)',
-        [req.user.sub, points, Number(order.total)]
+        'INSERT INTO loyalty_accounts(user_id,points_balance,lifetime_spend,tier) VALUES(?,?,?,?) ON DUPLICATE KEY UPDATE points_balance=points_balance+VALUES(points_balance), lifetime_spend=lifetime_spend+VALUES(lifetime_spend)',
+        [req.user.sub, points, spend, initTier]
+      );
+      await conn.execute(
+        "UPDATE loyalty_accounts SET tier = CASE WHEN lifetime_spend >= 12500000 THEN 'gold' WHEN lifetime_spend >= 5000000 THEN 'silver' ELSE 'bronze' END WHERE user_id = ?",
+        [req.user.sub]
       );
     }
 
@@ -105,12 +119,15 @@ router.post('/:id/refund', async (req, res, next) => {
     const id = z.coerce.number().int().positive().parse(req.params.id);
     const { reason } = z.object({ reason: z.string().trim().min(1).max(500) }).parse(req.body);
     const [[order]] = await db.execute(
-      'SELECT o.id,o.status,o.total,p.id AS payment_id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id=? AND o.user_id=? ORDER BY p.id DESC LIMIT 1',
+      'SELECT o.id,o.status,o.total,o.recipient_user_id,p.id AS payment_id FROM orders o JOIN payments p ON p.order_id=o.id WHERE o.id=? AND o.user_id=? ORDER BY p.id DESC LIMIT 1',
       [id, req.user.sub]
     );
     if (!order) return res.status(404).json({ error: 'order_not_found' });
     if (!['paid', 'processing', 'shipped', 'fulfilled'].includes(order.status)) {
       return res.status(409).json({ error: 'order_not_refundable' });
+    }
+    if (order.recipient_user_id && order.status === 'fulfilled') {
+      return res.status(409).json({ error: 'gift_order_not_refundable' });
     }
     const [[open]] = await db.execute(
       "SELECT id FROM refunds WHERE order_id=? AND status IN ('requested','approved','processed')",

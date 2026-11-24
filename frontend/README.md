@@ -28,8 +28,8 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 | `support.html` | Chăm sóc khách hàng | Chat trực tiếp, FAQ, gửi và theo dõi lịch sử Support Ticket |
 | `login.html` | Đăng nhập & 2FA TOTP | Xác thực mật khẩu, popup Quên mật khẩu (demo OTP), kiểm tra mã **2FA TOTP 6 số** (đặc cách duy nhất `admin@5guys.com` không qua 2FA) |
 | `register.html` | Đăng ký & Thiết lập 2FA | Sinh khóa Base32 & vẽ QR Google Authenticator (`otpauth` + `qrcodejs`), checkbox bắt buộc đồng ý `terms.html` & `privacy.html`, kiểm tra mã 6 số rồi gọi API tạo tài khoản |
-| `publisher.html` | Cổng Nhà phát hành | *(Role `publisher`/`admin`)* Thống kê doanh thu Studio, đăng game mới (`draft`), cài đặt giá/giảm giá, phát hành Patch/DLC, trả lời đánh giá |
-| `admin.html` | Bảng Quản trị | *(Role `admin`/`staff`)* 6 tab: Tổng quan (biểu đồ 14 ngày, doanh thu Số/Đĩa), Đơn hàng (điều phối ship, in phiếu, xem Key), Hoàn tiền, Sản phẩm + **Duyệt/Từ chối game**, Người dùng, Hỗ trợ |
+| `publisher.html` | Cổng Nhà phát hành | *(Role `publisher`/`admin`)* Thống kê doanh thu Studio, đăng game mới (`draft`), cài đặt giá (`>= 1.000đ`) / giảm giá, phát hành Patch/DLC, trả lời đánh giá |
+| `admin.html` | Bảng Quản trị | *(Role `admin`/`staff`)* 6 tab: Tổng quan, Đơn hàng (điều phối ship, in phiếu, xem Key), Hoàn tiền, Sản phẩm + **Duyệt/Từ chối game**, Người dùng, Hỗ trợ (các thao tác tài chính, sản phẩm & phân quyền chỉ mở cho `admin`) |
 | `privacy.html` | Chính sách Bảo mật | Trang 2 cột (Sticky Mục lục 3/12 cột + Nội dung 9/12 cột) trình bày 3 cam kết cốt lõi & 7 điều khoản pháp lý – kỹ thuật (PCI-DSS SAQ-A, Bcrypt, 2FA, LocalStorage, quyền người dùng & thông tin Nhóm 5Guys 26C01) |
 | `terms.html` | Điều khoản Dịch vụ | Trang 2 cột (Sticky Mục lục 3/12 cột + Nội dung 9/12 cột) trình bày 3 thẻ tóm tắt, căn cứ pháp lý, trọn vẹn 6 điều khoản dịch vụ Hybrid & Bảng quy định giao nhận / vận chuyển / hoàn tiền |
 
@@ -51,7 +51,7 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 | `assets/tailwind-config-hub.js` | Cấu hình token màu riêng cho 3 trang Hub (`library.html`, `rental.html`, `mods.html`) |
 | `assets/catalog.js` | Render thẻ game động từ `GET /api/products`, fallback ảnh bìa & nút **"Thử tải lại"** khi mất kết nối API |
 | `assets/detail.js` | Xử lý chuyển đổi định dạng Số/Đĩa, render Đặc tả bản vật lý, Modal Gallery Video/Ảnh, viết & bình chọn Review, hiển thị phản hồi Nhà phát hành |
-| `assets/search.js` | Logic tìm kiếm, lọc đa tiêu chí, sắp xếp và phân trang kết quả |
+| `assets/search.js` | Logic tìm kiếm, lọc đa tiêu chí (kiểm tra `available_formats` cho game Hybrid và tự gán đúng định dạng khi thêm vào giỏ), sắp xếp và phân trang kết quả |
 | `assets/hub.js` | Logic cho Kho game (Key DRM, chọn ổ đĩa NVMe, thời lượng chơi, launcher, Auto-Patcher & DLC), Cloud Rental và Cộng đồng Mod Động |
 | `assets/address.js` | Tải 34 Tỉnh/Thành & Phường/Xã từ `https://provinces.open-api.vn/api/v2`, chuẩn hóa và định dạng số điện thoại VN |
 | `assets/float-widgets.js` | Điều khiển khung chat PC2GAMES AI & Trung tâm hỗ trợ nổi |
@@ -79,6 +79,6 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 ## 4. Kết nối Backend & Tối ưu Bảo mật Frontend
 
 - Địa chỉ API mặc định là `http://localhost:3000/api` (có thể ghi đè bằng `window.G5_API_BASE` trước khi nạp `assets/shared.js`).
-- **Chống DOM XSS:** Sử dụng `G5.esc()` (`shared.js`) và `escapeHtml()` (`index.html`) kết hợp DOM API (`textContent`, `createElement`) cho dữ liệu người dùng nhập (chat hỗ trợ, tra cứu mã đơn, tên game trong giỏ hàng, lịch sử điểm, đánh giá, mod).
+- **Chống DOM XSS:** Sử dụng `G5.esc()` (`shared.js`) và `escapeHtml()` (`index.html`) kết hợp DOM API (`textContent`, `createElement`, event delegation) cho toàn bộ dữ liệu người dùng và dữ liệu động trên `digital.html`, `physical.html`, `orders.html`, `cart.html`, `support.html`, `loyalty.html`, `reviews.html`, `mods.html`, `admin.html` và `publisher.html`.
 - **Chống Double-Submit & Race Condition:** Khóa nút submit trong lúc chờ phản hồi API trên `login.html`, `cart.html`, `support.html`, `orders.html`; khóa số lượng sản phẩm `digital` = `1` và cập nhật cache đồng bộ trước khi gọi API trong `G5.setCart()`.
 - **Loại bỏ N+1 HTTP Requests:** `G5.syncOrders()` sử dụng dữ liệu `items` trả gộp trực tiếp từ `GET /api/orders` thay vì gọi thêm `N` request lẻ cho từng đơn hàng.

@@ -49,9 +49,9 @@ const createProductSchema = z.object({
   release_date: z.union([z.string().regex(/^\d{4}-\d{2}-\d{2}$/), z.literal('')]).optional().nullable().transform((v) => v || null),
   platform: z.string().trim().min(1).max(80),
   genre: z.string().trim().max(80).optional().default(''),
-  cover_url: z.string().trim().url().max(1000).optional().or(z.literal('')).default(''),
+  cover_url: z.string().trim().url().regex(/^https?:\/\//i).max(1000).optional().or(z.literal('')).default(''),
   product_type: z.enum(['digital', 'physical']),
-  price: z.coerce.number().min(0),
+  price: z.coerce.number().min(1000),
   original_price: z.preprocess((v) => (v === '' || v == null ? null : v), z.coerce.number().min(0).nullable()).optional(),
   stock: z.preprocess((v) => (v === '' || v == null ? undefined : v), z.coerce.number().int().min(0).optional()),
   min_requirements: z.union([z.string().max(1000), z.record(z.string(), z.any())]).optional().default(''),
@@ -187,7 +187,7 @@ router.put('/products/:id/pricing', async (req, res, next) => {
   try {
     const id = idParam.parse(req.params.id);
     const data = z.object({
-      price: z.coerce.number().min(0),
+      price: z.coerce.number().min(1000),
       original_price: z.preprocess((v) => (v === '' || v == null ? null : v), z.coerce.number().min(0).nullable()).optional(),
     }).parse(req.body);
 

@@ -79,6 +79,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
     try { return await G5.api('/admin' + path, { method: method || 'GET', body }); }
     catch (err) { flash(G5.errorText(err), false); throw err; }
   }
+  const isStrictAdmin = () => (G5.user() || {}).role === 'admin';
 
   const ORDER_STATUS = {
     pending_payment: ['Chờ thanh toán', '#f59e0b'], paid: ['Chờ lấy hàng', '#60a5fa'], processing: ['Chờ lấy hàng', '#60a5fa'],
@@ -481,8 +482,8 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
           h('td', { class: 'whitespace-nowrap' }, pill(REFUND_STATUS, r.status)),
           h('td', { class: 'text-xs whitespace-nowrap' }, date(r.created_at)),
           h('td', { class: 'whitespace-nowrap' }, r.status === 'requested' ? h('div', { class: 'flex items-center gap-1.5' },
-            h('button', { class: 'btn !py-1 !px-2.5 text-xs', onclick: () => handle(r, 'approve') }, 'Duyệt'),
-            h('button', { class: 'ghost danger !py-1 !px-2.5 text-xs', onclick: () => handle(r, 'reject') }, 'Từ chối')) : h('span', { class: 'text-outline text-xs' }, '—')))))))
+            h('button', { class: 'btn !py-1 !px-2.5 text-xs', disabled: !isStrictAdmin(), title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền duyệt hoàn tiền' : '', onclick: () => handle(r, 'approve') }, 'Duyệt'),
+            h('button', { class: 'ghost danger !py-1 !px-2.5 text-xs', disabled: !isStrictAdmin(), title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền từ chối hoàn tiền' : '', onclick: () => handle(r, 'reject') }, 'Từ chối')) : h('span', { class: 'text-outline text-xs' }, '—')))))))
         : h('p', { class: 'text-outline text-sm' }, 'Chưa có yêu cầu hoàn tiền.')));
   }
 
@@ -647,6 +648,8 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
           p.status === 'draft' ? [
             h('button', {
               class: 'btn !py-1 !px-2.5 text-xs !bg-emerald-600 hover:!bg-emerald-500 !border-emerald-400/40',
+              disabled: !isStrictAdmin(),
+              title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền duyệt sản phẩm' : '',
               onclick: async () => {
                 await call('/products/' + p.id + '/approval', 'PUT', { action: 'approve' });
                 flash('Đã duyệt "' + p.title + '" lên kệ bán!');
@@ -655,19 +658,21 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
             }, h('i', { class: 'fa-solid fa-check' }), 'Duyệt lên kệ'),
             h('button', {
               class: 'ghost danger !py-1 !px-2.5 text-xs',
+              disabled: !isStrictAdmin(),
+              title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền từ chối sản phẩm' : '',
               onclick: () => openRejectModal(p)
             }, h('i', { class: 'fa-solid fa-xmark' }), 'Từ chối'),
-            h('button', { class: 'ghost !py-1 !px-2.5 text-xs', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa')
+            h('button', { class: 'ghost !py-1 !px-2.5 text-xs', disabled: !isStrictAdmin(), onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa')
           ] : [
-            h('button', { class: 'ghost', onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
-            h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), onclick: async () => {
+            h('button', { class: 'ghost', disabled: !isStrictAdmin(), onclick: () => { editing = p; products(); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, 'Sửa'),
+            h('button', { class: 'ghost' + (p.status === 'active' ? ' danger' : ''), disabled: !isStrictAdmin(), onclick: async () => {
               await call('/products/' + p.id, 'PUT', { status: p.status === 'active' ? 'inactive' : 'active' }); flash('Đã cập nhật ' + p.title); products();
             } }, p.status === 'active' ? 'Ẩn' : 'Bán lại')
           ])))));
 
     renderFilters();
     draw();
-    view.replaceChildren(form, h('div', { class: 'card p-5' },
+    view.replaceChildren(...(isStrictAdmin() ? [form] : []), h('div', { class: 'card p-5' },
       h('div', { class: 'flex flex-wrap justify-between items-center gap-3 mb-4' },
         h('h3', { class: 'font-bold' }, `Sản phẩm (${list.length})`),
         h('div', { class: 'flex flex-wrap items-center gap-2' },
@@ -693,12 +698,13 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
           const self = (me.id != null && String(u.id) === String(me.id))
             || (me.email && String(u.email).toLowerCase() === String(me.email).toLowerCase())
             || (u.role === 'admin' && String(u.email).toLowerCase() === 'admin@5guys.vn' && (!me.email || String(me.email).toLowerCase() === 'admin@5guys.vn'));
+          const readOnlyUser = self || !isStrictAdmin();
           const roleSel = h('select', {
             class: 'inp !w-auto',
-            disabled: self,
-            title: self ? 'Tài khoản Admin đang đăng nhập — đã khóa tự đổi vai trò' : 'Đổi vai trò người dùng',
+            disabled: readOnlyUser,
+            title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền đổi vai trò' : (self ? 'Tài khoản Admin đang đăng nhập — đã khóa tự đổi vai trò' : 'Đổi vai trò người dùng'),
             onchange: async e => {
-              if (self) return;
+              if (readOnlyUser) return;
               await call('/users/' + u.id, 'PUT', { role: e.target.value });
               flash('Đã đổi vai trò ' + u.email + ' thành ' + (ROLE_LABELS[e.target.value] || e.target.value));
             }
@@ -706,10 +712,10 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
             ['customer', 'publisher', 'staff', 'admin'].map(r => h('option', { value: r, selected: r === u.role }, ROLE_LABELS[r])));
           const lock = h('button', {
             class: 'ghost' + (u.status === 'active' ? ' danger' : ''),
-            disabled: self,
-            title: self ? 'Không thể tự khóa tài khoản Admin đang đăng nhập' : '',
+            disabled: readOnlyUser,
+            title: !isStrictAdmin() ? 'Chỉ Quản trị viên (Admin) mới có quyền khóa/mở khóa tài khoản' : (self ? 'Không thể tự khóa tài khoản Admin đang đăng nhập' : ''),
             onclick: async () => {
-              if (self) return;
+              if (readOnlyUser) return;
               await call('/users/' + u.id, 'PUT', { status: u.status === 'active' ? 'locked' : 'active' });
               flash('Đã cập nhật ' + u.email);
               users();

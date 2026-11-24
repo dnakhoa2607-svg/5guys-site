@@ -1,5 +1,31 @@
 # Thay đổi bản v2
 
+## Kiểm toán Bảo mật OWASP & Vá lỗi Nghiệp vụ TMĐT — Nhóm A (`backend/src/app.js`, `backend/src/middleware/auth.js`, `backend/src/api/products.routes.js`, `backend/src/api/store.routes.js`, `backend/src/api/payments.routes.js`, `backend/src/api/admin.routes.js`, `backend/src/api/publisher.routes.js`, `frontend/assets/shared.js`, `frontend/assets/search.js`, `frontend/digital.html`, `frontend/physical.html`, `frontend/orders.html`, `frontend/cart.html`, `frontend/admin.html`, `frontend/publisher.html`, `frontend/profile.html`)
+- **Sửa lọc định dạng Hybrid & chọn đúng bản Số/Đĩa khi thêm giỏ hàng (`backend/src/api/products.routes.js`, `frontend/assets/search.js`):**
+  - `GET /api/products`: Khi truyền tham số `type=digital` hoặc `type=physical`, subquery `unique_titles` lọc trực tiếp theo `product_type=?` và trả đúng `id`, `slug`, `price`, `cover_url` và `available_stock` của đúng định dạng đó cho `digital.html` và `physical.html`.
+  - `frontend/assets/search.js`: Đổi điều kiện lọc định dạng sang kiểm tra `available_formats` (không còn làm ẩn các tựa game bán song song cả Số lẫn Đĩa) và tự gán đúng định dạng đang lọc cho thao tác *Thêm vào giỏ hàng*.
+- **Vá dứt điểm DOM XSS & Siết giao thức URL ảnh bìa (`frontend/digital.html`, `frontend/physical.html`, `frontend/orders.html`, `backend/src/api/admin.routes.js`, `backend/src/api/publisher.routes.js`):**
+  - Chuyển bong bóng tin nhắn người dùng trong `appendMessage` trên `frontend/digital.html` và `frontend/physical.html` sang dùng `textContent` thay vì nối chuỗi vào `.innerHTML`.
+  - Bọc `esc()` cho mã đơn, ngày đặt, tên sản phẩm, nhãn trạng thái và thay `onclick` nội tuyến bằng event delegation `data-refund-order` trên `frontend/orders.html`.
+  - Bắt buộc `cover_url` tuân thủ Regex `/^https?:\/\//i` trong `admin.routes.js` và `publisher.routes.js` (chặn `javascript:` và `data:` URI).
+- **Đồng bộ Điểm thưởng Loyalty & Tự động nâng/hạ hạng thành viên (`frontend/cart.html`, `backend/src/api/payments.routes.js`, `backend/src/api/admin.routes.js`):**
+  - Khóa cố định ô `#pt` (*Dùng 500 điểm*) bên trong hàm `R()` của `frontend/cart.html` khi ở chế độ API để tránh lệch tổng tiền hiển thị so với hóa đơn server, đồng thời đồng bộ công thức hiển thị điểm nhận được.
+  - Tự động tính lại cột `loyalty_accounts.tier` (`bronze` < `5.000.000đ` <= `silver` < `12.500.000đ` <= `gold`) mỗi khi thanh toán đơn hàng hoặc hoàn tiền.
+- **Siết kiểm tra khóa tài khoản, phân quyền RBAC, nghiệp vụ Quà tặng & Rate Limiting (`backend/src/middleware/auth.js`, `backend/src/api/admin.routes.js`, `frontend/admin.html`, `backend/src/api/publisher.routes.js`, `frontend/publisher.html`, `backend/src/api/payments.routes.js`, `backend/src/api/store.routes.js`, `backend/src/app.js`, `frontend/profile.html`, `frontend/assets/shared.js`):**
+  - `requireAuth` (`auth.js`): Kiểm tra trực tiếp `users.status = 'active'` từ MySQL trên mọi request xác thực, chặn tức thì (`403 account_locked`) ngay khi Admin khóa tài khoản.
+  - Phân tách quyền `adminOnly` (`requireRole('admin')`) cho duyệt hoàn tiền, thêm/sửa sản phẩm và duyệt/từ chối game trên `admin.routes.js` (đồng bộ khóa nút thao tác cho `staff` trên `frontend/admin.html`); áp giá bán tối thiểu `1.000đ` trên `publisher.routes.js` và `frontend/publisher.html`; bổ sung nhãn `publisher: 'Nhà phát hành'` trên `frontend/profile.html`.
+  - Chặn hoàn tiền tự động đối với đơn quà tặng đã chuyển vào Kho game người nhận (`gift_order_not_refundable`, tuân thủ Điều 5.5 `terms.html`), khóa kiểm tra `game_library FOR UPDATE` trong `POST /api/orders/:id/pay` chống ghi đè đơn tặng trùng, và giới hạn tối đa 5 đơn `pending_payment` mỗi tài khoản (`too_many_pending_orders`) chống găm giữ tồn kho đĩa.
+  - Bổ sung `writeLimiter` (30 tác vụ ghi / 15 phút) cho `/api/orders`, `/api/mods`, `/api/support`, `/api/products` và rate limit tổng `/api` (180 req / phút) trả JSON chuẩn `{ error: 'too_many_requests' }`, đồng bộ toàn bộ mã lỗi mới vào `G5.errorText` (`frontend/assets/shared.js`).
+
+## Tinh gọn Cấu trúc File SQL Database (`database/schema.sql`, `database/seed.sql`, `database/README.md`, `README.md`, `backend/README.md`)
+- **Gộp toàn bộ nâng cấp v2 vào `database/schema.sql` (đủ 31 bảng):**
+  - Tích hợp trực tiếp các cột mới (`products.publisher_user_id`, `products.rejection_reason`, `orders.recipient_user_id`, `orders.gift_email`, `orders.gift_message`, `reviews.publisher_reply`, `reviews.publisher_replied_at`, `game_library.installed_version`, `game_library.dlc_installed`) và 2 bảng mới (`game_patches`, `game_mods`) vào `database/schema.sql`.
+- **Gộp toàn bộ danh mục game mở rộng vào `database/seed.sql`:**
+  - Gộp 14 tựa game mở rộng (23 bản ghi sản phẩm Số/Đĩa cùng 4 thể loại `Indie`, `Kinh dị`, `Mô phỏng`, `Platformer`, tồn kho, ảnh bìa, trailer Steam, cấu hình và phiên bản `Standard`) từ `add_games.sql` vào `database/seed.sql` (tổng 10 thể loại, 45 biến thể sản phẩm, chạy lại an toàn với `ON DUPLICATE KEY UPDATE`).
+- **Xoá các file SQL thừa & cập nhật tài liệu:**
+  - Xoá `database/update_v2.sql` và `database/add_games.sql`; giữ lại `database/make_admin.sql` để nâng quyền Admin nhanh.
+  - Cập nhật lại hướng dẫn cài đặt 2 bước (`schema.sql` → `seed.sql`) trong `database/README.md`, `README.md` và `backend/README.md`.
+
 ## Trang Điều khoản Dịch vụ, Checkbox Bắt buộc Đăng ký & Liên kết Toàn trang (`frontend/terms.html`, `frontend/assets/layout.js`, `frontend/register.html`, `frontend/cart.html`)
 - **Tạo mới `frontend/terms.html`:**
   - Đồng bộ 100% kiến trúc giao diện Cyberpunk Vault của `frontend/privacy.html` (Tailwind CDN, FontAwesome 6.4.0, Google Fonts `Inter`, `assets/shared.css`, `assets/tailwind-config.js`, `assets/shared.js`, `assets/layout.js` `nav` + `footer`).

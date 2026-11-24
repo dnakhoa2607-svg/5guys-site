@@ -90,7 +90,7 @@
 <script>
 (function(){
   const $=id=>document.getElementById(id);
-  const ROLE={customer:'Khách hàng',staff:'Nhân viên',admin:'Quản trị viên'};
+  const ROLE={customer:'Khách hàng',publisher:'Nhà phát hành',staff:'Nhân viên',admin:'Quản trị viên'};
   const TIER={bronze:'🥉 Bronze',silver:'🥈 Silver',gold:'🥇 Gold',platinum:'💎 Platinum'};
   const ok=(el,t)=>{el.className='text-sm mt-3 text-emerald-300';el.textContent='✔ '+t};
   const fail=(el,err)=>{el.className='text-sm mt-3 text-red-400';el.textContent=typeof err==='string'?err:G5.errorText(err)};

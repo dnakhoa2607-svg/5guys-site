@@ -6,7 +6,7 @@ Web chạy **một link duy nhất**: backend vừa phục vụ API (`/api`) v�
 1. Tạo tài khoản tại tidbcloud.com, tạo cluster **Starter/Free**.
 2. Bấm **Connect**, lấy Host, Port (4000), User, Password.
 3. Chạy lần lượt trong MySQL Workbench (kết nối bằng thông tin trên, bật SSL):
-   `database/schema.sql` -> `database/seed.sql` -> `database/update_v2.sql` (nếu README yêu cầu) -> `database/add_games.sql`
+   `database/schema.sql` -> `database/seed.sql`
 4. Tạo user chỉ có quyền thao tác dữ liệu nếu muốn; không bắt buộc cho demo.
 
 ## 2. Web (Render)

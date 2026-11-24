@@ -1,62 +1,46 @@
 # Cơ sở dữ liệu MySQL (`database/`)
 
-Hệ quản trị **MySQL `8.0+`** (Engine `InnoDB`, charset `utf8mb4_0900_ai_ci`) cho nền tảng phân phối game **5GUYS Vault**. Tổng cộng gồm **31 bảng** (**29 bảng gốc** trong `schema.sql` và **2 bảng mở rộng v2** trong `update_v2.sql`).
+Hệ quản trị **MySQL `8.0+`** (Engine `InnoDB`, charset `utf8mb4_0900_ai_ci`) cho nền tảng phân phối game **5GUYS Vault**. Toàn bộ **31 bảng** (đã gộp đầy đủ cấu trúc v2) nằm gọn trong `schema.sql`, và toàn bộ dữ liệu mẫu nằm gọn trong `seed.sql`.
 
 ---
 
 ## 1. Thứ tự Chạy Script SQL
 
-Chạy lần lượt các tệp sau trong **MySQL Workbench** hoặc **MySQL CLI**:
+Chạy lần lượt **2 tệp** sau trong **MySQL Workbench** hoặc **MySQL CLI**:
 
 ```sh
 mysql -u root -p < database/schema.sql
 mysql -u root -p 5guys_store < database/seed.sql
-mysql -u root -p 5guys_store < database/update_v2.sql
 ```
 
 *(Tùy chọn)* Nâng quyền Admin cho một tài khoản đã đăng ký: chỉnh lại email trong `database/make_admin.sql` rồi chạy trên `5guys_store`, sau đó đăng xuất và đăng nhập lại trên web.
 
 ---
 
-## 2. Cấu trúc 31 Bảng dữ liệu
-
-### 2.1. 29 bảng nền tảng (`database/schema.sql`)
+## 2. Cấu trúc 31 Bảng dữ liệu (`database/schema.sql`)
 
 | Nhóm nghiệp vụ | Danh sách bảng | Chức năng chính |
 | :--- | :--- | :--- |
-| **Người dùng & Địa chỉ** (2) | `users`, `user_addresses` | Tài khoản (`email`, `password_hash`, `display_name`, `role`, `status`) và sổ địa chỉ giao đĩa (tối đa 10/user) |
-| **Catalog & Thuộc tính** (7) | `categories`, `products`, `product_categories`, `product_images`, `game_media`, `game_requirements`, `product_editions` | Danh mục sản phẩm Số/Đĩa, ảnh bìa, media trailer, cấu hình tối thiểu/khuyến nghị (JSON) và các phiên bản giá (`Standard`, ...) |
+| **Người dùng & Địa chỉ** (2) | `users`, `user_addresses` | Tài khoản (`email`, `password_hash`, `display_name`, `role` gồm `customer/publisher/staff/admin`, `status`) và sổ địa chỉ giao đĩa (tối đa 10/user) |
+| **Catalog & Thuộc tính** (8) | `categories`, `products`, `product_categories`, `product_images`, `game_media`, `game_requirements`, `product_editions`, `game_patches` | Danh mục sản phẩm Số/Đĩa (kèm `publisher_user_id`, `rejection_reason`), ảnh bìa, media trailer, cấu hình (JSON), phiên bản giá và lịch sử Bản vá / DLC (`game_patches`) |
 | **Tồn kho & Kho Key** (2) | `physical_inventory`, `digital_licenses` | Quản lý tồn kho thực/giữ chỗ cho game đĩa và kho key mã hóa cho game số |
-| **Giỏ hàng & Đơn hàng** (5) | `carts`, `cart_items`, `orders`, `order_items`, `order_fulfillments` | Giỏ hàng theo user, đơn hàng (kèm bản chụp `shipping_address` JSON), chi tiết đơn và trạng thái cấp phát |
+| **Giỏ hàng & Đơn hàng** (5) | `carts`, `cart_items`, `orders`, `order_items`, `order_fulfillments` | Giỏ hàng theo user, đơn hàng (kèm trạng thái `'shipped'`, `shipping_address` JSON và cột tặng quà `recipient_user_id`, `gift_email`, `gift_message`), chi tiết đơn và cấp phát |
 | **Thanh toán & Hoàn tiền** (2) | `payments`, `refunds` | Kênh thanh toán (`provider`) + mã tham chiếu đối soát (`provider_reference` theo PCI-DSS SAQ-A) và yêu cầu hoàn tiền |
-| **Thư viện, Loyalty & Ví** (7) | `game_library`, `loyalty_accounts`, `loyalty_transactions`, `wallets`, `wallet_transactions`, `gift_codes`, `gift_redemptions` | Thư viện game sở hữu (`user_id`, `product_id`, `status`), tích/thu hồi điểm thưởng, ví và mã quà tặng |
-| **Cộng đồng & Hỗ trợ** (4) | `reviews`, `review_votes`, `support_tickets`, `support_messages` | Đánh giá 1–5 sao, bình chọn đánh giá hữu ích (`review_votes`) và phiếu hỗ trợ + phản hồi Admin |
+| **Thư viện, Loyalty & Ví** (7) | `game_library`, `loyalty_accounts`, `loyalty_transactions`, `wallets`, `wallet_transactions`, `gift_codes`, `gift_redemptions` | Thư viện game sở hữu (kèm `installed_version`, `dlc_installed` cho Auto-Patcher), tích/thu hồi điểm thưởng, ví và mã quà tặng |
+| **Cộng đồng, Mod & Hỗ trợ** (5) | `reviews`, `review_votes`, `game_mods`, `support_tickets`, `support_messages` | Đánh giá 1–5 sao (kèm `publisher_reply`), bình chọn hữu ích (`review_votes`), Cộng đồng Mod (`game_mods`) và phiếu hỗ trợ |
 
-### 2.2. Nâng cấp bản v2 (`database/update_v2.sql`) — +2 bảng & mở rộng cột
-
-- **2 bảng mới (nâng tổng số lên 31 bảng):**
-  - `game_patches`: Lưu lịch sử Bản vá (`Patch`) và gói mở rộng `DLC` theo từng `product_id` (`version`, `title`, `patch_notes`, `size_mb`, `is_dlc`, `released_at`).
-  - `game_mods`: Lưu các bản Mod do cộng đồng đăng tải (`product_id`, `author_user_id`, `title`, `category`, `version`, `size_label`, `description`, `downloads_count`, `rating`, `status`).
-- **Mở rộng các bảng hiện có:**
-  - `users.role`: Mở rộng `ENUM('customer','publisher','staff','admin')` bổ sung vai trò **Nhà phát hành (Publisher)**.
-  - `orders.status`: Mở rộng thêm trạng thái `'shipped'` phục vụ điều phối vận chuyển đĩa vật lý.
-  - `orders`: Bổ sung `recipient_user_id` (`fk_orders_recipient`), `gift_email`, `gift_message` cho hệ thống **Tặng quà (Gifting)**.
-  - `products`: Bổ sung `publisher_user_id` (`fk_products_publisher`) và `rejection_reason` phục vụ luồng đăng game & duyệt game (`draft` → `active`/`inactive`).
-  - `reviews`: Bổ sung `publisher_reply` và `publisher_replied_at` để Nhà phát hành trả lời đánh giá người chơi.
-  - `game_library`: Bổ sung `installed_version` (mặc định `'1.0.0'`) và `dlc_installed` (mặc định `FALSE`) cho Auto-Patcher trong Kho game.
-
-> **Cơ chế tự động bảo toàn (`ensureSchemaReady`):** Khi Backend khởi động, `backend/src/db.js` tự động kiểm tra qua `INFORMATION_SCHEMA` để áp dụng an toàn mọi thay đổi v2 nếu database cũ chưa chạy `update_v2.sql`.
+> **Cơ chế tự động bảo toàn (`ensureSchemaReady`):** Khi Backend khởi động, `backend/src/db.js` tự động kiểm tra qua `INFORMATION_SCHEMA` để bổ sung an toàn mọi cột/bảng mới nếu chạy trên database cũ hơn.
 
 ---
 
-## 3. Dữ liệu & Tài khoản Seed Mặc định (`seed.sql` & `update_v2.sql`)
+## 3. Dữ liệu & Tài khoản Seed Mặc định (`database/seed.sql`)
 
 - **Tài khoản Admin mặc định (mật khẩu chung `Admin@12345`):**
-  - `admin@5guys.com`: Tạo tự động qua `seed.sql` / `update_v2.sql` / `ensureSchemaReady()` — **được đặc cách bỏ qua bước 2FA** trên `login.html` để kiểm thử nhanh.
-  - `admin@5guys.vn`: Tạo trong `seed.sql` — **bắt buộc xác thực 2FA** (cùng khóa Base32 mặc định `JBSWY3DPEHPK3PXP` nếu chưa có khóa riêng trong trình duyệt).
-- **Dữ liệu minh họa khác:**
-  - 6 danh mục thể loại, 20 bản ghi sản phẩm mẫu (bao gồm biến thể bản Số & bản Đĩa của 10 tựa game nổi bật), tồn kho mặc định 25 đĩa/mẫu, thông số cấu hình PC, phiên bản `Standard` và 2 phiếu hỗ trợ mẫu trong `support_tickets`.
-  - Ảnh bìa catalog trỏ tới Steam CDN; giá bán và thông số phục vụ minh họa đồ án.
+  - `admin@5guys.com`: Được đặc cách bỏ qua bước 2FA trên `login.html` để kiểm thử nhanh.
+  - `admin@5guys.vn`: Bắt buộc xác thực 2FA (khóa Base32 mặc định `JBSWY3DPEHPK3PXP` nếu chưa có khóa riêng trong trình duyệt).
+- **Dữ liệu catalog minh họa (chạy lại nhiều lần an toàn với `ON DUPLICATE KEY UPDATE`):**
+  - **10 danh mục thể loại** (`Hành động`, `Phiêu lưu`, `Metroidvania`, `Souls-like`, `RPG`, `Thế giới mở`, `Indie`, `Kinh dị`, `Mô phỏng`, `Platformer`).
+  - **45 bản ghi sản phẩm** (bao gồm 24 tựa game nổi bật với biến thể Bản Số & Bản Đĩa, cùng mini-game web `neon-viper`, `black-myth`), tồn kho mặc định 25 đĩa/mẫu, ảnh bìa Steam CDN, trailer, thông số cấu hình PC và phiên bản `Standard`.
 
 ---
 

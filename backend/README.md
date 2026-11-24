@@ -9,10 +9,10 @@ REST API viết bằng **Node.js `>= 20` (ES Modules)**, **Express `4.21`**, **Z
 | Thành phần | Chức năng chính |
 | :--- | :--- |
 | `src/server.js` | Kiểm tra kết nối MySQL, chạy `ensureSchemaReady()` và mở HTTP server trên `PORT` (`3000`) |
-| `src/app.js` | Cấu hình `helmet()`, ẩn `x-powered-by`, `cors()`, `express.json({ limit: '32kb' })`, `rateLimit` `/api/auth` & error handlers |
+| `src/app.js` | Cấu hình `helmet()`, ẩn `x-powered-by`, `cors()`, `express.json({ limit: '32kb' })`, `rateLimit` đa tầng (`/api/auth`, `writeLimiter`, `/api`) & error handlers |
 | `src/config.js` | Nạp và kiểm tra biến môi trường `.env` bằng `zod` |
 | `src/db.js` | Pool kết nối MySQL2 (`utc`, `decimalNumbers: true`), `inTransaction()` và `ensureSchemaReady()` |
-| `src/middleware/auth.js` | `requireAuth` (xác thực JWT) và `requireRole(...roles)` (truy vấn trực tiếp `users.role` & `users.status` từ MySQL) |
+| `src/middleware/auth.js` | `requireAuth` (xác thực JWT + kiểm tra trực tiếp `users.status = 'active'` & `role` từ MySQL) và `requireRole(...roles)` |
 | `src/middleware/errors.js` | Chuẩn hóa lỗi `404 not_found`, `400 invalid_request` (Zod), `409 already_exists` (`ER_DUP_ENTRY`), `500` |
 | `src/ai/advisor.js` | Trích xuất 3 nhóm dữ liệu (Phần cứng / Sở thích / Ngân sách), hỏi làm rõ và gợi ý game fallback nội bộ |
 | `src/api/index.js` | Router tổng `/api` + `GET /api/health` |
@@ -43,7 +43,6 @@ Sao chép từ `backend/.env.example`:
    ```sh
    mysql -u root -p < database/schema.sql
    mysql -u root -p 5guys_store < database/seed.sql
-   mysql -u root -p 5guys_store < database/update_v2.sql
    ```
 2. Tạo user MySQL cho API với quyền tối thiểu (`SELECT, INSERT, UPDATE, DELETE` trên `5guys_store.*`).
 3. Sao chép `backend/.env.example` thành `backend/.env`, điền `DB_PASSWORD` và `JWT_SECRET` (`>= 32` ký tự).
@@ -72,7 +71,7 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 - `ensureModsReady()` (`mods.routes.js`): Seed 10 bản Mod mẫu cho 5 tựa game phổ biến vào `game_mods`.
 - `ensureAdminReady()` (`admin.routes.js`): Seed 2 ticket hỗ trợ mẫu vào `support_tickets`.
 
-> **Lưu ý quyền MySQL:** Nếu tài khoản `5guys_api` chỉ được cấp `SELECT, INSERT, UPDATE, DELETE`, bạn cần chạy `database/update_v2.sql` trước bằng tài khoản `root` để mọi cột/bảng đã tồn tại sẵn, khi đó `ensureSchemaReady()` sẽ không cần thực thi `ALTER` hay `CREATE`.
+> **Lưu ý quyền MySQL:** Nếu tài khoản `5guys_api` chỉ được cấp `SELECT, INSERT, UPDATE, DELETE`, hãy khởi tạo database bằng `database/schema.sql` (đã gộp đầy đủ cấu trúc v2) dưới tài khoản `root` trước, khi đó `ensureSchemaReady()` sẽ không cần thực thi `ALTER` hay `CREATE`.
 
 ---
 
@@ -90,7 +89,7 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 ### 5.2. Sản phẩm, Media & Đánh giá (`products.routes.js`)
 | Phương thức | Đường dẫn | Mô tả |
 | :--- | :--- | :--- |
-| `GET` | `/api/products` | Lọc/tìm kiếm catalog (`q`, `type`, `platform`, `genre`, `limit`, `offset`), gộp biến thể Số/Đĩa theo tựa game |
+| `GET` | `/api/products` | Lọc/tìm kiếm catalog (`q`, `type`, `platform`, `genre`, `limit`, `offset`); khi truyền `type` sẽ chọn đúng bản ghi Số hoặc Đĩa kèm giá và tồn kho khả dụng của định dạng đó |
 | `GET` | `/api/products/reviews` | Lấy top 50 đánh giá đã duyệt kèm `helpful_count` từ `review_votes` và `publisher_reply` cho `reviews.html` |
 | `GET` | `/api/products/:idOrSlug/gallery` | Reverse proxy lấy trailer & screenshots từ Steam (`galleryCache` TTL 6 giờ, tránh CORS) |
 | `GET` | `/api/products/:idOrSlug` | Chi tiết sản phẩm kèm `formats`, `media`, `requirements`, `editions` và `reviews` (gồm `helpful_count`, `publisher_reply`) |
@@ -103,11 +102,11 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 | `GET` | `/api/cart` | Lấy sản phẩm trong giỏ hàng của người dùng |
 | `PUT` | `/api/cart/items` | Thêm/cập nhật số lượng sản phẩm (`digital` tự khóa `1`; `physical` kiểm tra tồn kho khả dụng) |
 | `DELETE` | `/api/cart/items/:productId` | Xóa 1 sản phẩm khỏi giỏ hàng |
-| `POST` | `/api/orders` | Tạo đơn trong Transaction: kiểm tồn kho vật lý, kiểm trùng sở hữu số (cho mình hoặc người nhận quà), tính `computeTotals` phía server (coupon `SELL10`, VAT 10%, phí cổng thanh toán, ship `30.000đ`/`60.000đ`), chụp `shipping_address`, hỗ trợ `{ isGift, giftEmail, giftMessage }` |
+| `POST` | `/api/orders` | Tạo đơn trong Transaction (giới hạn tối đa 5 đơn `pending_payment`/tài khoản): kiểm tồn kho vật lý, kiểm trùng sở hữu số, tính `computeTotals` phía server (coupon `SELL10`, VAT 10%, phí cổng thanh toán, ship `30.000đ`/`60.000đ`), chụp `shipping_address`, hỗ trợ `{ isGift, giftEmail, giftMessage }` |
 | `GET` | `/api/orders` | Lấy danh sách đơn hàng của người dùng kèm sẵn mảng `items` (tránh N+1 HTTP requests), `shipping_address`, `gift_email` và `refund_status` mới nhất |
 | `GET` | `/api/orders/:id` | Lấy chi tiết 1 đơn hàng và danh sách `order_items` |
-| `POST` | `/api/orders/:id/pay` | *(Demo, khóa khi `NODE_ENV=production`)* Thanh toán mô phỏng: cấp game số vào `game_library` của `recipient_user_id || req.user.sub`, trừ tồn kho đĩa + tạo `order_fulfillments`, lưu `provider_reference` vào `payments`, cộng điểm Loyalty cho người mua |
-| `POST` | `/api/orders/:id/refund` | Khách gửi yêu cầu hoàn tiền (`requested`) cho đơn đã thanh toán |
+| `POST` | `/api/orders/:id/pay` | *(Demo, khóa khi `NODE_ENV=production`)* Thanh toán mô phỏng: khóa kiểm tra `game_library FOR UPDATE` rồi cấp game số cho `recipient_user_id || req.user.sub`, trừ tồn kho đĩa + tạo `order_fulfillments`, lưu `provider_reference` vào `payments`, cộng điểm và tự động nâng hạng `loyalty_accounts.tier` (`bronze`/`silver`/`gold`) |
+| `POST` | `/api/orders/:id/refund` | Khách gửi yêu cầu hoàn tiền (`requested`) cho đơn đã thanh toán (tự động từ chối `gift_order_not_refundable` với đơn quà tặng đã hoàn tất theo Điều 5.5) |
 | `GET` | `/api/library` | Trả danh sách game số trong `game_library` kèm `installed_version`, `dlc_installed` và danh sách `patches` từ `game_patches` |
 | `POST` | `/api/library/:productId/update` | Cập nhật `installed_version` và `dlc_installed` cho game sở hữu trong `game_library` |
 | `GET` | `/api/loyalty` | Lấy số dư điểm, hạng thành viên và 100 biến động điểm gần nhất |
@@ -123,8 +122,8 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 | Phương thức | Đường dẫn | Mô tả |
 | :--- | :--- | :--- |
 | `GET` | `/api/publisher/dashboard` | Trả thống kê `stats`, danh sách game của Studio, danh sách review và lịch sử `game_patches` |
-| `POST` | `/api/publisher/products` | Tạo game mới trong Transaction với `status = 'draft'` (chờ Admin duyệt), kèm `physical_inventory` hoặc `game_requirements` và bản `'Standard'` trong `product_editions` |
-| `PUT` | `/api/publisher/products/:id/pricing` | Cập nhật giá bán, giá gốc, tự tính `discount_percent` và đồng bộ `product_editions` `'Standard'` |
+| `POST` | `/api/publisher/products` | Tạo game mới (`price >= 1000`, `cover_url` chuẩn `http(s)://`) trong Transaction với `status = 'draft'`, kèm `physical_inventory` hoặc `game_requirements` và bản `'Standard'` trong `product_editions` |
+| `PUT` | `/api/publisher/products/:id/pricing` | Cập nhật giá bán (`>= 1000`), giá gốc, tự tính `discount_percent` và đồng bộ `product_editions` `'Standard'` |
 | `POST` | `/api/publisher/products/:id/patches` | Phát hành bản vá hoặc DLC mới vào `game_patches` |
 | `PUT` | `/api/publisher/reviews/:reviewId/reply` | Gửi phản hồi chính thức của Nhà phát hành cho đánh giá về game của Studio |
 
@@ -134,9 +133,9 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 | `GET` | `/api/admin/stats` | Thống kê doanh thu tổng, tách doanh thu Số / Vật lý, đơn theo trạng thái, doanh thu 14 ngày liên tục, top sản phẩm & cảnh báo tồn kho thấp |
 | `GET` / `GET` | `/api/admin/orders`, `/api/admin/orders/:id` | Danh sách đơn hàng (tối đa 200) và chi tiết đơn để điều phối giao vận / in phiếu / xem Key |
 | `PUT` | `/api/admin/orders/:id/status` | Chuyển trạng thái đơn (`processing`, `shipped`, `fulfilled`, `cancelled`) kèm hoàn giữ chỗ khi hủy |
-| `GET` / `PUT` | `/api/admin/refunds`, `/api/admin/refunds/:id` | Duyệt/từ chối hoàn tiền trong Transaction: thu hồi `game_library`, hoàn tồn kho đĩa (nếu chưa giao) và thu hồi điểm Loyalty |
-| `GET` / `POST` / `PUT` | `/api/admin/products`, `/api/admin/products/:id` | Quản lý toàn bộ catalog (ưu tiên game `draft` lên đầu); đồng bộ giá `product_editions` `'Standard'` và xóa `rejection_reason` khi chuyển `active` |
-| `PUT` | `/api/admin/products/:id/approval` | Phê duyệt (`approve` → `active`) hoặc từ chối (`reject` → `inactive` + lưu `rejection_reason`) game từ Publisher |
+| `GET` / `PUT` | `/api/admin/refunds`, `/api/admin/refunds/:id` | *(Chỉ `admin` được `PUT`)* Duyệt/từ chối hoàn tiền trong Transaction: thu hồi `game_library`, hoàn tồn kho đĩa (nếu chưa giao), thu hồi điểm & tính lại `tier` Loyalty |
+| `GET` / `POST` / `PUT` | `/api/admin/products`, `/api/admin/products/:id` | *(Chỉ `admin` được `POST`/`PUT`)* Quản lý toàn bộ catalog (`cover_url` chuẩn `http(s)://`); đồng bộ giá `product_editions` `'Standard'` và xóa `rejection_reason` khi chuyển `active` |
+| `PUT` | `/api/admin/products/:id/approval` | *(Chỉ `admin`)* Phê duyệt (`approve` → `active`) hoặc từ chối (`reject` → `inactive` + lưu `rejection_reason`) game từ Publisher |
 | `GET` / `PUT` | `/api/admin/users`, `/api/admin/users/:id` | Danh sách tài khoản và phân quyền (`customer`/`publisher`/`staff`/`admin`, khóa/mở khóa; chỉ `admin` được sửa và chặn tự sửa chính mình) |
 | `GET` / `PUT` | `/api/admin/tickets`, `/api/admin/tickets/:id` | Xem danh sách ticket hỗ trợ (tối đa 200), gửi phản hồi và cập nhật trạng thái |
 
@@ -152,5 +151,5 @@ Ngoài ra, các route khởi tạo sẵn dữ liệu demo trong transaction nế
 
 ## 6. Bảo mật & Giới hạn Phạm vi Demo
 
-- **Các lớp bảo mật đã cài đặt:** `Bcrypt` (cost 12) + `JWT` có thời hạn `2h`; `requireRole` đối chiếu DB thời gian thực; `Helmet` security headers; `CORS` theo danh sách origin; `express.json({ limit: '32kb' })`; `Express Rate Limit`; xác thực schema đầu vào bằng `Zod`; `100%` truy vấn SQL tham số hóa (`Prepared Statements`).
-- **Phạm vi mô phỏng học thuật:** Cổng thanh toán thật + xác minh chữ ký webhook, gửi email xác thực khi quên mật khẩu và cấp key DRM thật từ nhà phát hành gốc cần tích hợp thêm hạ tầng khi triển khai production. Không đưa thông tin bí mật thật hoặc file `.env` lên Git.
+- **Các lớp bảo mật đã cài đặt:** `Bcrypt` (cost 12) + `JWT` có thời hạn `2h`; `requireAuth` và `requireRole` đối chiếu trực tiếp `status = 'active'` & `role` từ MySQL trên mọi request (chặn tức thì tài khoản bị khóa); `Helmet` security headers; `CORS` theo danh sách origin; `express.json({ limit: '32kb' })`; `Express Rate Limit` đa tầng (`/api/auth`: 30 req/15p, tác vụ ghi trên `/api/orders`, `/api/mods`, `/api/support`, `/api/products`: 30 req/15p, toàn cục `/api`: 180 req/phút, `/api/ai`: 15 req/phút); xác thực schema đầu vào bằng `Zod` (ràng buộc `http(s)://` cho `cover_url`); `100%` truy vấn SQL tham số hóa (`Prepared Statements`).
+- **Phạm vi mô phỏng học thuật (Hướng phát triển Production):** Chuyển xác thực 2FA TOTP và lưu trữ `totp_secret` về phía Server (cấp `tempToken`), lưu phiên trong `HttpOnly` Cookie kèm Refresh Token, tích hợp cổng thanh toán thật + xác minh chữ ký webhook (kèm worker tự động hủy đơn `pending_payment` quá hạn), gửi email SMTP thật khi quên mật khẩu và cấp key DRM thật từ nhà phát hành gốc. Không đưa thông tin bí mật thật hoặc file `.env` lên Git.

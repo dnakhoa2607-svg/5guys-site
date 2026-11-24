@@ -217,7 +217,7 @@
 
             <label class="text-xs text-outline flex flex-col gap-1">
               Giá bán (VNĐ) *
-              <input id="ng-price" type="number" min="0" step="1000" class="inp" required placeholder="590000">
+              <input id="ng-price" type="number" min="1000" step="1000" class="inp" required placeholder="590000">
             </label>
             <label class="text-xs text-outline flex flex-col gap-1">
               <span class="flex items-center justify-between gap-2">
@@ -353,7 +353,7 @@
       <div class="grid grid-cols-2 gap-3">
         <label class="text-xs text-outline flex flex-col gap-1">
           Giá bán mới (VNĐ) *
-          <input id="pm-price" type="number" min="0" step="1000" class="inp" required>
+          <input id="pm-price" type="number" min="1000" step="1000" class="inp" required>
         </label>
         <label class="text-xs text-outline flex flex-col gap-1">
           Giá gốc (VNĐ)
@@ -748,8 +748,8 @@
       const priceVal = Number($('pm-price').value);
       const origRaw = $('pm-original').value.trim();
       const origVal = origRaw === '' ? null : Number(origRaw);
-      if (Number.isNaN(priceVal) || priceVal < 0) {
-        errBox.textContent = 'Giá bán phải >= 0.';
+      if (Number.isNaN(priceVal) || priceVal < 1000) {
+        errBox.textContent = 'Giá bán tối thiểu là 1.000đ.';
         errBox.classList.remove('hidden');
         return;
       }

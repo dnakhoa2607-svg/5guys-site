@@ -3,9 +3,11 @@ import { z } from 'zod';
 import db, { ensureSchemaReady } from '../db.js';
 import { requireAuth, requireRole } from '../middleware/auth.js';
 
-// Tat ca route trong file nay chi danh cho admin (hoac nhan vien - staff)
+// Tat ca route xem/dieu phoi trong file nay danh cho admin va staff;
+// cac thao tac tai chinh, danh muc goc va phan quyen chi danh rieng cho admin.
 const router = Router();
 router.use(requireAuth, requireRole('admin', 'staff'));
+const adminOnly = requireRole('admin');
 
 const idParam = z.coerce.number().int().positive();
 
@@ -219,7 +221,7 @@ router.get('/refunds', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.put('/refunds/:id', async (req, res, next) => {
+router.put('/refunds/:id', adminOnly, async (req, res, next) => {
   try {
     const id = idParam.parse(req.params.id);
     const { action } = z.object({ action: z.enum(['approve', 'reject']) }).parse(req.body);
@@ -257,6 +259,10 @@ router.put('/refunds/:id', async (req, res, next) => {
           'UPDATE loyalty_accounts SET points_balance=GREATEST(points_balance-?,0), lifetime_spend=GREATEST(lifetime_spend-?,0) WHERE user_id=?',
           [Number(earned.pts), Number(order.total), order.user_id]
         );
+        await conn.execute(
+          "UPDATE loyalty_accounts SET tier = CASE WHEN lifetime_spend >= 12500000 THEN 'gold' WHEN lifetime_spend >= 5000000 THEN 'silver' ELSE 'bronze' END WHERE user_id = ?",
+          [order.user_id]
+        );
       }
       // 4. Cap nhat trang thai
       await conn.execute("UPDATE refunds SET status='processed' WHERE id=?", [id]);
@@ -277,7 +283,7 @@ const productSchema = z.object({
   release_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional().nullable(),
   platform: z.string().trim().min(1).max(80),
   genre: z.string().max(80).optional().default(''),
-  cover_url: z.string().url().max(1000).optional().or(z.literal('')).default(''),
+  cover_url: z.string().trim().url().regex(/^https?:\/\//i).max(1000).optional().or(z.literal('')).default(''),
   product_type: z.enum(['digital', 'physical']),
   price: z.coerce.number().min(0),
   original_price: z.coerce.number().min(0).optional().nullable(),
@@ -311,7 +317,7 @@ function discountOf(price, original) {
   return Math.round((1 - Number(price) / Number(original)) * 100);
 }
 
-router.post('/products', async (req, res, next) => {
+router.post('/products', adminOnly, async (req, res, next) => {
   try {
     const p = productSchema.parse(req.body);
     const original = p.original_price || p.price;
@@ -345,7 +351,7 @@ router.post('/products', async (req, res, next) => {
   } catch (e) { next(e); }
 });
 
-router.put('/products/:id', async (req, res, next) => {
+router.put('/products/:id', adminOnly, async (req, res, next) => {
   try {
     const id = idParam.parse(req.params.id);
     const p = productSchema.partial().parse(req.body);
@@ -386,7 +392,7 @@ router.put('/products/:id', async (req, res, next) => {
   } catch (e) { sendError(res, next, e); }
 });
 
-router.put('/products/:id/approval', async (req, res, next) => {
+router.put('/products/:id/approval', adminOnly, async (req, res, next) => {
   try {
     await ensureAdminReady();
     const id = idParam.parse(req.params.id);

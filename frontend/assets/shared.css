@@ -85,32 +85,50 @@
   --shadow-btn-hover:     0 6px 18px -3px rgb(var(--g5-brand-600-rgb) / 0.5);
 }
 
-/* Sẵn sàng cho chế độ Light Mode (Layer 1 + Layer 4, bước L ~2%) */
+/* Chế độ Light Mode hoàn chỉnh (Layer 1 + Layer 4, bước L rõ nét, WCAG AA >= 4.5:1) */
 [data-theme="light"] {
-  --g5-bg-lowest-rgb:     243 240 248; /* #f3f0f8 */
-  --g5-bg-canvas-rgb:     251 249 254; /* #fbf9fe — oklch(0.985 0.006 302) */
-  --g5-bg-shell-rgb:      243 240 248; /* #f3f0f8 — oklch(0.960 0.010 302) */
-  --g5-bg-container-rgb:  247 245 251; /* #f7f5fb */
-  --g5-bg-surface-rgb:    255 255 255; /* #ffffff — Card trắng nổi trên nền off-white */
-  --g5-bg-elevated-rgb:   255 255 255; /* #ffffff */
+  --g5-bg-lowest-rgb:     232 227 242; /* #e8e3f2 — Ô lõm / nền phụ */
+  --g5-bg-canvas-rgb:     246 244 250; /* #f6f4fa — Nền trang chính xám tím nhạt giúp thẻ trắng nổi khối */
+  --g5-bg-shell-rgb:      238 234 246; /* #eeeaf6 — Sidebar / Footer / Vùng phụ */
+  --g5-bg-container-rgb:  243 240 249; /* #f3f0f9 — Khối chứa phụ */
+  --g5-bg-surface-rgb:    255 255 255; /* #ffffff — Thẻ Card trắng nổi rõ trên nền trang */
+  --g5-bg-elevated-rgb:   255 255 255; /* #ffffff — Dropdown / Modal / Toast nổi */
 
-  --g5-border-subtle-rgb: 217 213 224; /* #d9d5e0 — ~85% trắng pha nhẹ tím */
-  --g5-border-strong-rgb: 182 174 198; /* #b6aec6 */
+  --g5-border-subtle-rgb: 214 206 232; /* #d6cee8 — Viền sắc nét (~85% trắng pha tím nhẹ) */
+  --g5-border-strong-rgb: 175 162 204; /* #afa2cc — Viền nhấn mạnh / nút phụ */
 
-  --g5-text-primary-rgb:  24 19 32;    /* #181320 */
-  --g5-text-body-rgb:     53 48 62;    /* #35303e */
-  --g5-text-muted-rgb:    102 96 111;  /* #66606f */
+  --g5-text-primary-rgb:  20 16 32;    /* #141020 — Tiêu đề (~18.5:1 trên trắng) */
+  --g5-text-body-rgb:     46 40 66;    /* #2e2842 — Nội dung (~13.5:1 trên trắng) */
+  --g5-text-muted-rgb:    91 83 117;   /* #5b5375 — Chữ phụ (~6.9:1 trên trắng, PASS AA) */
 
-  --g5-brand-300-rgb:     145 71 214;  /* #9147d6 — Link rõ nét trên nền sáng */
-  --g5-brand-400-rgb:     123 44 191;  /* #7b2cbf */
-  --g5-brand-500-rgb:     123 44 191;  /* #7b2cbf — Nút chính Light Mode */
-  --g5-brand-600-rgb:     98 31 160;   /* #621fa0 — Hover tối hơn trên Light Mode */
+  --g5-brand-200-rgb:     91 33 182;   /* #5b21b6 — Nhãn phụ / secondary rõ nét trên nền sáng */
+  --g5-brand-300-rgb:     109 40 217;  /* #6d28d9 — Link & điểm nhấn (~7.2:1 trên trắng) */
+  --g5-brand-400-rgb:     91 33 182;   /* #5b21b6 — Hover link */
+  --g5-brand-500-rgb:     124 58 237;  /* #7c3aed — Nền nút CTA chữ trắng (~5.7:1 PASS AA) */
+  --g5-brand-600-rgb:     109 40 217;  /* #6d28d9 — Hover CTA chữ trắng (~7.2:1 PASS AAA) */
 
-  --shadow-card-hover:    0 10px 24px -8px rgba(24, 19, 32, 0.14), 0 0 0 1px rgb(var(--g5-brand-400-rgb) / 0.25);
+  --g5-success-rgb:       22 163 74;   /* #16a34a */
+  --g5-warning-rgb:       180 83 9;    /* #b45309 */
+  --g5-danger-rgb:        220 38 38;   /* #dc2626 */
+  --g5-info-rgb:          37 99 235;   /* #2563eb */
+
+  --chart-1:              #7c3aed;
+  --chart-2:              #2563eb;
+  --chart-3:              #a21caf;
+  --chart-4:              #be185d;
+  --chart-5:              #dc2626;
+  --chart-6:              #d97706;
+
+  --shadow-card-hover:    0 12px 28px -10px rgba(20, 16, 32, 0.16), 0 0 0 1px rgb(var(--g5-brand-500-rgb) / 0.28);
+  --shadow-btn:           0 4px 12px -3px rgb(var(--g5-brand-500-rgb) / 0.35);
+  --shadow-btn-hover:     0 8px 18px -4px rgb(var(--g5-brand-600-rgb) / 0.45);
 }
 
 /* =====================================================================
-   0.1. CÁC LỚP GIAO DIỆN DÙNG CHUNG (Dùng :where để trang riêng dễ ghi đè)
+   0.1. CÁC LỚP GIAO DIỆN DÙNG CHUNG
+   Lưu ý: Chỉ dùng :where() cho thẻ HTML gốc (body, h1-h4). Các lớp component
+   (.card, .btn, .ghost, .inp) giữ specificity chuẩn để KHÔNG bị Tailwind
+   Preflight (button,[type='button']{background-color:transparent}) ghi đè!
    ===================================================================== */
 :where(body) {
   background-color: var(--bg-canvas);
@@ -125,36 +143,38 @@
 ::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--brand-500); }
 
-:where(.card) {
+.card {
   background: var(--bg-surface);
   border: 1px solid var(--border-subtle);
   border-radius: 1rem;
   transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
 }
-:where(.card-container) {
+.card-container {
   background: var(--bg-container);
   border: 1px solid rgb(var(--g5-brand-500-rgb) / 0.25);
   border-radius: 1rem;
 }
-:where(.game-card) {
+.game-card {
   transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
 }
-:where(.game-card:hover) {
+.game-card:hover {
   transform: translateY(-6px);
   border-color: var(--brand-300);
   box-shadow: var(--shadow-card-hover);
 }
-:where(.glow:hover) {
+.glow:hover {
   border-color: var(--brand-300) !important;
-  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.35);
 }
-:where(.btn) {
+a.btn,
+button.btn,
+.btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.45rem;
   text-align: center;
-  background: var(--btn-bg);
+  background-color: var(--btn-bg);
   color: var(--btn-text);
   font-weight: 700;
   border-radius: 0.5rem;
@@ -164,39 +184,50 @@
   transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
   cursor: pointer;
 }
-:where(.btn:hover) {
-  background: var(--btn-hover-bg);
+a.btn:hover,
+button.btn:hover,
+.btn:hover {
+  background-color: var(--btn-hover-bg);
   color: var(--btn-hover-text);
   box-shadow: var(--shadow-btn-hover);
 }
-:where(.btn:disabled) {
+a.btn:disabled,
+button.btn:disabled,
+.btn:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
-:where(.ghost) {
+a.ghost,
+button.ghost,
+.ghost {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 0.4rem;
-  background: var(--bg-canvas);
+  background-color: var(--bg-canvas);
   border: 1px solid var(--border-subtle);
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   color: var(--text-body);
+  font-weight: 600;
   transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
   cursor: pointer;
 }
-:where(.ghost:hover) {
+a.ghost:hover,
+button.ghost:hover,
+.ghost:hover {
   border-color: var(--brand-300);
   color: var(--text-primary);
 }
-:where(.ghost:disabled) {
+a.ghost:disabled,
+button.ghost:disabled,
+.ghost:disabled {
   opacity: 0.45;
   cursor: not-allowed;
   pointer-events: none;
 }
-:where(.inp) {
+.inp {
   background: var(--bg-canvas) !important;
   border: 1px solid var(--border-subtle) !important;
   border-radius: 0.5rem !important;
@@ -204,20 +235,24 @@
   padding: 0.6rem 1rem;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-:where(.inp:focus) {
+.inp::placeholder {
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+.inp:focus {
   outline: 0;
   border-color: var(--brand-300) !important;
-  box-shadow: 0 0 0 2px rgb(var(--g5-brand-300-rgb) / 0.35) !important;
+  box-shadow: 0 0 0 2px rgb(var(--g5-brand-300-rgb) / 0.3) !important;
 }
-:where(.inp:disabled) {
+.inp:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-:where(select.inp option) {
-  background: var(--bg-canvas);
+select.inp option {
+  background: var(--bg-surface);
   color: var(--text-primary);
 }
-:where(.mono) {
+.mono {
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.02em;
 }
@@ -873,4 +908,606 @@ nav [data-nav-role-trigger].is-current {
     animation-iteration-count: 1 !important;
     transition-duration: .01ms !important;
   }
+}
+
+/* =====================================================================
+   5. NÚT CHUYỂN CHẾ ĐỘ SÁNG / TỐI & LỚP ÁNH XẠ LIGHT MODE TOÀN TRANG
+   ===================================================================== */
+.auth-theme-toggle {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 60;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 9999px;
+  background: rgb(var(--g5-bg-surface-rgb) / 0.88);
+  border: 1px solid var(--border-strong);
+  color: var(--text-primary);
+  font: 600 12.5px/1 'Inter', sans-serif;
+  cursor: pointer;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.auth-theme-toggle:hover {
+  border-color: var(--brand-300);
+  color: var(--brand-300);
+  transform: translateY(-1px);
+}
+@media (max-width: 640px) {
+  .auth-theme-toggle {
+    top: 10px;
+    right: 10px;
+    padding: 7px 11px;
+    font-size: 11.5px;
+  }
+}
+
+/* --- 5.1. Tiêu đề Hero, Thẻ Nền Tảng, Widget Nổi & Toast (Đồng bộ Light + Dark) --- */
+.hero-gradient-text {
+  background-image: linear-gradient(90deg, #ffffff 0%, #c894ff 55%, #9147d6 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent !important;
+}
+[data-theme="light"] .hero-gradient-text {
+  background-image: linear-gradient(90deg, #1e1035 0%, #6d28d9 52%, #9333ea 100%);
+}
+
+/* Nút lọc nền tảng trang Game Vật Lý */
+.platform-chip {
+  background-color: #24143b;
+  border: 1px solid #4c2a7a;
+  color: #e9d5ff;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+.platform-chip:hover {
+  border-color: var(--brand-300);
+  color: #ffffff;
+}
+.platform-chip.is-active {
+  background-color: #9d4edd;
+  border-color: #c77dff;
+  color: #ffffff !important;
+}
+[data-theme="light"] .platform-chip {
+  background-color: #ffffff;
+  border-color: #d4cce6;
+  color: #1f1633;
+}
+[data-theme="light"] .platform-chip:hover {
+  background-color: #f3effa;
+  border-color: #7c3aed;
+  color: #5b21b6;
+}
+[data-theme="light"] .platform-chip.is-active {
+  background-color: #7c3aed;
+  border-color: #6d28d9;
+  color: #ffffff !important;
+}
+[data-theme="light"] .platform-chip.is-active i {
+  color: #ffffff !important;
+}
+
+/* Nút nổi Trung tâm Hỗ trợ & Chatbot AI — đồng nhất 100% ở mọi trang */
+#support-toggle-btn,
+#support-fab-btn {
+  background-color: var(--bg-surface) !important;
+  border: 2px solid rgb(var(--g5-brand-300-rgb) / 0.55) !important;
+  color: var(--brand-300) !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+}
+#support-toggle-btn:hover,
+#support-fab-btn:hover {
+  border-color: var(--brand-300) !important;
+  background-color: var(--btn-bg) !important;
+  color: #ffffff !important;
+}
+[data-theme="light"] #support-toggle-btn,
+[data-theme="light"] #support-fab-btn {
+  background-color: #ffffff !important;
+  border: 2px solid #7c3aed !important;
+  color: #6d28d9 !important;
+  box-shadow: 0 10px 26px -6px rgba(20, 16, 32, 0.22) !important;
+}
+[data-theme="light"] #support-toggle-btn:hover,
+[data-theme="light"] #support-fab-btn:hover {
+  background-color: #7c3aed !important;
+  border-color: #6d28d9 !important;
+  color: #ffffff !important;
+}
+
+#chat-toggle-btn,
+#chatbot-fab-btn {
+  background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%) !important;
+  border: 2px solid rgba(255, 255, 255, 0.32) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 28px -4px rgba(124, 58, 237, 0.55) !important;
+}
+#chat-toggle-btn:hover,
+#chatbot-fab-btn:hover {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%) !important;
+  color: #ffffff !important;
+}
+#chat-toggle-btn i,
+#chatbot-fab-btn i {
+  color: #ffffff !important;
+}
+
+/* Header & Thân khung Chatbot PC2GAMES AI */
+#chat-panel > div:first-child,
+#ai-chat-panel > div:first-child {
+  background: linear-gradient(135deg, #6d28d9 0%, #7c3aed 55%, #9333ea 100%) !important;
+  color: #ffffff !important;
+}
+#chat-panel > div:first-child h3,
+#chat-panel > div:first-child h4,
+#ai-chat-panel > div:first-child h3,
+#ai-chat-panel > div:first-child h4 {
+  color: #ffffff !important;
+}
+#chat-panel > div:first-child p,
+#ai-chat-panel > div:first-child p {
+  color: rgba(243, 232, 255, 0.92) !important;
+}
+#chat-panel > div:first-child .bg-white\/20,
+#ai-chat-panel > div:first-child .bg-white\/20 {
+  background-color: rgba(255, 255, 255, 0.2) !important;
+  border-color: rgba(255, 255, 255, 0.35) !important;
+}
+#chat-panel > div:first-child .bg-white\/20 i,
+#ai-chat-panel > div:first-child .bg-white\/20 i {
+  color: #ffffff !important;
+}
+#chat-panel > div:first-child button,
+#ai-chat-panel > div:first-child button {
+  background-color: rgba(255, 255, 255, 0.16) !important;
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.28) !important;
+}
+#chat-panel > div:first-child button:hover,
+#ai-chat-panel > div:first-child button:hover {
+  background-color: rgba(255, 255, 255, 0.3) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] #chat-panel,
+[data-theme="light"] #ai-chat-panel,
+[data-theme="light"] #support-panel {
+  border-color: #d6cee8 !important;
+  box-shadow: 0 20px 50px -12px rgba(20, 16, 32, 0.24) !important;
+}
+[data-theme="light"] #chat-messages,
+[data-theme="light"] #chat-stream {
+  background-color: #f4f1fa !important;
+}
+[data-theme="light"] #chat-messages .bg-dark-surface,
+[data-theme="light"] #chat-stream .bg-vault-surface {
+  background-color: #ffffff !important;
+  border-color: #e2dcf0 !important;
+  color: #1e1633 !important;
+  box-shadow: 0 2px 8px rgba(20, 16, 32, 0.06) !important;
+}
+[data-theme="light"] #chat-messages .bg-brand,
+[data-theme="light"] #chat-stream [class*="from-vault-primary"] {
+  background: #7c3aed !important;
+  color: #ffffff !important;
+}
+
+/* Toast thông báo thống nhất Light & Dark */
+.g5-toast-item {
+  background-color: #1e1133;
+  color: #e2d9f3;
+  border: 1px solid rgba(157, 78, 221, 0.35);
+  border-left-width: 4px;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.55);
+}
+.g5-toast-item .g5-toast-title {
+  color: #ffffff;
+}
+.g5-toast-item .g5-toast-body {
+  color: #e2d9f3;
+}
+.g5-toast-item.is-success { border-left-color: #22c55e; }
+.g5-toast-item.is-error   { border-left-color: #ef4444; }
+.g5-toast-item.is-info    { border-left-color: #9d4edd; }
+
+[data-theme="light"] .g5-toast-item {
+  background-color: #ffffff !important;
+  color: #374151 !important;
+  border-color: #e2dcf0 !important;
+  box-shadow: 0 14px 36px -6px rgba(20, 16, 32, 0.18), 0 0 0 1px rgba(20, 16, 32, 0.05) !important;
+}
+[data-theme="light"] .g5-toast-item.is-success { border-left-color: #16a34a !important; }
+[data-theme="light"] .g5-toast-item.is-error   { border-left-color: #dc2626 !important; }
+[data-theme="light"] .g5-toast-item.is-info    { border-left-color: #7c3aed !important; }
+[data-theme="light"] .g5-toast-item .g5-toast-title {
+  color: #111827 !important;
+}
+[data-theme="light"] .g5-toast-item .g5-toast-body {
+  color: #374151 !important;
+}
+
+/* --- 5.2. Ánh xạ bề mặt & chữ cho Light Mode (Tách bạch Surface Text vs On-Brand) --- */
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+[data-theme="light"] nav {
+  box-shadow: 0 6px 20px -10px rgba(20, 16, 32, 0.14);
+}
+
+[data-theme="light"] footer {
+  background-color: var(--bg-shell);
+}
+
+[data-theme="light"] .card,
+[data-theme="light"] .vault-card,
+[data-theme="light"] .game-card {
+  border-color: #dcd6e8;
+  box-shadow: 0 4px 16px -6px rgba(20, 16, 32, 0.09);
+}
+
+[data-theme="light"] a.ghost,
+[data-theme="light"] button.ghost,
+[data-theme="light"] .ghost {
+  background-color: #ffffff;
+  border-color: #cfc6e2;
+  color: #1f1633;
+}
+[data-theme="light"] a.ghost:hover,
+[data-theme="light"] button.ghost:hover,
+[data-theme="light"] .ghost:hover {
+  background-color: #f3e8ff;
+  border-color: #7c3aed;
+  color: #5b21b6;
+}
+[data-theme="light"] .ghost.active-filter {
+  background-color: var(--btn-bg) !important;
+  border-color: var(--btn-bg) !important;
+  color: #ffffff !important;
+}
+
+[data-theme="light"] nav [data-user].group > .absolute > div,
+[data-theme="light"] nav [data-nav-role-menu] > .absolute > div {
+  box-shadow: 0 18px 40px -10px rgba(20, 16, 32, 0.18), 0 0 0 1px rgb(var(--g5-brand-500-rgb) / 0.16);
+}
+
+/* Surface Text: chuyển sang tông tối rõ nét trên nền sáng */
+[data-theme="light"] .text-white {
+  color: var(--text-primary) !important;
+}
+[data-theme="light"] .text-white\/80 {
+  color: var(--text-body) !important;
+}
+[data-theme="light"] .text-gray-100,
+[data-theme="light"] .text-gray-200 {
+  color: var(--text-primary) !important;
+}
+[data-theme="light"] .text-gray-300 {
+  color: var(--text-body) !important;
+}
+[data-theme="light"] .text-gray-400,
+[data-theme="light"] .text-gray-500 {
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .hover\:text-white:hover,
+[data-theme="light"] .hover\:text-gray-200:hover {
+  color: var(--text-primary) !important;
+}
+
+/* On-Brand / On-Accent: LUÔN giữ chữ & icon trắng tinh #ffffff trên nền màu đậm */
+[data-theme="light"] .btn,
+[data-theme="light"] .btn *,
+[data-theme="light"] .tab.on,
+[data-theme="light"] .tab.on *,
+[data-theme="light"] .active-nav-tab,
+[data-theme="light"] .active-nav-tab *,
+[data-theme="light"] .bg-brand,
+[data-theme="light"] .bg-brand *,
+[data-theme="light"] .bg-brand-dark,
+[data-theme="light"] .bg-brand-dark *,
+[data-theme="light"] .bg-brand-purple,
+[data-theme="light"] .bg-brand-purple *,
+[data-theme="light"] .bg-brand-neon,
+[data-theme="light"] .bg-brand-neon *,
+[data-theme="light"] .bg-vault-primary,
+[data-theme="light"] .bg-vault-primary *,
+[data-theme="light"] .bg-vault-primaryDark,
+[data-theme="light"] .bg-vault-primaryDark *,
+[data-theme="light"] .bg-emerald-600,
+[data-theme="light"] .bg-emerald-600 *,
+[data-theme="light"] .bg-emerald-500,
+[data-theme="light"] .bg-emerald-500 *,
+[data-theme="light"] .bg-red-600,
+[data-theme="light"] .bg-red-600 *,
+[data-theme="light"] .bg-red-500,
+[data-theme="light"] .bg-red-500 *,
+[data-theme="light"] .bg-blue-600,
+[data-theme="light"] .bg-blue-600 *,
+[data-theme="light"] .bg-amber-600,
+[data-theme="light"] .bg-amber-600 *,
+[data-theme="light"] .bg-indigo-600,
+[data-theme="light"] .bg-indigo-600 *,
+[data-theme="light"] .bg-purple-600,
+[data-theme="light"] .bg-purple-600 *,
+[data-theme="light"] .bg-violet-600,
+[data-theme="light"] .bg-violet-600 *,
+[data-theme="light"] .bg-\[\#e50071\],
+[data-theme="light"] .from-brand,
+[data-theme="light"] .from-brand *,
+[data-theme="light"] .from-brand-dark,
+[data-theme="light"] .from-brand-dark *,
+[data-theme="light"] .from-brand-purple,
+[data-theme="light"] .from-brand-purple *,
+[data-theme="light"] .from-vault-primary,
+[data-theme="light"] .from-vault-primary *,
+[data-theme="light"] .from-vault-primaryDark,
+[data-theme="light"] .from-vault-primaryDark *,
+[data-theme="light"] .hover\:bg-brand-purple:hover,
+[data-theme="light"] .hover\:bg-brand-purple:hover *,
+[data-theme="light"] .hover\:bg-brand:hover,
+[data-theme="light"] .hover\:bg-brand:hover *,
+[data-theme="light"] [data-user-initial],
+[data-theme="light"] [data-cart-count],
+[data-theme="light"] #cart-badge,
+[data-theme="light"] [data-dark-surface],
+[data-theme="light"] [data-dark-surface] .text-white,
+[data-theme="light"] [data-dark-surface] .text-gray-200,
+[data-theme="light"] [data-dark-surface] .text-gray-300 {
+  color: #ffffff !important;
+}
+/* Riêng phần chữ gradient logo 5GUYS (bg-clip-text) phải giữ color: transparent */
+[data-theme="light"] .bg-clip-text.text-transparent {
+  color: transparent !important;
+}
+[data-theme="light"] [data-dark-surface] {
+  background-color: #140c22 !important;
+}
+[data-theme="light"] [data-dark-surface] .text-outline {
+  color: #b8accf !important;
+}
+
+/* Logo hover trên nền sáng */
+[data-theme="light"] .group:hover .group-hover\:to-white {
+  --tw-gradient-to: var(--brand-600) var(--tw-gradient-to-position) !important;
+}
+
+/* Viền & nền trong suốt vốn thiết kế cho Dark Mode -> sắc tím phấn rõ nét */
+[data-theme="light"] .border-white\/5,
+[data-theme="light"] .border-white\/10,
+[data-theme="light"] .border-white\/15,
+[data-theme="light"] .border-white\/30 {
+  border-color: var(--border-subtle) !important;
+}
+[data-theme="light"] .bg-white\/5,
+[data-theme="light"] .bg-white\/10 {
+  background-color: rgb(var(--g5-bg-shell-rgb) / 0.9) !important;
+}
+[data-theme="light"] .bg-white\/20 {
+  background-color: rgb(var(--g5-bg-lowest-rgb) / 0.95) !important;
+}
+[data-theme="light"] .bg-black\/20,
+[data-theme="light"] .bg-black\/30,
+[data-theme="light"] .bg-black\/35 {
+  background-color: rgb(var(--g5-bg-lowest-rgb) / 0.72) !important;
+}
+[data-theme="light"] .bg-black {
+  background-color: var(--bg-lowest) !important;
+}
+
+/* Nền hộp cảnh báo tối (amber/emerald/red-900) chuyển sang tông sáng rõ chữ */
+[data-theme="light"] .bg-amber-950\/40,
+[data-theme="light"] .bg-amber-400\/10 {
+  background-color: #fef3c7 !important;
+  border-color: rgba(217, 119, 6, 0.4) !important;
+}
+[data-theme="light"] .bg-emerald-900\/40 {
+  background-color: #dcfce7 !important;
+  border-color: rgba(22, 163, 74, 0.35) !important;
+}
+[data-theme="light"] .bg-red-900\/40 {
+  background-color: #fee2e2 !important;
+  border-color: rgba(220, 38, 38, 0.35) !important;
+}
+[data-theme="light"] .bg-blue-950\/25 {
+  background-color: #eff6ff !important;
+  border-color: rgba(37, 99, 235, 0.3) !important;
+}
+
+/* Màu trạng thái pastel (-100/-200/-300) -> tăng đậm đạt chuẩn WCAG AA trên nền trắng */
+[data-theme="light"] .text-emerald-200,
+[data-theme="light"] .text-emerald-300,
+[data-theme="light"] .text-emerald-400,
+[data-theme="light"] .text-green-300,
+[data-theme="light"] .text-green-400 {
+  color: #047857 !important;
+}
+[data-theme="light"] .text-amber-100,
+[data-theme="light"] .text-amber-200,
+[data-theme="light"] .text-amber-300,
+[data-theme="light"] .text-amber-400,
+[data-theme="light"] .text-yellow-300,
+[data-theme="light"] .text-yellow-400 {
+  color: #b45309 !important;
+}
+[data-theme="light"] .text-red-200,
+[data-theme="light"] .text-red-300,
+[data-theme="light"] .text-red-400,
+[data-theme="light"] .text-rose-300,
+[data-theme="light"] .text-rose-400 {
+  color: #b91c1c !important;
+}
+[data-theme="light"] .text-sky-300,
+[data-theme="light"] .text-sky-400,
+[data-theme="light"] .text-blue-300,
+[data-theme="light"] .text-blue-400,
+[data-theme="light"] .text-cyan-300,
+[data-theme="light"] .text-cyan-400 {
+  color: #1d4ed8 !important;
+}
+[data-theme="light"] .text-purple-200,
+[data-theme="light"] .text-purple-300,
+[data-theme="light"] .text-violet-300 {
+  color: #6d28d9 !important;
+}
+
+/* Menu đang chọn, chip & toast nổi trong Light Mode */
+[data-theme="light"] a[data-nav].is-current {
+  background: rgb(var(--g5-brand-500-rgb) / 0.12);
+  color: var(--brand-600) !important;
+}
+[data-theme="light"] nav [data-nav-role-trigger].is-current {
+  background: rgb(var(--g5-brand-500-rgb) / 0.18);
+  border-color: rgb(var(--g5-brand-500-rgb) / 0.55);
+  color: var(--brand-600) !important;
+}
+[data-theme="light"] .chip.dg {
+  background: rgb(var(--g5-brand-500-rgb) / 0.12);
+  border-color: rgb(var(--g5-brand-500-rgb) / 0.35);
+  color: var(--brand-600);
+}
+[data-theme="light"] .chip.ph {
+  background: rgb(var(--g5-info-rgb) / 0.12);
+  border-color: rgb(var(--g5-info-rgb) / 0.35);
+  color: var(--status-info);
+}
+[data-theme="light"] .cover-fallback {
+  background: radial-gradient(ellipse at 50% 0%, rgb(var(--g5-brand-500-rgb) / 0.16), transparent 65%), var(--bg-shell);
+}
+[data-theme="light"] #g5-toast,
+[data-theme="light"] #toast,
+[data-theme="light"] #toast-container.bg-dark-surface {
+  background-color: #ffffff !important;
+  color: #111827 !important;
+  border-color: #d6cee8 !important;
+  box-shadow: 0 14px 36px -6px rgba(20, 16, 32, 0.2) !important;
+}
+
+/* --- 5.2. Light Mode cho trang Đăng nhập & Đăng ký (.auth-page) --- */
+[data-theme="light"] body.auth-page {
+  background: radial-gradient(circle at 50% 35%, #f4eeff 0%, #f9f7fd 58%, #ede7f6 100%) !important;
+  color: var(--text-primary) !important;
+}
+[data-theme="light"] .auth-page .ambient-glow-1 {
+  background: radial-gradient(circle, rgba(123, 44, 191, 0.12) 0%, rgba(249, 247, 253, 0) 68%) !important;
+}
+[data-theme="light"] .auth-page .ambient-glow-2 {
+  background: radial-gradient(circle, rgba(145, 71, 214, 0.10) 0%, rgba(249, 247, 253, 0) 68%) !important;
+}
+[data-theme="light"] .auth-page .auth-container {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: 0 24px 60px -20px rgba(24, 18, 34, 0.18), 0 0 0 1px rgba(123, 44, 191, 0.12) !important;
+}
+[data-theme="light"] .auth-page .auth-hero {
+  background: linear-gradient(145deg, #f3ebff 0%, #ebe2fa 100%) !important;
+  border-color: var(--border-subtle) !important;
+}
+[data-theme="light"] .auth-page .hero-logo {
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .auth-page .hero-logo i {
+  color: var(--brand-500) !important;
+  filter: none !important;
+}
+[data-theme="light"] .auth-page .feature-icon {
+  background: rgba(123, 44, 191, 0.12) !important;
+  color: var(--brand-500) !important;
+  border-color: rgba(123, 44, 191, 0.28) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .auth-page .feature-text h4,
+[data-theme="light"] .auth-page .student-signature,
+[data-theme="light"] .auth-page h1,
+[data-theme="light"] .auth-page .input-group label {
+  color: var(--text-primary) !important;
+  text-shadow: none !important;
+}
+[data-theme="light"] .auth-page .auth-hero > div:last-child {
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .auth-page .feature-text p,
+[data-theme="light"] .auth-page .subtitle,
+[data-theme="light"] .auth-page .switch-auth,
+[data-theme="light"] .auth-page .strength-text span:first-child {
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .auth-page .form-section {
+  background: #ffffff !important;
+}
+[data-theme="light"] .auth-page .back-link {
+  color: var(--brand-500) !important;
+  background: rgba(123, 44, 191, 0.08) !important;
+  border-color: rgba(123, 44, 191, 0.24) !important;
+}
+[data-theme="light"] .auth-page .back-link:hover {
+  color: #ffffff !important;
+  background: var(--brand-500) !important;
+  border-color: var(--brand-500) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .auth-page .status-bar {
+  background: var(--bg-shell) !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .auth-page .status-left {
+  color: var(--brand-500) !important;
+}
+[data-theme="light"] .auth-page .badge-encrypted {
+  background: rgba(5, 150, 105, 0.12) !important;
+  color: #047857 !important;
+  border-color: rgba(5, 150, 105, 0.35) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .auth-page .input-wrapper i.icon-left {
+  color: var(--brand-500) !important;
+}
+[data-theme="light"] .auth-page .input-wrapper input {
+  background: var(--bg-canvas) !important;
+  border-color: var(--border-subtle) !important;
+  color: var(--text-primary) !important;
+  box-shadow: none !important;
+}
+[data-theme="light"] .auth-page .input-wrapper input:focus {
+  background: #ffffff !important;
+  border-color: var(--brand-500) !important;
+  box-shadow: 0 0 0 3px rgba(123, 44, 191, 0.16) !important;
+}
+[data-theme="light"] .auth-page .input-wrapper input::placeholder {
+  color: #8b8299 !important;
+}
+[data-theme="light"] .auth-page .toggle-pw {
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .auth-page .toggle-pw:hover,
+[data-theme="light"] .auth-page .switch-auth a {
+  color: var(--brand-500) !important;
+}
+[data-theme="light"] .auth-page .switch-auth {
+  border-top-color: var(--border-subtle) !important;
+}
+[data-theme="light"] .auth-page .switch-auth a:hover {
+  color: var(--brand-600) !important;
+}
+[data-theme="light"] .auth-page .modal-overlay {
+  background: rgba(24, 18, 34, 0.45) !important;
+}
+[data-theme="light"] .auth-page .modal-card,
+[data-theme="light"] .auth-page .modal-box {
+  background: #ffffff !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-subtle) !important;
+  box-shadow: 0 24px 60px rgba(24, 18, 34, 0.22) !important;
+}
+[data-theme="light"] .auth-page .otp-digit {
+  background: var(--bg-canvas) !important;
+  border-color: var(--border-strong) !important;
+  color: var(--text-primary) !important;
 }

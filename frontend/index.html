@@ -95,7 +95,7 @@
 <div class="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full bg-vault-surface border border-vault-border text-xs font-semibold"><span class="w-2.5 h-2.5 rounded-full bg-vault-primary animate-pulse"></span><span class="text-vault-textMuted">Chế độ Truy Cập:</span><span data-access-label class="text-vault-primary font-bold">Khách vãng lai • 5GUYS Vault</span></div>
 <h1 class="text-4xl sm:text-6xl font-black text-white uppercase tracking-tight leading-tight">
                         Cổng Game Vault <br>
-<span class="text-transparent bg-clip-text bg-gradient-to-r from-white via-vault-primary to-vault-primaryDark">
+<span class="hero-gradient-text">
                             Kỹ Thuật Số &amp; Vật Lý
                         </span>
 </h1>
@@ -307,7 +307,7 @@
 <label class="block text-vault-primary font-bold mb-1.5 uppercase text-[10px] tracking-wider">Mô Tả Chi Tiết</label>
 <textarea class="w-full bg-vault-bg border border-vault-border rounded-xl px-3.5 py-2 text-white text-xs focus:border-vault-primary focus:outline-none resize-none shadow-inner" id="ticket-desc" placeholder="Vui lòng mô tả rõ sự cố bạn đang gặp phải để CSKH hỗ trợ nhanh nhất..." required="" rows="3"></textarea>
 </div>
-<button class="w-full py-3.5 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-extrabold text-xs uppercase tracking-wider transition-all shadow-purple-glow" type="submit">
+<button class="w-full py-3.5 rounded-xl bg-brand hover:bg-brand-dark text-white font-extrabold text-xs uppercase tracking-wider transition-all shadow-purple-glow" type="submit">
 <i class="fa-solid fa-paper-plane mr-1.5"></i> Gửi Ticket Hỗ Trợ
                             </button>
 </form>
@@ -357,30 +357,30 @@
                     Hotline: <span class="text-vault-primary font-bold">1900-5GUYS</span> • Hỗ trợ kỹ thuật viên trực tuyến
                 </div>
 </div>
-<!-- NÚT FAB HỖ TRỢ KHÁCH HÀNG: Biểu tượng Chiếc Điện Thoại Bàn (fa-phone-volume) -->
-<button class="w-[60px] h-[60px] rounded-full bg-vault-surface border-2 border-vault-primary/50 hover:border-vault-primary text-vault-primary flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.6)] hover:scale-110 transition-all duration-300" id="support-fab-btn" onclick="toggleSupportModal()" title="Trung tâm hỗ trợ">
-<i class="fa-solid fa-phone-volume text-2xl"></i>
+<!-- NÚT FAB HỖ TRỢ KHÁCH HÀNG (đồng bộ 100% icon & kiểu dáng với toàn site) -->
+<button aria-label="Trung tâm hỗ trợ" class="w-[60px] h-[60px] rounded-full bg-dark-surface border-2 border-brand/50 hover:border-brand-light text-brand-light flex items-center justify-center shadow-[0_10px_25px_rgba(0,0,0,0.6)] hover:scale-105 active:scale-95 transition-all duration-300" id="support-fab-btn" onclick="toggleSupportModal()" title="Trung tâm hỗ trợ">
+<i class="fa-solid fa-headset text-2xl"></i>
 </button>
 </div>
-<!-- 2. GÓC DƯỚI CÙNG: NÚT VÀ PANEL CHATBOT AI (Icon Tay Cầm Chơi Game fa-gamepad) -->
+<!-- 2. GÓC DƯỚI CÙNG: NÚT VÀ PANEL CHATBOT AI (đồng bộ 100% icon fa-microchip với toàn site) -->
 <div class="relative flex flex-col items-end">
 <!-- Modal Panel AI Chatbot -->
 <div class="panel-slide absolute bottom-20 right-0 w-[calc(100vw-2rem)] sm:w-[410px] h-[500px] max-h-[75vh] bg-vault-surface border border-vault-primary/60 rounded-3xl shadow-[0_15px_50px_rgba(157,78,221,0.4)] flex flex-col overflow-hidden opacity-0 scale-95 translate-y-6 pointer-events-none origin-bottom-right z-50" id="ai-chat-panel">
 <!-- Chatbot Header -->
-<div class="p-4 bg-gradient-to-r from-vault-primaryDark via-vault-surface to-vault-primaryDark border-b border-vault-border flex items-center justify-between text-white shadow-md">
+<div class="p-4 bg-gradient-to-r from-brand via-brand-dark to-brand border-b border-brand/40 flex items-center justify-between text-white shadow-md">
 <div class="flex items-center gap-3">
 <div class="w-10 h-10 rounded-xl bg-white/20 border border-white/30 text-white flex items-center justify-center text-lg font-bold shadow-inner">
-<i class="fa-solid fa-gamepad"></i>
+<i class="fa-solid fa-microchip animate-pulse"></i>
 </div>
 <div>
 <div class="flex items-center gap-2">
 <h3 class="text-sm font-black uppercase tracking-wider text-white">PC2GAMES AI</h3>
 <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse"></span>
 </div>
-<p class="text-[11px] text-vault-secondary font-semibold uppercase tracking-wider">Hệ thống phân tích cấu hình</p>
+<p class="text-[11px] text-purple-200 font-semibold uppercase tracking-wider">Hệ thống phân tích cấu hình</p>
 </div>
 </div>
-<button class="w-8 h-8 rounded-full bg-black/20 text-white/80 hover:text-white flex items-center justify-center transition-colors" onclick="toggleAiChat(false)">
+<button aria-label="Đóng chat" class="w-8 h-8 rounded-full bg-black/20 text-white/80 hover:text-white flex items-center justify-center transition-colors" onclick="toggleAiChat(false)">
 <i class="fa-solid fa-xmark text-sm"></i>
 </button>
 </div>
@@ -399,15 +399,15 @@
 <!-- Chat Input Controls -->
 <div class="p-3 bg-vault-surface border-t border-vault-border flex items-center gap-2">
 <input class="w-full bg-vault-bg border border-vault-border rounded-xl px-4 py-3 text-xs text-white focus:outline-none focus:border-vault-primary shadow-inner" id="chat-input" onkeypress="if(event.key==='Enter') sendChatMessage()" placeholder="Nhập cấu hình PC (VD: i5, 16gb, 3060)..." type="text">
-<button class="w-11 h-11 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-bold flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow-purple-glow" onclick="sendChatMessage()">
+<button aria-label="Gửi tin" class="w-11 h-11 rounded-xl bg-brand hover:bg-brand-dark text-white font-bold flex items-center justify-center flex-shrink-0 transition-transform active:scale-95 shadow-purple-glow" onclick="sendChatMessage()">
 <i class="fa-solid fa-paper-plane text-xs"></i>
 </button>
 </div>
 </div>
-<!-- NÚT FAB CHATBOT: Biểu tượng Chiếc Tay Cầm Chơi Game (fa-gamepad) -->
-<button class="w-[72px] h-[72px] rounded-full bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg flex items-center justify-center shadow-[0_0_30px_rgba(157,78,221,0.8)] hover:scale-110 transition-all duration-300 relative group border-2 border-vault-primary/40" id="chatbot-fab-btn" onclick="toggleAiChat()" title="PC2GAMES AI">
-<i class="fa-solid fa-gamepad text-3xl group-hover:rotate-12 transition-transform"></i>
-<span class="absolute top-1 right-1 w-4 h-4 bg-red-500 rounded-full border-2 border-vault-bg animate-pulse"></span>
+<!-- NÚT FAB CHATBOT (đồng bộ 100% icon & kiểu dáng với toàn site) -->
+<button aria-label="PC2GAMES AI" class="w-[60px] h-[60px] rounded-full bg-gradient-to-r from-brand to-brand-dark hover:brightness-110 text-white flex items-center justify-center shadow-[0_0_25px_rgba(157,78,221,0.7)] hover:scale-105 active:scale-95 transition-all duration-300 relative group border-2 border-brand-light/40" id="chatbot-fab-btn" onclick="toggleAiChat()" title="PC2GAMES AI">
+<i class="fa-solid fa-microchip text-2xl transition-transform duration-300"></i>
+<span class="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 rounded-full border-2 border-dark-bg animate-pulse"></span>
 </button>
 </div>
 </div>
@@ -443,7 +443,7 @@
 <span class="text-vault-textMuted">Phương thức trao quà:</span>
 <span class="text-vault-primary font-bold">Kích hoạt trực tiếp vào Thư viện</span>
 </div>
-<button class="w-full py-4 rounded-xl bg-gradient-to-r from-vault-primaryDark to-vault-primary hover:from-vault-primary hover:to-white text-white hover:text-vault-bg font-black uppercase tracking-wider text-xs shadow-purple-glow transition-all hover:scale-[1.02]" type="submit">
+<button class="w-full py-4 rounded-xl bg-brand hover:bg-brand-dark text-white font-black uppercase tracking-wider text-xs shadow-purple-glow transition-all hover:scale-[1.02]" type="submit">
 <i class="fa-solid fa-paper-plane mr-2"></i> Xác Nhận Gửi Quà Tặng
                 </button>
 </form>
@@ -675,11 +675,11 @@
                 toggleAiChat(false);
                 supportPanel.classList.remove('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
                 supportPanel.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
-                if (supportFabIcon) supportFabIcon.classList.replace('fa-phone-volume', 'fa-times');
+                if (supportFabIcon) supportFabIcon.classList.replace('fa-headset', 'fa-times');
             } else {
                 supportPanel.classList.add('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
                 supportPanel.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
-                if (supportFabIcon) supportFabIcon.classList.replace('fa-times', 'fa-phone-volume');
+                if (supportFabIcon) supportFabIcon.classList.replace('fa-times', 'fa-headset');
             }
         }
 
@@ -727,13 +727,13 @@
                 toggleSupportModal(false);
                 aiChatPanel.classList.remove('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
                 aiChatPanel.classList.add('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
-                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-gamepad', 'fa-times');
+                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-microchip', 'fa-times');
                 if (chatbotFabNotif) chatbotFabNotif.style.display = 'none';
                 setTimeout(() => chatInput.focus(), 300);
             } else {
                 aiChatPanel.classList.add('opacity-0', 'scale-95', 'translate-y-6', 'pointer-events-none');
                 aiChatPanel.classList.remove('opacity-100', 'scale-100', 'translate-y-0', 'pointer-events-auto');
-                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-times', 'fa-gamepad');
+                if (chatbotFabIcon) chatbotFabIcon.classList.replace('fa-times', 'fa-microchip');
             }
         }
 

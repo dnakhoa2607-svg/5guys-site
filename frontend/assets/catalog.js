@@ -14,7 +14,7 @@
     const bottom=node('div','mt-auto pt-4 flex items-center justify-between gap-3');
     const prices=node('div','flex flex-col');if(game.original_price&&Number(game.original_price)>Number(game.price))prices.appendChild(node('del','text-xs text-outline',money(game.original_price)));
     prices.appendChild(node('strong','text-lg font-black text-primary-container',money(game.price)));bottom.appendChild(prices);
-    const add=node('button','btn !px-3 !py-2');add.type='button';add.dataset.add='';add.dataset.name=game.title;add.dataset.kind=game.product_type;add.dataset.id=game.id;add.dataset.price=Number(game.price)/25000;add.disabled=game.product_type==='physical'&&game.available_stock===0;add.title='Thêm vào giỏ hàng';add.appendChild(node('i','fa-solid fa-cart-plus'));bottom.appendChild(add);body.appendChild(bottom);article.append(link,body);return article;
+    const add=node('button','btn bg-brand hover:bg-brand-dark text-white !px-3.5 !py-2.5');add.type='button';add.dataset.add='';add.dataset.name=game.title;add.dataset.kind=game.product_type;add.dataset.id=game.id;add.dataset.price=Number(game.price)/25000;add.disabled=game.product_type==='physical'&&game.available_stock===0;add.title='Thêm vào giỏ hàng';add.appendChild(node('i','fa-solid fa-cart-plus'));bottom.appendChild(add);body.appendChild(bottom);article.append(link,body);return article;
   }
   function renderGrid(container, products, compact) { container.replaceChildren(...products.map(p=>gameCard(p,compact))); }
   async function loadGrid(id, type, compact) {

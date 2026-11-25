@@ -10,8 +10,22 @@
 .btn{padding:.45rem 1rem;font-size:.85rem;box-shadow:none}.btn:disabled{opacity:.42;cursor:not-allowed!important;pointer-events:none;filter:grayscale(.35)}
 .ghost{padding:.4rem .9rem;font-size:.8rem}.ghost:disabled{opacity:.42;cursor:not-allowed!important;pointer-events:none;filter:grayscale(.35)}
 .ghost.active-filter{background:var(--btn-bg);border-color:var(--brand-300);color:var(--btn-text);font-weight:700}
-.danger{border-color:#7f1d1d;color:#fca5a5}.danger:hover{border-color:#ef4444;color:#fff}
+.danger{border-color:rgb(var(--g5-danger-rgb) / 0.55);color:var(--status-danger)}.danger:hover{border-color:var(--status-danger);background:rgb(var(--g5-danger-rgb) / 0.12);color:var(--status-danger)}
 .card{background:var(--bg-container)}
+[data-theme="light"] .card{background:var(--bg-surface);border-color:#e2dcf0;box-shadow:0 4px 16px -6px rgba(20,16,32,0.09)}
+.admin-chart-tip{background:#1e1035;color:#ffffff !important;border:1px solid #a855f7;box-shadow:0 10px 24px rgba(20,16,32,0.35)}
+.admin-chart-pill{background:rgba(18,9,28,0.95);color:var(--brand-300);border:1px solid rgb(var(--g5-brand-500-rgb)/0.5)}
+[data-theme="light"] .admin-chart-pill{background:#f3e8ff;color:#5b21b6;border-color:#c4b5fd}
+.admin-ticket-card{background:var(--bg-shell);border:1px solid var(--border-subtle);transition:border-color .2s,background-color .2s,box-shadow .2s}
+.admin-ticket-card:hover{border-color:rgb(var(--g5-brand-500-rgb)/0.55)}
+.admin-ticket-card.is-open{background:var(--bg-surface);border-color:var(--brand-500);box-shadow:0 8px 24px -10px rgba(20,16,32,0.18)}
+.admin-ticket-msg{background:var(--bg-canvas);border:1px solid var(--border-subtle);color:var(--text-body)}
+[data-theme="light"] .admin-ticket-card{background:#ffffff;border-color:#dcd6e8}
+[data-theme="light"] .admin-ticket-card.is-open{background:#ffffff;border-color:#7c3aed;box-shadow:0 10px 26px -10px rgba(124,58,237,0.18)}
+[data-theme="light"] .admin-ticket-msg{background:#f6f3fc;border-color:#ddd6fe;color:#1f1633}
+.admin-save-status{background:var(--bg-canvas);border:1px solid var(--border-strong);color:var(--text-primary);font-weight:700}
+[data-theme="light"] .admin-save-status{background:#f3e8ff;border-color:#c4b5fd;color:#5b21b6}
+[data-theme="light"] .admin-save-status:hover{background:#7c3aed;border-color:#6d28d9;color:#ffffff !important}
 .inp{padding:.45rem .75rem;font-size:.85rem;width:100%}.inp:disabled{opacity:.42;cursor:not-allowed!important;background:var(--bg-shell)!important;color:var(--text-muted)}
 .tab{padding:.55rem 1rem;border-radius:.6rem;font-weight:600;font-size:.9rem;color:var(--text-body)}.tab:hover{background:var(--bg-surface)}.tab.on{background:var(--btn-bg);color:var(--btn-text)}
 table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{text-align:left;color:var(--text-muted);font-weight:600;padding:.75rem .85rem;border-bottom:1px solid var(--border-subtle);white-space:nowrap}td{padding:.75rem .85rem;border-bottom:1px solid rgb(var(--g5-border-subtle-rgb) / 0.55);vertical-align:top}
@@ -25,18 +39,19 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
 <link rel="stylesheet" href="assets/shared.css"><script src="assets/shared.js"></script>
 </head>
 <body class="min-h-screen">
-<header class="border-b border-dark-border bg-dark-bg/95 sticky top-0 z-30 backdrop-blur">
+<header class="border-b border-dark-border bg-dark-bg/95 sticky top-0 z-40 backdrop-blur">
   <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between gap-4">
     <a href="index.html" class="text-2xl font-black tracking-widest flex items-center gap-2"><i class="fa-solid fa-gamepad text-brand"></i><span>5</span><span class="text-brand-light">GUYS</span><span class="text-xs font-bold ml-2 px-2 py-0.5 rounded bg-brand/20 text-brand-light tracking-normal">ADMIN</span></a>
-    <div class="flex items-center gap-3 text-sm">
+    <div class="flex items-center gap-2.5 text-sm">
+      <button type="button" data-theme-toggle class="ghost !px-2.5 !py-1.5" title="Chuyển sang giao diện sáng" aria-label="Chuyển sang giao diện sáng" aria-pressed="false"><i data-theme-icon class="fa-solid fa-sun"></i></button>
       <a href="index.html" class="ghost"><i class="fa-solid fa-store"></i> Về cửa hàng</a>
       <span class="hidden sm:inline text-outline"><i class="fa-solid fa-user-shield"></i> <span data-user-name></span></span>
-      <button data-logout class="ghost danger"><i class="fa-solid fa-power-off"></i></button>
+      <button data-logout class="ghost danger" title="Đăng xuất" aria-label="Đăng xuất"><i class="fa-solid fa-power-off"></i></button>
     </div>
   </div>
 </header>
 
-<main class="max-w-7xl mx-auto px-4 py-8">
+<main class="max-w-7xl mx-auto px-4 pt-8 pb-12">
   <div id="denied" class="hidden card p-8 text-center">
     <i class="fa-solid fa-lock text-4xl text-brand-light"></i>
     <h2 class="text-xl font-bold mt-3">Bạn không có quyền quản trị</h2>
@@ -81,13 +96,13 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
   const isStrictAdmin = () => (G5.user() || {}).role === 'admin';
 
   const ORDER_STATUS = {
-    pending_payment: ['Chờ thanh toán', '#f59e0b'], paid: ['Chờ lấy hàng', '#60a5fa'], processing: ['Chờ lấy hàng', '#60a5fa'],
-    shipped: ['Đang giao', '#c77dff'], fulfilled: ['Đã giao / Hoàn tất', '#10b981'], cancelled: ['Đã hủy', '#9ca3af'],
-    refunded: ['Đã hoàn tiền', '#ef4444'], partially_refunded: ['Hoàn một phần', '#ef4444']
+    pending_payment: ['Chờ thanh toán', 'var(--status-warning)'], paid: ['Chờ lấy hàng', 'var(--status-info)'], processing: ['Chờ lấy hàng', 'var(--status-info)'],
+    shipped: ['Đang giao', 'var(--brand-300)'], fulfilled: ['Đã giao / Hoàn tất', 'var(--status-success)'], cancelled: ['Đã hủy', 'var(--text-muted)'],
+    refunded: ['Đã hoàn tiền', 'var(--status-danger)'], partially_refunded: ['Hoàn một phần', 'var(--status-danger)']
   };
-  const REFUND_STATUS = { requested: ['Chờ duyệt', '#f59e0b'], approved: ['Đã duyệt', '#10b981'], processed: ['Đã hoàn tiền', '#10b981'], rejected: ['Từ chối', '#ef4444'] };
-  const TICKET_STATUS = { open: ['Đang mở', '#f59e0b'], in_progress: ['Đang xử lý', '#60a5fa'], resolved: ['Đã giải quyết', '#10b981'], closed: ['Đã đóng', '#9ca3af'] };
-  const pill = (map, key) => { const [t, c] = map[key] || [key, '#a78bba']; return h('span', { class: 'pill', style: `color:${c};border-color:${c}` }, t); };
+  const REFUND_STATUS = { requested: ['Chờ duyệt', 'var(--status-warning)'], approved: ['Đã duyệt', 'var(--status-success)'], processed: ['Đã hoàn tiền', 'var(--status-success)'], rejected: ['Từ chối', 'var(--status-danger)'] };
+  const TICKET_STATUS = { open: ['Đang mở', 'var(--status-warning)'], in_progress: ['Đang xử lý', 'var(--status-info)'], resolved: ['Đã giải quyết', 'var(--status-success)'], closed: ['Đã đóng', 'var(--text-muted)'] };
+  const pill = (map, key) => { const [t, c] = map[key] || [key, 'var(--brand-300)']; return h('span', { class: 'pill', style: `color:${c};border-color:${c}` }, t); };
 
   // Sinh ma Key ban quyen 5GUYS DRM Safe dong bo 100% voi Kho game cua khach hang
   function hash32(s) {
@@ -233,14 +248,14 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
                 const pct = hasRev ? Math.max(18, Math.round(d.revenue / max * 100)) : 5;
                 const tip = `Ngày ${d.ddmm}: ${money(d.revenue)} (${d.orders} đơn)`;
                 return h('div', { class: 'group relative flex flex-col items-center justify-end h-full cursor-pointer', title: tip },
-                  // Tooltip chi tiet khi hover
-                  h('div', { class: 'pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-lg bg-[#0d0914] border border-brand-light px-2.5 py-1 text-[11px] font-bold text-white shadow-xl' },
+                  // Tooltip chi tiet khi hover (luon nen tim dam #1e1035 + chu trang sang #ffffff o ca 2 che do)
+                  h('div', { 'data-dark-surface': '', class: 'admin-chart-tip pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity absolute -top-7 left-1/2 -translate-x-1/2 z-20 whitespace-nowrap rounded-lg px-2.5 py-1 text-[11px] font-bold' },
                     `${d.ddmm}: ${money(d.revenue)} · ${d.orders} đơn`),
                   // Nhan so tien tren dau cot (sole nhe neu 2 ngay lien tiep deu co doanh thu de khong de chu)
                   h('span', {
                     class: hasRev
-                      ? `text-[10px] font-extrabold text-brand-light bg-[#12091c]/95 border border-brand/50 rounded px-1 py-0.5 whitespace-nowrap z-10 shadow ${prevHasRev ? 'mb-4' : 'mb-1'}`
-                      : 'text-[10px] text-outline/70 mb-1 whitespace-nowrap'
+                      ? `admin-chart-pill text-[10px] font-extrabold rounded px-1.5 py-0.5 whitespace-nowrap z-10 shadow-sm ${prevHasRev ? 'mb-4' : 'mb-1'}`
+                      : 'text-[10px] text-outline/80 mb-1 whitespace-nowrap'
                   }, hasRev ? money(d.revenue) : '0đ'),
                   // Cot bieu do (OKLCH phang sach, dong deu do sang)
                   h('div', {
@@ -314,7 +329,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
           h('button', { class: 'ghost no-print !px-2.5 !py-1.5', onclick: closeModal, title: 'Đóng' }, h('i', { class: 'fa-solid fa-xmark' }))),
 
         // Thong tin khach hang & trang thai
-        h('div', { class: 'grid sm:grid-cols-2 gap-4 my-4 text-sm bg-[#12091c] p-4 rounded-xl border border-white/10' },
+        h('div', { class: 'grid sm:grid-cols-2 gap-4 my-4 text-sm bg-dark-bg p-4 rounded-xl border border-dark-border' },
           h('div', {},
             h('p', { class: 'text-xs text-outline uppercase font-semibold' }, 'Khách hàng'),
             h('p', { class: 'font-bold mt-1' }, ord.display_name || 'Khách hàng'),
@@ -340,10 +355,10 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
             const isDig = it.product_type === 'digital';
             const key = isDig ? makeLicenseKey(it.product_title, it.slug, userSeed) : null;
             const revoked = ord.status === 'refunded' || ord.refund_status === 'processed';
-            return h('div', { class: 'rounded-xl border border-white/10 bg-[#12091c] p-3.5 flex flex-col gap-2' },
+            return h('div', { class: 'rounded-xl border border-dark-border bg-dark-bg p-3.5 flex flex-col gap-2' },
               h('div', { class: 'flex items-center justify-between gap-2' },
                 h('div', { class: 'flex items-center gap-2 min-w-0' },
-                  h('span', { class: 'pill', style: isDig ? 'color:#c77dff;border-color:#c77dff' : 'color:#60a5fa;border-color:#60a5fa' }, isDig ? 'BẢN SỐ' : 'ĐĨA VẬT LÝ'),
+                  h('span', { class: 'pill', style: isDig ? 'color:var(--brand-300);border-color:var(--brand-300)' : 'color:var(--status-info);border-color:var(--status-info)' }, isDig ? 'BẢN SỐ' : 'ĐĨA VẬT LÝ'),
                   h('b', { class: 'text-sm truncate' }, it.product_title),
                   h('span', { class: 'text-xs text-outline' }, 'x' + it.quantity)),
                 it.line_total ? h('span', { class: 'text-sm font-semibold whitespace-nowrap' }, money(it.line_total)) : null),
@@ -763,7 +778,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
         h('div', {},
           h('h3', { class: 'font-bold' }, `Yêu cầu hỗ trợ (${list.length})`),
           h('p', { class: 'text-xs text-outline mt-0.5' }, `Đang mở: ${openCount} ticket · Bấm vào từng ticket để xem nội dung và phản hồi`)),
-        h('span', { class: 'pill', style: openCount > 0 ? 'color:#f59e0b;border-color:#f59e0b' : 'color:#10b981;border-color:#10b981' },
+        h('span', { class: 'pill', style: openCount > 0 ? 'color:var(--status-warning);border-color:var(--status-warning)' : 'color:var(--status-success);border-color:var(--status-success)' },
           openCount > 0 ? `${openCount} Ticket đang mở` : 'Đã xử lý hết')),
       h('div', { class: 'space-y-3' }, list.map(t => {
         const isOpen = expandedTicketId === t.id;
@@ -775,7 +790,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
         const statusSel = h('select', { class: 'inp !w-auto' },
           Object.entries(TICKET_STATUS).map(([k, [l]]) => h('option', { value: k, selected: k === t.status }, l)));
 
-        return h('div', { class: 'border rounded-xl transition-colors ' + (isOpen ? 'border-brand bg-[#160b25]' : 'border-dark-border bg-[#190d29] hover:border-brand/50') },
+        return h('div', { class: 'admin-ticket-card rounded-xl ' + (isOpen ? 'is-open' : '') },
           // Header: bam vao de xem / thu gon noi dung ticket
           h('button', {
             type: 'button',
@@ -793,21 +808,22 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
               h('i', { class: 'fa-solid ' + (isOpen ? 'fa-chevron-up' : 'fa-chevron-down') }))),
 
           // Noi dung chi tiet & o phan hoi
-          isOpen ? h('div', { class: 'px-4 pb-4 pt-2 border-t border-white/10 space-y-3' },
-            h('div', { class: 'rounded-lg bg-[#12091c] border border-white/10 p-3.5' },
+          isOpen ? h('div', { class: 'px-4 pb-4 pt-3 border-t border-dark-border space-y-3' },
+            h('div', { class: 'admin-ticket-msg rounded-lg p-3.5' },
               h('p', { class: 'text-[11px] uppercase tracking-wider text-outline font-bold mb-1' }, 'Nội dung khách gửi:'),
-              h('p', { class: 'text-sm text-gray-200 whitespace-pre-line leading-relaxed' }, t.message)),
+              h('p', { class: 'text-sm whitespace-pre-line leading-relaxed' }, t.message)),
             t.last_reply ? h('div', { class: 'rounded-lg bg-brand/15 border border-brand/40 p-3 text-sm text-brand-light' },
               h('b', { class: 'text-xs uppercase tracking-wider block mb-1 text-white' }, '✔ Phản hồi của Admin:'),
               t.last_reply) : null,
-            h('div', { class: 'space-y-2 pt-1' },
+            h('div', { class: 'space-y-2.5 pt-1' },
               reply,
               h('div', { class: 'flex flex-wrap items-center justify-between gap-2' },
                 h('div', { class: 'flex items-center gap-2' },
-                  h('span', { class: 'text-xs text-outline' }, 'Trạng thái:'),
+                  h('span', { class: 'text-xs text-outline font-medium' }, 'Trạng thái:'),
                   statusSel,
                   h('button', {
-                    class: 'ghost text-xs',
+                    type: 'button',
+                    class: 'ghost admin-save-status text-xs',
                     onclick: async () => {
                       await saveTicket(t, statusSel.value, reply.value.trim());
                       flash('Đã lưu cập nhật ticket #TK-' + String(t.id).padStart(4, '0'));
@@ -815,6 +831,7 @@ table{width:100%;border-collapse:separate;border-spacing:0;font-size:.85rem}th{t
                     }
                   }, 'Lưu trạng thái')),
                 h('button', {
+                  type: 'button',
                   class: 'btn',
                   onclick: async () => {
                     const msg = reply.value.trim();

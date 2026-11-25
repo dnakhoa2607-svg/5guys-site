@@ -189,7 +189,7 @@
                     <button onclick="toggleChat()" class="text-white/80 hover:text-white bg-black/20 w-8 h-8 rounded-full flex items-center justify-center transition-colors relative z-10"><i class="fa-solid fa-times"></i></button>
                 </div>
                 
-                <div id="chat-messages" class="flex-grow p-5 overflow-y-auto bg-[#0d0714] flex flex-col gap-5 text-sm scroll-smooth">
+                <div id="chat-messages" class="flex-grow p-5 overflow-y-auto bg-dark-bg flex flex-col gap-5 text-sm scroll-smooth">
                     <div class="flex gap-3">
                         <div class="w-10 h-10 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-1 shadow-[0_0_15px_rgba(157,78,221,0.5)] border border-brand-light/30">
                             <i class="fa-solid fa-robot text-white text-sm"></i>
@@ -206,14 +206,14 @@
                         <input type="text" id="chat-input" placeholder="Nhập cấu hình PC..." class="w-full bg-dark-bg border border-dark-border text-white text-[13px] rounded-xl pl-4 pr-10 py-3.5 focus:outline-none focus:border-brand-light focus:ring-1 focus:ring-brand-light transition-all shadow-inner">
                         <i class="fa-solid fa-keyboard absolute right-4 top-4 text-gray-500"></i>
                     </div>
-                    <button onclick="sendMessage()" class="bg-brand text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-brand-light transition-all duration-300 flex-shrink-0 shadow-[0_0_15px_rgba(157,78,221,0.5)] transform hover:scale-105 active:scale-95 border border-brand-light/50">
+                    <button onclick="sendMessage()" class="bg-brand text-white w-12 h-12 rounded-xl flex items-center justify-center hover:bg-brand-dark transition-all duration-300 flex-shrink-0 shadow-[0_0_15px_rgba(157,78,221,0.5)] transform hover:scale-105 active:scale-95 border border-brand-light/50">
                         <i class="fa-solid fa-paper-plane text-lg ml-[-2px]"></i>
                     </button>
                 </div>
             </div>
             
             <!-- Chatbot Button -->
-            <button onclick="toggleChat()" id="chat-toggle-btn" title="PC2GAMES AI" class="bg-gradient-to-r from-brand to-brand-light hover:from-brand-light hover:to-white text-white hover:text-brand-dark w-[64px] sm:w-[72px] h-[64px] sm:h-[72px] rounded-full shadow-[0_0_30px_rgba(157,78,221,0.8)] flex items-center justify-center transition-all duration-300 hover:scale-110 relative z-50 group border-2 border-brand-light/50">
+            <button onclick="toggleChat()" id="chat-toggle-btn" title="PC2GAMES AI" class="bg-gradient-to-r from-brand to-brand-dark hover:brightness-110 text-white w-[64px] sm:w-[72px] h-[64px] sm:h-[72px] rounded-full shadow-[0_0_30px_rgba(157,78,221,0.8)] flex items-center justify-center transition-all duration-300 hover:scale-110 relative z-50 group border-2 border-brand-light/50">
                 <i class="fa-solid fa-microchip text-2xl sm:text-3xl transition-transform duration-500"></i>
                 <span class="absolute top-1 right-1 w-4 h-4 bg-red-500 border-2 border-dark-bg rounded-full animate-pulse"></span>
             </button>
@@ -238,7 +238,7 @@
                 <p class="text-brand-light/80 text-sm font-semibold tracking-wider uppercase">Đặc quyền dành riêng cho Gamer</p>
             </div>
             
-            <div class="space-y-4 text-sm text-gray-300 max-h-[45vh] overflow-y-auto pr-3 bg-[#0d0714] p-5 sm:p-6 rounded-2xl border border-dark-border relative z-10 shadow-inner">
+            <div class="space-y-4 text-sm text-gray-300 max-h-[45vh] overflow-y-auto pr-3 bg-dark-bg p-5 sm:p-6 rounded-2xl border border-dark-border relative z-10 shadow-inner">
                 <p class="leading-relaxed text-[15px] font-medium mb-4 text-white text-center">Tham gia hệ sinh thái 5GUYS để mở khóa các phần quà giá trị thực:</p>
                 <ul class="list-none space-y-4">
                     <li class="flex items-start gap-4 p-3 rounded-xl bg-dark-surface/50 border border-brand/10 hover:border-brand/40 transition-colors">

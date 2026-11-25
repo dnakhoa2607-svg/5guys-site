@@ -4,7 +4,46 @@
  * đọc/ghi trong các hàm bên dưới bằng lời gọi API (fetch) là các trang giữ nguyên.
  */
 (function () {
-  var K = { user: '5guys_user', cartPrefix: '5guys_cart_', ordersPrefix: '5guys_orders_', walletPrefix: '5guys_wallet_', redeemedPrefix: '5guys_redeemed_codes_', pointsPrefix: '5guys_points_', pointHistoryPrefix: '5guys_point_history_' };
+  var K = { user: '5guys_user', theme: '5guys_theme', cartPrefix: '5guys_cart_', ordersPrefix: '5guys_orders_', walletPrefix: '5guys_wallet_', redeemedPrefix: '5guys_redeemed_codes_', pointsPrefix: '5guys_points_', pointHistoryPrefix: '5guys_point_history_' };
+
+  function readSavedTheme() {
+    try {
+      var saved = localStorage.getItem(K.theme);
+      if (saved === 'light' || saved === 'dark') return saved;
+    } catch (e) {}
+    return 'dark';
+  }
+  function syncThemeButtons(theme) {
+    var isLight = theme === 'light';
+    var nextLabel = isLight ? 'Chuyển sang giao diện tối' : 'Chuyển sang giao diện sáng';
+    document.querySelectorAll('[data-theme-toggle]').forEach(function (btn) {
+      btn.setAttribute('title', nextLabel);
+      btn.setAttribute('aria-label', nextLabel);
+      btn.setAttribute('aria-pressed', isLight ? 'true' : 'false');
+      var icon = btn.querySelector('[data-theme-icon]') || btn.querySelector('i');
+      if (icon) {
+        icon.classList.remove('fa-sun', 'fa-moon');
+        icon.classList.add(isLight ? 'fa-moon' : 'fa-sun');
+      }
+      var text = btn.querySelector('[data-theme-label]');
+      if (text) text.textContent = isLight ? 'Chế độ tối' : 'Chế độ sáng';
+    });
+  }
+  function applyTheme(theme, persist) {
+    var t = theme === 'light' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = t;
+    document.documentElement.style.colorScheme = t;
+    if (persist) {
+      try { localStorage.setItem(K.theme, t); } catch (e) {}
+    }
+    syncThemeButtons(t);
+    try {
+      document.dispatchEvent(new CustomEvent('g5:themechange', { detail: { theme: t } }));
+    } catch (e) {}
+    return t;
+  }
+  // Áp theme ngay trong <head> trước khi vẽ DOM để tránh chớp sáng/tối
+  applyTheme(readSavedTheme(), false);
   var RATE = 25000; // 1 USD (đơn vị giá nội bộ) = 25.000đ, khớp với trang giỏ hàng
   var API_BASE = window.G5_API_BASE || ((/^(localhost|127\.0\.0\.1)$/.test(location.hostname) && location.port !== '3000') ? 'http://localhost:3000/api' : '/api');
   var apiToken = localStorage.getItem('5guys_api_token');
@@ -330,18 +369,32 @@
     isAdmin: function () { var u = G5.user(); return !!(u && (u.role === 'admin' || u.role === 'staff')); },
     isPublisher: function () { var u = G5.user(); return !!(u && (u.role === 'publisher' || u.role === 'admin')); },
     notify: function (message) {
-      if (typeof window.showToast === 'function') { window.showToast('Thông báo', message, false); return; }
+      if (typeof window.showToast === 'function') {
+        if (window.showToast.length >= 2) window.showToast('Thông báo', message, false);
+        else window.showToast(message);
+        return;
+      }
       // Thong bao nho goc phai duoi, tu an sau 3.5 giay (khong chan trang nhu alert)
       var box = document.getElementById('g5-toast');
       if (!box) {
         box = document.createElement('div'); box.id = 'g5-toast';
-        box.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483001;max-width:340px;padding:12px 16px;border-radius:14px;background:var(--bg-elevated,#2e2837);border:1px solid var(--border-strong,#5e5172);color:var(--text-primary,#f0edf5);font:600 14px Inter,sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.55);transition:opacity .3s;opacity:0';
+        box.className = 'g5-toast-item is-info';
+        box.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483001;max-width:340px;padding:12px 16px;border-radius:14px;font:600 14px Inter,sans-serif;transition:opacity .3s;opacity:0';
         document.body.appendChild(box);
       }
       box.textContent = message; box.style.opacity = '1';
       clearTimeout(box._t); box._t = setTimeout(function () { box.style.opacity = '0'; }, 3500);
     },
-    /* ---- Giao diện ---- */
+    /* ---- Giao diện & Chế độ Sáng / Tối ---- */
+    theme: function () {
+      return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    },
+    setTheme: function (next) {
+      return applyTheme(next, true);
+    },
+    toggleTheme: function () {
+      return applyTheme(G5.theme() === 'light' ? 'dark' : 'light', true);
+    },
     refresh: function () {
       var n = G5.user() ? G5.getCart().length : 0;
       document.querySelectorAll('[data-cart-count]').forEach(function (el) {
@@ -350,8 +403,22 @@
       });
       var balance = G5.formatVnd(G5.getWallet());
       document.querySelectorAll('[data-wallet-balance]').forEach(function (el) { el.textContent = balance; });
+      syncThemeButtons(G5.theme());
     }
   };
+
+  // Đồng bộ nhanh nút chuyển chế độ Sáng/Tối kể cả khi DOM thêm động
+  document.addEventListener('click', function (e) {
+    var btn = e.target && e.target.closest ? e.target.closest('[data-theme-toggle]') : null;
+    if (!btn) return;
+    e.preventDefault();
+    G5.toggleTheme();
+  });
+  window.addEventListener('storage', function (e) {
+    if (e.key === K.theme && (e.newValue === 'light' || e.newValue === 'dark')) {
+      applyTheme(e.newValue, false);
+    }
+  });
 
   // Áp trạng thái đăng nhập ngay từ <head> để không bị "nháy" giao diện.
   var u = G5.user();

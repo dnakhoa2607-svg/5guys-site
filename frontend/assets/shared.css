@@ -1,8 +1,231 @@
-/* 5GUYS - shared.css: kiểu dùng chung cho các trang frontend. */
+/* 5GUYS - shared.css: hệ thống token màu 4 tầng, component UI và responsive dùng chung cho mọi trang frontend. */
+
+/* =====================================================================
+   0. HỆ THỐNG BIẾN MÀU 4 TẦNG OKLCH (Single Source of Truth — Hue 302°)
+   - Layer 1 + Layer 4: Nền tím-than tiết chế (C = 0.020–0.028, bước L tăng 4–5%)
+   - Layer 2: Thang màu thương hiệu 200–600 đạt tương phản WCAG AA (kể cả hover)
+   - Layer 3: Màu ngữ nghĩa chuẩn & Bảng màu biểu đồ OKLCH đồng đều độ sáng
+   ===================================================================== */
+:root,
+[data-theme="dark"] {
+  /* Layer 1 + Layer 4: Các lớp nền (RGB tách kênh để Tailwind /opacity hoạt động) */
+  --g5-bg-lowest-rgb:     7 5 10;      /* #07050a — Ô lõm sâu nhất */
+  --g5-bg-canvas-rgb:     13 9 18;     /* #0d0912 — oklch(0.15 0.020 302) Nền chính */
+  --g5-bg-shell-rgb:      22 17 28;    /* #16111c — oklch(0.19 0.022 302) Sidebar / Input */
+  --g5-bg-container-rgb:  28 22 35;    /* #1c1623 — oklch(0.215 0.024 302) Khối chứa phụ */
+  --g5-bg-surface-rgb:    33 28 41;    /* #211c29 — oklch(0.24 0.025 302) Thẻ Card nổi */
+  --g5-bg-elevated-rgb:   46 40 55;    /* #2e2837 — oklch(0.29 0.028 302) Modal / Dropdown */
+
+  /* Viền sáng & sắc nét thay cho #3c096c bị bết */
+  --g5-border-subtle-rgb: 61 55 73;    /* #3d3749 — oklch(0.35 0.032 302) */
+  --g5-border-strong-rgb: 94 81 114;   /* #5e5172 — oklch(0.46 0.055 302) */
+
+  /* 3 cấp chữ đồng nhất cùng tông Hue 302° (tất cả >= 4.9:1 trên mọi lớp nền) */
+  --g5-text-primary-rgb:  240 237 245; /* #f0edf5 — 14.36:1 trên card */
+  --g5-text-body-rgb:     204 200 213; /* #ccc8d5 — 10.13:1 trên card */
+  --g5-text-muted-rgb:    155 149 164; /* #9b95a4 —  5.72:1 trên card */
+
+  /* Layer 2: Thang màu thương hiệu (Brand Accent Scale, Hue 304°) */
+  --g5-brand-200-rgb:     223 194 255; /* #dfc2ff */
+  --g5-brand-300-rgb:     200 148 255; /* #c894ff — Link chữ sáng 7.23:1 trên card */
+  --g5-brand-400-rgb:     179 115 248; /* #b373f8 — Hover link / badge */
+  --g5-brand-500-rgb:     145 71 214;  /* #9147d6 — Nền nút CTA chữ trắng 5.15:1 PASS AA */
+  --g5-brand-600-rgb:     123 49 188;  /* #7b31bc — Hover CTA chữ trắng 6.98:1 PASS AA */
+
+  /* Layer 3: Màu ngữ nghĩa chuẩn phổ quát */
+  --g5-success-rgb:       52 211 153;  /* #34d399 */
+  --g5-warning-rgb:       251 191 36;  /* #fbbf24 */
+  --g5-danger-rgb:        248 113 113; /* #f87171 */
+  --g5-info-rgb:          96 165 250;  /* #60a5fa */
+
+  /* Biến màu hoàn chỉnh dùng trong CSS thường */
+  --bg-lowest:            rgb(var(--g5-bg-lowest-rgb));
+  --bg-canvas:            rgb(var(--g5-bg-canvas-rgb));
+  --bg-shell:             rgb(var(--g5-bg-shell-rgb));
+  --bg-container:         rgb(var(--g5-bg-container-rgb));
+  --bg-surface:           rgb(var(--g5-bg-surface-rgb));
+  --bg-elevated:          rgb(var(--g5-bg-elevated-rgb));
+
+  --border-subtle:        rgb(var(--g5-border-subtle-rgb));
+  --border-strong:        rgb(var(--g5-border-strong-rgb));
+
+  --text-primary:         rgb(var(--g5-text-primary-rgb));
+  --text-body:            rgb(var(--g5-text-body-rgb));
+  --text-muted:           rgb(var(--g5-text-muted-rgb));
+
+  --brand-200:            rgb(var(--g5-brand-200-rgb));
+  --brand-300:            rgb(var(--g5-brand-300-rgb));
+  --brand-400:            rgb(var(--g5-brand-400-rgb));
+  --brand-500:            rgb(var(--g5-brand-500-rgb));
+  --brand-600:            rgb(var(--g5-brand-600-rgb));
+  --on-brand-dark:        #0d0912;
+
+  /* Nút bấm CTA: giữ tương phản cao cả trạng thái thường (5.15:1) lẫn hover (6.98:1) */
+  --btn-bg:               var(--brand-500);
+  --btn-hover-bg:         var(--brand-600);
+  --btn-text:             #ffffff;
+  --btn-hover-text:       #ffffff;
+
+  --status-success:       rgb(var(--g5-success-rgb));
+  --status-warning:       rgb(var(--g5-warning-rgb));
+  --status-danger:        rgb(var(--g5-danger-rgb));
+  --status-info:          rgb(var(--g5-info-rgb));
+
+  /* Layer 3: Bảng màu biểu đồ OKLCH đồng đều độ sáng (L=0.72, C=0.14) */
+  --chart-1:              #b58eed; /* H=302° — Kỹ thuật số */
+  --chart-2:              #50acf6; /* H=246° — Đĩa vật lý */
+  --chart-3:              #d582ce; /* H=330° */
+  --chart-4:              #e97da4; /* H=358° */
+  --chart-5:              #f07f76; /* H=26°  */
+  --chart-6:              #e78a47; /* H=54°  */
+
+  /* Bóng đổ tiết chế, nổi khối rõ ràng không chói neon */
+  --shadow-card-hover:    0 12px 26px -8px rgba(0, 0, 0, 0.58), 0 0 0 1px rgb(var(--g5-brand-300-rgb) / 0.35);
+  --shadow-btn:           0 4px 14px -3px rgb(var(--g5-brand-500-rgb) / 0.35);
+  --shadow-btn-hover:     0 6px 18px -3px rgb(var(--g5-brand-600-rgb) / 0.5);
+}
+
+/* Sẵn sàng cho chế độ Light Mode (Layer 1 + Layer 4, bước L ~2%) */
+[data-theme="light"] {
+  --g5-bg-lowest-rgb:     243 240 248; /* #f3f0f8 */
+  --g5-bg-canvas-rgb:     251 249 254; /* #fbf9fe — oklch(0.985 0.006 302) */
+  --g5-bg-shell-rgb:      243 240 248; /* #f3f0f8 — oklch(0.960 0.010 302) */
+  --g5-bg-container-rgb:  247 245 251; /* #f7f5fb */
+  --g5-bg-surface-rgb:    255 255 255; /* #ffffff — Card trắng nổi trên nền off-white */
+  --g5-bg-elevated-rgb:   255 255 255; /* #ffffff */
+
+  --g5-border-subtle-rgb: 217 213 224; /* #d9d5e0 — ~85% trắng pha nhẹ tím */
+  --g5-border-strong-rgb: 182 174 198; /* #b6aec6 */
+
+  --g5-text-primary-rgb:  24 19 32;    /* #181320 */
+  --g5-text-body-rgb:     53 48 62;    /* #35303e */
+  --g5-text-muted-rgb:    102 96 111;  /* #66606f */
+
+  --g5-brand-300-rgb:     145 71 214;  /* #9147d6 — Link rõ nét trên nền sáng */
+  --g5-brand-400-rgb:     123 44 191;  /* #7b2cbf */
+  --g5-brand-500-rgb:     123 44 191;  /* #7b2cbf — Nút chính Light Mode */
+  --g5-brand-600-rgb:     98 31 160;   /* #621fa0 — Hover tối hơn trên Light Mode */
+
+  --shadow-card-hover:    0 10px 24px -8px rgba(24, 19, 32, 0.14), 0 0 0 1px rgb(var(--g5-brand-400-rgb) / 0.25);
+}
+
+/* =====================================================================
+   0.1. CÁC LỚP GIAO DIỆN DÙNG CHUNG (Dùng :where để trang riêng dễ ghi đè)
+   ===================================================================== */
+:where(body) {
+  background-color: var(--bg-canvas);
+  color: var(--text-primary);
+  font-family: 'Inter', sans-serif;
+}
+:where(h1, h2, h3, h4) {
+  letter-spacing: -0.02em;
+}
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: var(--bg-canvas); }
+::-webkit-scrollbar-thumb { background: var(--border-subtle); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--brand-500); }
+
+:where(.card) {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1rem;
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+:where(.card-container) {
+  background: var(--bg-container);
+  border: 1px solid rgb(var(--g5-brand-500-rgb) / 0.25);
+  border-radius: 1rem;
+}
+:where(.game-card) {
+  transition: transform 0.28s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.28s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.25s ease;
+}
+:where(.game-card:hover) {
+  transform: translateY(-6px);
+  border-color: var(--brand-300);
+  box-shadow: var(--shadow-card-hover);
+}
+:where(.glow:hover) {
+  border-color: var(--brand-300) !important;
+  box-shadow: 0 8px 20px -6px rgba(0, 0, 0, 0.5);
+}
+:where(.btn) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  text-align: center;
+  background: var(--btn-bg);
+  color: var(--btn-text);
+  font-weight: 700;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid rgb(var(--g5-brand-300-rgb) / 0.3);
+  box-shadow: var(--shadow-btn);
+  transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  cursor: pointer;
+}
+:where(.btn:hover) {
+  background: var(--btn-hover-bg);
+  color: var(--btn-hover-text);
+  box-shadow: var(--shadow-btn-hover);
+}
+:where(.btn:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+:where(.ghost) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: var(--bg-canvas);
+  border: 1px solid var(--border-subtle);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  color: var(--text-body);
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  cursor: pointer;
+}
+:where(.ghost:hover) {
+  border-color: var(--brand-300);
+  color: var(--text-primary);
+}
+:where(.ghost:disabled) {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+:where(.inp) {
+  background: var(--bg-canvas) !important;
+  border: 1px solid var(--border-subtle) !important;
+  border-radius: 0.5rem !important;
+  color: var(--text-primary);
+  padding: 0.6rem 1rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+:where(.inp:focus) {
+  outline: 0;
+  border-color: var(--brand-300) !important;
+  box-shadow: 0 0 0 2px rgb(var(--g5-brand-300-rgb) / 0.35) !important;
+}
+:where(.inp:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+:where(select.inp option) {
+  background: var(--bg-canvas);
+  color: var(--text-primary);
+}
+:where(.mono) {
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+}
+
 /* 1. Trạng thái đăng nhập, điều hướng và logo. */
 html:not(.is-auth) [data-user] { display: none !important; }
 html.is-auth [data-guest] { display: none !important; }
-a[data-nav].is-current { color: #c77dff; background: #2a1645; }
+a[data-nav].is-current { color: var(--brand-300); background: var(--bg-surface); }
 .logo-font { font-family: 'Inter', sans-serif; }
 /* Cặp nút tài khoản khách có cùng khung kích thước trên mọi trang. */
 [data-guest] > a[href="register.html"],
@@ -73,10 +296,10 @@ html, body { max-width: 100%; overflow-x: clip; }
 }
 
 /* Navbar search is a text link now (not a competing magnifier + input). */
- .chip { display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid rgba(199,125,255,.3); }
- .chip.dg { background:rgba(157,78,221,.2);border-color:rgba(199,125,255,.4);color:#c77dff; }
- .chip.ph { background:rgba(59,130,246,.15);border-color:rgba(59,130,246,.4);color:#60a5fa; }
-.cover-fallback { background: radial-gradient(ellipse at 50% 0%, rgba(157,78,221,.35), transparent 65%), #1b1028; }
+.chip { display:inline-flex;align-items:center;font-size:10px;font-weight:700;letter-spacing:.05em;border-radius:9999px;padding:2px 10px;border:1px solid rgb(var(--g5-brand-300-rgb) / 0.3); }
+.chip.dg { background:rgb(var(--g5-brand-500-rgb) / 0.2);border-color:rgb(var(--g5-brand-300-rgb) / 0.4);color:var(--brand-300); }
+.chip.ph { background:rgb(var(--g5-info-rgb) / 0.15);border-color:rgb(var(--g5-info-rgb) / 0.4);color:var(--status-info); }
+.cover-fallback { background: radial-gradient(ellipse at 50% 0%, rgb(var(--g5-brand-500-rgb) / 0.28), transparent 65%), var(--bg-shell); }
 nav a[title="Tìm kiếm"] {
   flex: 0 0 auto;
   white-space: nowrap;
@@ -255,15 +478,30 @@ main table td {
   min-width: 0;
 }
 
-/* Account menu: constrain the dropdown and permit keyboard focus as well as
+/* Account & Role menus: constrain dropdown and permit keyboard focus as well as
    pointer hover. */
-nav [data-user].group > .absolute {
+nav [data-user].group > .absolute,
+nav [data-nav-role-menu] > .absolute {
   max-width: calc(100vw - 24px);
 }
 
 nav [data-user].group:hover > .absolute,
-nav [data-user].group:focus-within > .absolute {
+nav [data-user].group:focus-within > .absolute,
+nav [data-nav-role-menu]:hover > .absolute,
+nav [data-nav-role-menu]:focus-within > .absolute {
   display: block;
+}
+
+/* Desktop navbar link stability: never crush links into each other; hide search
+   text label only on tight 1280px–1399px viewports (e.g. 15.6" @ 150% DPI). */
+nav [data-desktop-nav] > a {
+  flex-shrink: 0;
+}
+
+@media (min-width: 1280px) and (max-width: 1399px) {
+  nav .nav-search-label {
+    display: none;
+  }
 }
 
 /* Overlays/chat widgets never exceed the viewport width or usable height. */

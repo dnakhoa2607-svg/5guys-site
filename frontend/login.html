@@ -243,17 +243,17 @@
         
         .btn-submit { 
             width: 100%; 
-            background: linear-gradient(135deg, #9d4edd, #c77dff); 
+            background: var(--btn-bg, #9147d6); 
             color: #ffffff; 
             font-weight: 800; 
             font-size: 14.5px; 
             padding: 14px; 
             border-radius: 13px; 
-            border: none; 
+            border: 1px solid rgba(200, 148, 255, 0.25); 
             cursor: pointer; 
             margin-top: 8px; 
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
-            box-shadow: 0 10px 25px -5px rgba(157, 78, 221, 0.65); 
+            transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease; 
+            box-shadow: 0 8px 20px -6px rgba(145, 71, 214, 0.5); 
             text-transform: uppercase; 
             letter-spacing: 0.8px;
             display: flex;
@@ -262,9 +262,9 @@
             gap: 10px;
         }
         .btn-submit:hover { 
-            transform: translateY(-2px); 
-            box-shadow: 0 14px 35px -5px rgba(199, 125, 255, 0.85); 
-            filter: brightness(1.1);
+            background: var(--btn-hover-bg, #7b31bc);
+            transform: translateY(-1px); 
+            box-shadow: 0 10px 24px -6px rgba(123, 49, 188, 0.65); 
         }
         .btn-submit:active { transform: translateY(0); }
         

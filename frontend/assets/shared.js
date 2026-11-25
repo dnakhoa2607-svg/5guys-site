@@ -106,18 +106,18 @@
         st.textContent =
           '#g5-login-modal{position:fixed;inset:0;z-index:2147483000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(10,5,18,.78);backdrop-filter:blur(6px)}' +
           '#g5-login-modal.open{display:flex}' +
-          '#g5-login-modal .g5-box{position:relative;width:100%;max-width:400px;text-align:center;background:#1a1028;border:1px solid rgba(157,78,221,.5);border-radius:24px;padding:32px 24px 24px;box-shadow:0 20px 60px rgba(0,0,0,.7),0 0 40px rgba(157,78,221,.25);color:#fff;font-family:Inter,sans-serif}' +
-          '#g5-login-modal .g5-ic{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:rgba(157,78,221,.2);color:#c77dff;border:1px solid rgba(199,125,255,.4)}' +
+          '#g5-login-modal .g5-box{position:relative;width:100%;max-width:400px;text-align:center;background:var(--bg-surface,#211c29);border:1px solid var(--border-strong,#5e5172);border-radius:20px;padding:32px 24px 24px;box-shadow:0 20px 50px rgba(0,0,0,.65);color:var(--text-primary,#f0edf5);font-family:Inter,sans-serif}' +
+          '#g5-login-modal .g5-ic{width:56px;height:56px;margin:0 auto 14px;border-radius:50%;display:grid;place-items:center;font-size:22px;background:rgb(var(--g5-brand-500-rgb,145 71 214)/.2);color:var(--brand-300,#c894ff);border:1px solid rgb(var(--g5-brand-300-rgb,200 148 255)/.35)}' +
           '#g5-login-modal h3{font-size:18px;font-weight:800;margin:0 0 8px}' +
-          '#g5-login-modal p{font-size:13px;line-height:1.6;color:#b9aac4;margin:0 0 20px}' +
+          '#g5-login-modal p{font-size:13px;line-height:1.6;color:var(--text-body,#ccc8d5);margin:0 0 20px}' +
           '#g5-login-modal .g5-row{display:flex;gap:10px}' +
           '#g5-login-modal .g5-row a{flex:1;padding:11px 12px;border-radius:12px;font-size:13px;font-weight:700;text-decoration:none;transition:all .2s}' +
-          '#g5-login-modal .g5-primary{background:#9d4edd;color:#fff;box-shadow:0 0 15px rgba(157,78,221,.4)}' +
-          '#g5-login-modal .g5-primary:hover{background:#c77dff}' +
-          '#g5-login-modal .g5-second{border:1px solid rgba(199,125,255,.5);color:#e0b6ff}' +
-          '#g5-login-modal .g5-second:hover{background:rgba(157,78,221,.15)}' +
-          '#g5-login-modal .g5-x{position:absolute;top:10px;right:14px;background:none;border:0;color:#9a8aa8;font-size:22px;cursor:pointer;line-height:1}' +
-          '#g5-login-modal .g5-x:hover{color:#fff}';
+          '#g5-login-modal .g5-primary{background:var(--btn-bg,#9147d6);color:#fff;box-shadow:var(--shadow-btn,none)}' +
+          '#g5-login-modal .g5-primary:hover{background:var(--btn-hover-bg,#7b31bc)}' +
+          '#g5-login-modal .g5-second{border:1px solid var(--border-strong,#5e5172);color:var(--text-body,#ccc8d5)}' +
+          '#g5-login-modal .g5-second:hover{border-color:var(--brand-300,#c894ff);color:var(--text-primary,#f0edf5)}' +
+          '#g5-login-modal .g5-x{position:absolute;top:10px;right:14px;background:none;border:0;color:var(--text-muted,#9b95a4);font-size:22px;cursor:pointer;line-height:1}' +
+          '#g5-login-modal .g5-x:hover{color:var(--text-primary,#f0edf5)}';
         document.head.appendChild(st);
         el = document.createElement('div');
         el.id = 'g5-login-modal';
@@ -335,7 +335,7 @@
       var box = document.getElementById('g5-toast');
       if (!box) {
         box = document.createElement('div'); box.id = 'g5-toast';
-        box.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483001;max-width:340px;padding:12px 16px;border-radius:14px;background:#2a1645;border:1px solid #9d4edd;color:#f3e8ff;font:600 14px Inter,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.5);transition:opacity .3s;opacity:0';
+        box.style.cssText = 'position:fixed;right:20px;bottom:20px;z-index:2147483001;max-width:340px;padding:12px 16px;border-radius:14px;background:var(--bg-elevated,#2e2837);border:1px solid var(--border-strong,#5e5172);color:var(--text-primary,#f0edf5);font:600 14px Inter,sans-serif;box-shadow:0 12px 28px rgba(0,0,0,.55);transition:opacity .3s;opacity:0';
         document.body.appendChild(box);
       }
       box.textContent = message; box.style.opacity = '1';
@@ -371,32 +371,90 @@
     document.querySelectorAll('[data-logout]').forEach(function (el) {
       el.addEventListener('click', function (e) { e.preventDefault(); G5.logout(); location.href = 'index.html'; });
     });
-    if (G5.isAdmin()) {
-      document.querySelectorAll('a[data-nav][href="mods.html"]').forEach(function (lastNav) {
-        var parent = lastNav.parentElement;
-        if (parent && !parent.querySelector('a[data-nav][href="admin.html"]')) {
-          var adm = lastNav.cloneNode(false);
-          adm.setAttribute('href', 'admin.html');
-          adm.innerHTML = '<i class="fa-solid fa-user-shield"></i> Quản trị';
-          lastNav.insertAdjacentElement('afterend', adm);
+    var isAdm = G5.isAdmin();
+    var isPub = G5.isPublisher();
+    if (isAdm || isPub) {
+      // Desktop: gộp các cổng quản lý vào cụm riêng có phân cách để tránh chen lấn thanh menu chính
+      document.querySelectorAll('[data-desktop-role-slot]').forEach(function (slot) {
+        if (slot.dataset.roleMounted) return;
+        slot.dataset.roleMounted = '1';
+        slot.classList.remove('hidden');
+        slot.classList.add('flex');
+        var divider = '<span aria-hidden="true" class="mx-1 h-4 w-px bg-dark-border/90 flex-shrink-0"></span>';
+        if (isAdm && isPub) {
+          slot.innerHTML = divider
+            + '<div data-nav-role-menu class="relative group flex-shrink-0">'
+            + '<a data-nav data-nav-role-trigger href="admin.html" class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-lg text-[13px] 2xl:text-sm font-semibold tracking-wide text-brand-light bg-brand/15 border border-brand/35 hover:bg-brand/25 hover:border-brand-light/60 whitespace-nowrap transition-colors">'
+            + '<i class="fa-solid fa-user-shield text-xs"></i><span>Quản trị</span><i class="fa-solid fa-chevron-down text-[10px] opacity-80 group-hover:rotate-180 transition-transform duration-200"></i>'
+            + '</a>'
+            + '<div class="absolute left-0 top-full pt-2.5 w-60 hidden group-hover:block z-50">'
+            + '<div class="bg-dark-surface border border-brand/40 rounded-xl shadow-[0_15px_36px_rgba(0,0,0,0.72)] p-1.5 space-y-1">'
+            + '<a data-nav href="admin.html" class="flex items-start gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-200 hover:text-brand-light hover:bg-dark-bg transition-colors">'
+            + '<i class="fa-solid fa-user-shield w-4 mt-0.5 text-brand-light flex-shrink-0"></i>'
+            + '<span><span class="block font-semibold leading-tight">Bảng quản trị</span><span class="block text-[11px] text-outline mt-0.5">Sản phẩm, đơn hàng, người dùng</span></span>'
+            + '</a>'
+            + '<a data-nav href="publisher.html" class="flex items-start gap-2.5 px-3 py-2 rounded-lg text-sm text-gray-200 hover:text-brand-light hover:bg-dark-bg transition-colors">'
+            + '<i class="fa-solid fa-code-branch w-4 mt-0.5 text-brand-light flex-shrink-0"></i>'
+            + '<span><span class="block font-semibold leading-tight">Nhà phát hành</span><span class="block text-[11px] text-outline mt-0.5">Đăng game &amp; quản lý bản dựng</span></span>'
+            + '</a>'
+            + '</div></div></div>';
+        } else if (isAdm) {
+          slot.innerHTML = divider
+            + '<a data-nav href="admin.html" class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-lg text-[13px] 2xl:text-sm font-semibold tracking-wide text-brand-light bg-brand/15 border border-brand/35 hover:bg-brand/25 hover:border-brand-light/60 whitespace-nowrap transition-colors flex-shrink-0">'
+            + '<i class="fa-solid fa-user-shield text-xs"></i><span>Quản trị</span></a>';
+        } else {
+          slot.innerHTML = divider
+            + '<a data-nav href="publisher.html" class="inline-flex items-center gap-1.5 px-2.5 2xl:px-3 py-1.5 rounded-lg text-[13px] 2xl:text-sm font-semibold tracking-wide text-brand-light bg-brand/15 border border-brand/35 hover:bg-brand/25 hover:border-brand-light/60 whitespace-nowrap transition-colors flex-shrink-0">'
+            + '<i class="fa-solid fa-code-branch text-xs"></i><span>Nhà phát hành</span></a>';
         }
       });
-    }
-    if (G5.isPublisher()) {
-      document.querySelectorAll('a[data-nav][href="mods.html"]').forEach(function (lastNav) {
+
+      // Mobile / Tablet pill strip: giữ nút trực tiếp dễ chạm trong thanh cuộn ngang
+      document.querySelectorAll('[data-mobile-nav] a[data-nav][href="mods.html"]').forEach(function (lastNav) {
         var parent = lastNav.parentElement;
-        if (parent && !parent.querySelector('a[data-nav][href="publisher.html"]')) {
+        if (!parent) return;
+        if (isAdm && !parent.querySelector('a[data-nav][href="admin.html"]')) {
+          var adm = lastNav.cloneNode(false);
+          adm.setAttribute('href', 'admin.html');
+          adm.className = 'flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-brand-light bg-brand/15 border border-brand/40 hover:bg-brand/25 whitespace-nowrap';
+          adm.innerHTML = '<i class="fa-solid fa-user-shield text-[11px]"></i><span>Quản trị</span>';
+          lastNav.insertAdjacentElement('afterend', adm);
+        }
+        if (isPub && !parent.querySelector('a[data-nav][href="publisher.html"]')) {
           var pub = lastNav.cloneNode(false);
           pub.setAttribute('href', 'publisher.html');
-          pub.innerHTML = '<i class="fa-solid fa-code-branch"></i> Nhà phát hành';
+          pub.className = 'flex-shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold text-brand-light bg-brand/15 border border-brand/40 hover:bg-brand/25 whitespace-nowrap';
+          pub.innerHTML = '<i class="fa-solid fa-code-branch text-[11px]"></i><span>Nhà phát hành</span>';
           lastNav.insertAdjacentElement('afterend', pub);
         }
+      });
+
+      // Dropdown tài khoản: luôn có lối vào nhanh các trang quản trị / nhà phát hành
+      document.querySelectorAll('[data-role-menu]').forEach(function (box) {
+        if (box.dataset.roleMounted) return;
+        box.dataset.roleMounted = '1';
+        var html = '<div class="px-4 pt-1 pb-1.5 text-[10px] font-bold uppercase tracking-wider text-outline">Quản lý hệ thống</div>';
+        if (isAdm) {
+          html += '<a href="admin.html" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-semibold text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-user-shield w-4 text-brand-light"></i>Bảng quản trị</a>';
+        }
+        if (isPub) {
+          html += '<a href="publisher.html" class="flex items-center gap-3 px-4 py-2 rounded-lg text-sm font-semibold text-brand-light hover:bg-dark-bg transition-colors"><i class="fa-solid fa-code-branch w-4 text-brand-light"></i>Cổng Nhà phát hành</a>';
+        }
+        box.innerHTML = html;
+        box.classList.remove('hidden');
       });
     }
     // Đánh dấu mục menu của trang hiện tại
     var cur = location.pathname.split('/').pop() || 'index.html';
     document.querySelectorAll('a[data-nav]').forEach(function (a) {
-      if (a.getAttribute('href').split('#')[0] === cur) a.classList.add('is-current');
+      if (a.getAttribute('href').split('#')[0] === cur) {
+        a.classList.add('is-current');
+        var roleWrap = a.closest('[data-nav-role-menu]');
+        if (roleWrap) {
+          var trig = roleWrap.querySelector('[data-nav-role-trigger]');
+          if (trig) trig.classList.add('is-current');
+        }
+      }
     });
     G5.refresh();
     if (apiMode) { G5.syncCart().catch(function () { G5.notify('Không thể tải giỏ hàng từ API.'); }); G5.syncOrders().catch(function () { G5.notify('Không thể tải đơn hàng từ API.'); }); }

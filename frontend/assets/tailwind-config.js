@@ -1,69 +1,94 @@
-/* Cấu hình Tailwind dùng chung cho toàn bộ site (gộp từ các trang gốc). */
-tailwind.config = {
-  "theme": {
-    "extend": {
-      "fontFamily": {
-        "sans": [
-          "Inter",
-          "sans-serif"
-        ],
-        "display": [
-          "Inter",
-          "sans-serif"
-        ]
-      },
-      "colors": {
-        "vault": {
-          "bg": "#12091c",
-          "surface": "#2a1645",
-          "container": "#1f1032",
-          "containerHigh": "#291542",
-          "border": "#3c096c",
-          "borderSubtle": "rgba(157, 78, 221, 0.3)",
-          "primary": "#c77dff",
-          "primaryDark": "#9d4edd",
-          "primaryDeep": "#7b2cbf",
-          "secondary": "#e0aaff",
-          "text": "#f3e8ff",
-          "textMuted": "#a8b2d1",
-          "amber": "#f59e0b",
-          "emerald": "#10b981",
-          "crimson": "#ef4444"
+/* Cấu hình Tailwind hợp nhất duy nhất cho toàn bộ 20 trang 5GUYS (gộp cả 3 trang Hub).
+ * Đọc trực tiếp từ hệ biến CSS 4 tầng trong assets/shared.css qua cú pháp rgb(var(...) / <alpha-value>)
+ * để hỗ trợ đầy đủ opacity modifier (/20, /40, /95...) và chuyển đổi theme đồng bộ. */
+(function () {
+  var c = function (varName) {
+    return 'rgb(var(' + varName + ') / <alpha-value>)';
+  };
+
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Inter', 'sans-serif'],
+          display: ['Inter', 'sans-serif']
         },
-        "brand": {
-          "light": "#c77dff",
-          "DEFAULT": "#9d4edd",
-          "dark": "#7b2cbf"
+        colors: {
+          /* Nhóm tên chuẩn mới (4 tầng) */
+          canvas: c('--g5-bg-canvas-rgb'),
+          shell: c('--g5-bg-shell-rgb'),
+          surface: c('--g5-bg-surface-rgb'),
+          elevated: c('--g5-bg-elevated-rgb'),
+
+          /* Nhóm tên thương hiệu & tương thích ngược toàn site */
+          brand: {
+            200: c('--g5-brand-200-rgb'),
+            300: c('--g5-brand-300-rgb'),
+            400: c('--g5-brand-400-rgb'),
+            500: c('--g5-brand-500-rgb'),
+            600: c('--g5-brand-600-rgb'),
+            light: c('--g5-brand-300-rgb'),
+            DEFAULT: c('--g5-brand-500-rgb'),
+            dark: c('--g5-brand-600-rgb')
+          },
+          dark: {
+            bg: c('--g5-bg-canvas-rgb'),
+            surface: c('--g5-bg-surface-rgb'),
+            border: c('--g5-border-subtle-rgb'),
+            text: c('--g5-text-primary-rgb')
+          },
+          vault: {
+            bg: c('--g5-bg-canvas-rgb'),
+            surface: c('--g5-bg-surface-rgb'),
+            container: c('--g5-bg-container-rgb'),
+            containerHigh: c('--g5-bg-elevated-rgb'),
+            border: c('--g5-border-subtle-rgb'),
+            borderSubtle: 'rgb(var(--g5-brand-500-rgb) / 0.25)',
+            primary: c('--g5-brand-300-rgb'),
+            primaryDark: c('--g5-brand-500-rgb'),
+            primaryDeep: c('--g5-brand-600-rgb'),
+            secondary: c('--g5-brand-200-rgb'),
+            text: c('--g5-text-primary-rgb'),
+            textMuted: c('--g5-text-muted-rgb'),
+            amber: c('--g5-warning-rgb'),
+            emerald: c('--g5-success-rgb'),
+            crimson: c('--g5-danger-rgb')
+          },
+
+          /* Token hợp nhất từ 3 trang Hub (library, rental, mods) */
+          background: c('--g5-bg-canvas-rgb'),
+          'surface-dim': c('--g5-bg-canvas-rgb'),
+          'surface-container-lowest': c('--g5-bg-lowest-rgb'),
+          'surface-container-low': c('--g5-bg-shell-rgb'),
+          'surface-container': c('--g5-bg-container-rgb'),
+          'surface-container-high': c('--g5-bg-surface-rgb'),
+          'surface-container-highest': c('--g5-bg-elevated-rgb'),
+          'surface-bright': c('--g5-bg-elevated-rgb'),
+          'on-surface': c('--g5-text-primary-rgb'),
+          'on-surface-variant': c('--g5-text-body-rgb'),
+          outline: c('--g5-text-muted-rgb'),
+          'outline-variant': c('--g5-border-subtle-rgb'),
+          primary: c('--g5-brand-300-rgb'),
+          'primary-container': c('--g5-brand-300-rgb'),
+          secondary: c('--g5-brand-200-rgb'),
+          'secondary-container': c('--g5-brand-600-rgb'),
+          tertiary: c('--g5-brand-200-rgb'),
+          error: c('--g5-danger-rgb'),
+          'brand-purple': c('--g5-brand-500-rgb'),
+          'brand-neon': c('--g5-brand-300-rgb')
         },
-        "dark": {
-          "bg": "#12091c",
-          "surface": "#2a1645",
-          "border": "#3c096c",
-          "text": "#f3e8ff"
+        boxShadow: {
+          /* Giảm độ chói neon, chỉ giữ điểm nhấn tinh tế cho CTA chính */
+          'purple-glow': '0 8px 22px -6px rgb(var(--g5-brand-500-rgb) / 0.35)',
+          'neon-glow': '0 10px 26px -6px rgb(var(--g5-brand-300-rgb) / 0.42)',
+          'ambient-glow': '0 10px 24px -8px rgba(0, 0, 0, 0.5)'
         },
-        "background": "#12091c",
-        "surface-container-lowest": "#0a0510",
-        "surface-container-low": "#180c26",
-        "surface-container": "#1f1032",
-        "surface-container-high": "#291542",
-        "surface-container-highest": "#331a52",
-        "on-surface-variant": "#d8b4e2",
-        "outline": "#a78bba",
-        "primary": "#c77dff",
-        "primary-container": "#c77dff",
-        "error": "#f87171",
-        "secondary": "#c77dff"
-      },
-      "boxShadow": {
-        "purple-glow": "0 0 25px -4px rgba(157, 78, 221, 0.5)",
-        "neon-glow": "0 0 35px -5px rgba(199, 125, 255, 0.8)",
-        "ambient-glow": "0 15px 35px -5px rgba(157, 78, 221, 0.35)"
-      },
-      "animation": {
-        "pulse-slow": "pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-        "spin-slow": "spin 3s linear infinite"
+        animation: {
+          'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          'spin-slow': 'spin 3s linear infinite'
+        }
       }
     }
-  },
-  "darkMode": "class"
-};
+  };
+})();

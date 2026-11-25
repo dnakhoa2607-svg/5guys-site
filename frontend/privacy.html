@@ -11,60 +11,6 @@
   <script src="assets/tailwind-config.js"></script>
   <style>
     html { scroll-behavior: smooth; }
-    body {
-      background-color: #12091c;
-      color: #f3e8ff;
-      overflow-x: hidden;
-      font-family: 'Inter', sans-serif;
-    }
-    h1, h2, h3, h4 { letter-spacing: -0.02em; }
-    ::-webkit-scrollbar { width: 8px; }
-    ::-webkit-scrollbar-track { background: #12091c; }
-    ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 4px; }
-    ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
-    .card {
-      background: #2a1645;
-      border: 1px solid #3c096c;
-      border-radius: 1rem;
-      transition: border-color 0.25s ease, box-shadow 0.25s ease;
-    }
-    .card-container {
-      background: #1f1032;
-      border: 1px solid rgba(157, 78, 221, 0.3);
-      border-radius: 1rem;
-    }
-    .btn {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      background: #9d4edd;
-      color: #fff;
-      font-weight: 700;
-      border-radius: 0.5rem;
-      padding: 0.6rem 1.25rem;
-      border: 1px solid rgba(199, 125, 255, 0.3);
-      box-shadow: 0 0 15px rgba(157, 78, 221, 0.4);
-      transition: background 0.25s ease, box-shadow 0.25s ease;
-    }
-    .btn:hover {
-      background: #c77dff;
-      box-shadow: 0 0 25px rgba(199, 125, 255, 0.6);
-    }
-    .ghost {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      background: #12091c;
-      border: 1px solid #3c096c;
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
-      color: #e9d5ff;
-      transition: border-color 0.25s ease, color 0.25s ease;
-    }
-    .ghost:hover { border-color: #c77dff; color: #fff; }
-    .mono { font-variant-numeric: tabular-nums; }
     .policy-section { scroll-margin-top: 6rem; }
     .toc-link {
       display: flex;
@@ -74,46 +20,42 @@
       border-radius: 0.65rem;
       font-size: 0.85rem;
       line-height: 1.4;
-      color: #d8b4e2;
+      color: var(--text-body);
       border: 1px solid transparent;
       transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease;
     }
     .toc-link:hover {
-      background: rgba(157, 78, 221, 0.14);
-      border-color: rgba(199, 125, 255, 0.3);
-      color: #ffffff;
+      background: rgb(var(--g5-brand-500-rgb) / 0.14);
+      border-color: rgb(var(--g5-brand-300-rgb) / 0.3);
+      color: var(--text-primary);
     }
     .toc-link.is-active {
-      background: rgba(157, 78, 221, 0.25);
-      border-color: rgba(199, 125, 255, 0.55);
-      color: #ffffff;
+      background: rgb(var(--g5-brand-500-rgb) / 0.22);
+      border-color: rgb(var(--g5-brand-300-rgb) / 0.5);
+      color: var(--text-primary);
       font-weight: 700;
     }
     .toc-badge {
       flex-shrink: 0;
       font-size: 0.7rem;
       font-weight: 800;
-      color: #c77dff;
-      background: rgba(18, 9, 28, 0.85);
-      border: 1px solid rgba(157, 78, 221, 0.35);
+      color: var(--brand-300);
+      background: rgb(var(--g5-bg-canvas-rgb) / 0.85);
+      border: 1px solid rgb(var(--g5-brand-500-rgb) / 0.35);
       border-radius: 0.4rem;
       padding: 0.12rem 0.45rem;
       margin-top: 0.05rem;
     }
     .code-inline {
       display: inline-block;
-      background: #12091c;
-      border: 1px solid rgba(157, 78, 221, 0.35);
-      color: #c77dff;
+      background: var(--bg-canvas);
+      border: 1px solid rgb(var(--g5-brand-500-rgb) / 0.35);
+      color: var(--brand-300);
       padding: 0.05rem 0.4rem;
       border-radius: 0.35rem;
       font-size: 0.84em;
       font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
       word-break: break-word;
-    }
-    @media (prefers-reduced-motion: reduce) {
-      html { scroll-behavior: auto !important; }
-      * { transition: none !important; animation: none !important; }
     }
   </style>
   <link rel="stylesheet" href="assets/shared.css">

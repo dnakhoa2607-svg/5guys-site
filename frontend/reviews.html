@@ -79,7 +79,7 @@
       card.appendChild(el('p', 'text-sm text-on-surface-variant mt-1 whitespace-pre-line', review.body));
 
       if (review.publisher_reply && String(review.publisher_reply).trim()) {
-        const replyBox = el('div', 'mt-3 ml-4 pl-3 border-l-2 border-brand-light bg-[#12091c]/70 rounded-r-xl p-3');
+        const replyBox = el('div', 'mt-3 ml-4 pl-3 border border-dark-border border-l-2 border-l-brand-light bg-dark-bg/80 rounded-r-xl p-3');
         const head = el('p', 'text-xs font-bold text-brand-light flex items-center gap-1.5');
         head.append(el('i', 'fa-solid fa-code-branch text-[11px]'), document.createTextNode('Phản hồi từ Nhà phát hành'));
         replyBox.append(head, el('p', 'mt-1 text-xs sm:text-sm text-gray-200 whitespace-pre-line', review.publisher_reply));

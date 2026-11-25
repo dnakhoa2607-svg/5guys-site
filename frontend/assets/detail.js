@@ -5,15 +5,18 @@
   function reqList(data){const list=el('ul','space-y-2 text-sm text-gray-300');for(const [k,v] of Object.entries(data||{})){const li=el('li');li.append(el('strong','text-white',k+': '),document.createTextNode(String(v)));list.appendChild(li);}return list;}
   // Form viet danh gia (can dang nhap va backend dang chay)
   function reviewForm(p,list){
-    const box=el('div','card p-5 mt-5');box.id='review-form';
+    const box=el('div','card p-6 sm:p-7 mt-6 space-y-4');box.id='review-form';
     if(!G5.user()){box.append(el('p','text-sm text-outline','Đăng nhập để viết đánh giá cho game này.'));list.insertAdjacentElement('afterend',box);return;}
     let score=5;
-    box.append(el('h3','font-bold text-white mb-3','Viết đánh giá của bạn'));
-    const stars=el('div','text-2xl mb-3 cursor-pointer select-none');
-    const draw=()=>{stars.replaceChildren(...[1,2,3,4,5].map(i=>{const s=el('span',i<=score?'text-yellow-400':'text-gray-600','★');s.onclick=()=>{score=i;draw();};return s;}));};draw();
-    const title=el('input','inp w-full mb-2 text-sm');title.placeholder='Tiêu đề (không bắt buộc)';title.maxLength=180;
-    const body=el('textarea','inp w-full text-sm');body.rows=3;body.placeholder='Cảm nhận của bạn về game...';
-    const send=el('button','btn mt-3','Gửi đánh giá');const note=el('p','text-sm mt-2 text-outline');
+    box.append(el('h3','text-base font-bold text-white','Viết đánh giá của bạn'));
+    const stars=el('div','flex items-center gap-1 text-2xl cursor-pointer select-none');
+    const draw=()=>{stars.replaceChildren(...[1,2,3,4,5].map(i=>{const s=el('span',i<=score?'text-yellow-400':'text-gray-400','★');s.onclick=()=>{score=i;draw();};return s;}));};draw();
+    const fields=el('div','space-y-4');
+    const title=el('input','inp w-full !px-4 !py-3.5 text-sm leading-normal');title.placeholder='Tiêu đề (không bắt buộc)';title.maxLength=180;
+    const body=el('textarea','inp w-full !p-4 text-sm leading-relaxed min-h-[120px]');body.rows=4;body.placeholder='Cảm nhận của bạn về game...';
+    fields.append(title,body);
+    const send=el('button','btn bg-brand hover:bg-brand-dark text-white !px-6 !py-3 text-sm','Gửi đánh giá');send.type='button';
+    const note=el('p','text-sm text-outline');
     send.onclick=async()=>{
       if(body.value.trim().length<3){note.textContent='Nội dung tối thiểu 3 ký tự.';return;}
       send.disabled=true;
@@ -21,7 +24,7 @@
         note.textContent='Đã gửi đánh giá'+(res.verifiedPurchase?' (đã xác minh mua hàng)':'')+'. Đang tải lại...';setTimeout(()=>location.reload(),800);}
       catch(err){note.textContent=G5.errorText(err);}finally{send.disabled=false;}
     };
-    box.append(stars,title,body,send,note);list.insertAdjacentElement('afterend',box);
+    box.append(stars,fields,send,note);list.insertAdjacentElement('afterend',box);
   }
   // ===== Khoi dac ta ban vat ly (chi hien khi dang xem phien ban "Vat ly") =====
   function physicalSpecs(){
@@ -44,7 +47,7 @@
   function createGalleryModal(title){
     let list=[],idx=0,hls=null;
     const ov=el('div','fixed inset-0 z-[100] hidden items-center justify-center bg-black/85 backdrop-blur-sm p-3 sm:p-6');ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-label','Trailer và ảnh chụp '+title);
-    const panel=el('div','w-full max-w-5xl overflow-hidden rounded-3xl border border-brand/40 bg-[#0d0914] shadow-[0_20px_60px_rgba(0,0,0,.7)]');
+    const panel=el('div','w-full max-w-5xl overflow-hidden rounded-3xl border border-brand/40 bg-[#0d0914] shadow-[0_20px_60px_rgba(0,0,0,.7)]');panel.setAttribute('data-dark-surface','');
     const head=el('div','flex items-center justify-between gap-3 border-b border-white/10 px-4 py-3');
     const ht=el('div','min-w-0'),name=el('p','truncate text-sm font-bold text-white'),count=el('p','text-xs text-outline');ht.append(name,count);
     const close=el('button','grid h-9 w-9 shrink-0 place-items-center rounded-full border border-white/10 text-gray-300 transition-colors hover:border-brand-light hover:text-white');close.type='button';close.setAttribute('aria-label','Đóng');close.innerHTML='<i class="fa-solid fa-xmark"></i>';head.append(ht,close);
@@ -119,7 +122,7 @@
       $('#buy-now').addEventListener('click',async()=>{if(add.disabled)return;if(!G5.user()){add.click();return;}try{await G5.add(p.title,p.product_type,Number(p.price)/25000,1,p.id);location.href='cart.html';}catch{G5.notify('Không thể thêm sản phẩm vào giỏ.');}});
       $('#favorite').addEventListener('click',()=>{const key='5guys_favorites',ids=JSON.parse(localStorage.getItem(key)||'[]'),on=ids.includes(p.slug);localStorage.setItem(key,JSON.stringify(on?ids.filter(x=>x!==p.slug):ids.concat(p.slug)));$('#favorite').textContent=on?'♡ Yêu thích':'♥ Đã yêu thích';});
       setupGallery(p);
-      const r=$('#game-reviews');(p.reviews||[]).forEach(review=>{const card=el('article','card p-4');card.append(el('div','font-bold text-white',review.title||'Đánh giá'),el('p','text-sm text-outline mt-1',review.display_name+' · '+Number(review.rating).toFixed(1)+' ★'+(review.verified_purchase?' · ✔ Đã mua':'')),el('p','mt-3 text-gray-200',review.body));if(review.publisher_reply&&String(review.publisher_reply).trim()){const replyBox=el('div','mt-3 ml-4 pl-3 border-l-2 border-brand-light bg-[#12091c]/70 rounded-r-xl p-3');const replyHead=el('p','text-xs font-bold text-brand-light flex items-center gap-1.5');const ic=el('i','fa-solid fa-code-branch text-[11px]');replyHead.append(ic,document.createTextNode('Phản hồi từ Nhà phát hành'));if(review.publisher_replied_at){replyHead.append(el('span','font-normal text-outline ml-1','· '+new Date(review.publisher_replied_at).toLocaleDateString('vi-VN')));}replyBox.append(replyHead,el('p','mt-1.5 text-sm text-gray-200 whitespace-pre-line',review.publisher_reply));card.append(replyBox);}const voteBtn=el('button','text-xs text-outline hover:text-brand-light mt-2 inline-flex items-center gap-1 cursor-pointer transition-colors');voteBtn.type='button';const voteCount=el('span','',String(review.helpful_count||0));voteCount.setAttribute('data-helpful-count','');voteBtn.append(document.createTextNode('👍 Hữu ích ('),voteCount,document.createTextNode(')'));voteBtn.addEventListener('click',async()=>{if(!G5.requireLogin('Vui lòng đăng nhập để bình chọn đánh giá hữu ích.'))return;if(!G5.isApiMode()){G5.notify('Chức năng bình chọn cần kết nối API backend.');return;}voteBtn.disabled=true;try{const res=await G5.api('/products/reviews/'+review.id+'/vote',{method:'POST'});voteCount.textContent=String(res.helpfulCount??0);voteBtn.classList.toggle('text-brand-light',!!res.voted);voteBtn.classList.toggle('text-outline',!res.voted);}catch(err){G5.notify(G5.errorText(err));}finally{voteBtn.disabled=false;}});card.appendChild(voteBtn);r.appendChild(card);});if(!r.children.length)r.append(el('p','text-outline','Chưa có đánh giá được duyệt.'));reviewForm(p,r);
+      const r=$('#game-reviews');(p.reviews||[]).forEach(review=>{const card=el('article','card p-4');card.append(el('div','font-bold text-white',review.title||'Đánh giá'),el('p','text-sm text-outline mt-1',review.display_name+' · '+Number(review.rating).toFixed(1)+' ★'+(review.verified_purchase?' · ✔ Đã mua':'')),el('p','mt-3 text-gray-200',review.body));if(review.publisher_reply&&String(review.publisher_reply).trim()){const replyBox=el('div','mt-3 ml-4 pl-3 border border-dark-border border-l-2 border-l-brand-light bg-dark-bg/80 rounded-r-xl p-3');const replyHead=el('p','text-xs font-bold text-brand-light flex items-center gap-1.5');const ic=el('i','fa-solid fa-code-branch text-[11px]');replyHead.append(ic,document.createTextNode('Phản hồi từ Nhà phát hành'));if(review.publisher_replied_at){replyHead.append(el('span','font-normal text-outline ml-1','· '+new Date(review.publisher_replied_at).toLocaleDateString('vi-VN')));}replyBox.append(replyHead,el('p','mt-1.5 text-sm text-gray-200 whitespace-pre-line',review.publisher_reply));card.append(replyBox);}const voteBtn=el('button','text-xs text-outline hover:text-brand-light mt-2 inline-flex items-center gap-1 cursor-pointer transition-colors');voteBtn.type='button';const voteCount=el('span','',String(review.helpful_count||0));voteCount.setAttribute('data-helpful-count','');voteBtn.append(document.createTextNode('👍 Hữu ích ('),voteCount,document.createTextNode(')'));voteBtn.addEventListener('click',async()=>{if(!G5.requireLogin('Vui lòng đăng nhập để bình chọn đánh giá hữu ích.'))return;if(!G5.isApiMode()){G5.notify('Chức năng bình chọn cần kết nối API backend.');return;}voteBtn.disabled=true;try{const res=await G5.api('/products/reviews/'+review.id+'/vote',{method:'POST'});voteCount.textContent=String(res.helpfulCount??0);voteBtn.classList.toggle('text-brand-light',!!res.voted);voteBtn.classList.toggle('text-outline',!res.voted);}catch(err){G5.notify(G5.errorText(err));}finally{voteBtn.disabled=false;}});card.appendChild(voteBtn);r.appendChild(card);});if(!r.children.length)r.append(el('p','text-outline','Chưa có đánh giá được duyệt.'));reviewForm(p,r);
       const requirements=p.requirements; if(requirements){$('#minimum-requirements').replaceChildren(reqList(requirements.minimum_requirements));$('#recommended-requirements').replaceChildren(reqList(requirements.recommended_requirements));}
       root.classList.remove('hidden');$('#detail-loading').classList.add('hidden');
     } catch {$('#detail-loading').textContent='Không tìm thấy game hoặc API chưa hoạt động. Hãy kiểm tra server rồi thử lại.';}

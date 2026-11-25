@@ -1,21 +1,21 @@
 /* 5GUYS - hub.js: logic dùng chung cho library.html, rental.html, mods.html */
 
-    // Quick Toast Dispatcher
+    // Quick Toast Dispatcher (dong bo Light & Dark Mode chuan tuong phan WCAG AA)
     window.showToast = function (title, message, isSuccess = true) {
       const container = document.getElementById('toast-container');
       if (!container) return;
       const toast = document.createElement('div');
-      toast.className = `p-4 rounded-2xl bg-[#241832] shadow-2xl flex items-center gap-3 text-white transition-all transform duration-300 translate-y-2 pointer-events-auto border-l-4 ${isSuccess ? 'border-[#9d4edd]' : 'border-red-500'} border border-outline-variant/30 min-w-[280px] max-w-sm`;
+      toast.className = `g5-toast-item ${isSuccess ? 'is-success' : 'is-error'} p-4 rounded-2xl flex items-center gap-3 transition-all transform duration-300 translate-y-2 pointer-events-auto min-w-[280px] max-w-sm`;
       const ic = document.createElement('span');
-      ic.className = `material-symbols-outlined ${isSuccess ? 'text-brand-neon' : 'text-red-400'} text-2xl`;
+      ic.className = `material-symbols-outlined ${isSuccess ? 'text-emerald-400' : 'text-red-400'} text-2xl shrink-0`;
       ic.textContent = isSuccess ? 'check_circle' : 'error';
       const box = document.createElement('div');
-      box.className = 'flex flex-col';
+      box.className = 'flex flex-col gap-0.5 min-w-0';
       const tEl = document.createElement('span');
-      tEl.className = 'text-xs font-bold text-white';
+      tEl.className = 'g5-toast-title text-xs font-bold leading-snug';
       tEl.textContent = String(title || '');
       const mEl = document.createElement('span');
-      mEl.className = 'text-[11px] text-on-surface-variant leading-tight';
+      mEl.className = 'g5-toast-body text-[11px] leading-snug';
       mEl.textContent = String(message || '');
       box.append(tEl, mEl);
       toast.append(ic, box);
@@ -923,7 +923,7 @@
 
         var button = document.createElement('button');
         button.type = 'button';
-        button.className = 'px-4 py-2 rounded-full bg-brand-purple hover:bg-brand-neon text-white text-xs font-bold cursor-pointer transition-all shadow-[0_0_12px_rgba(157,78,221,0.4)]';
+        button.className = 'px-4 py-2 rounded-full bg-brand-purple hover:bg-brand-dark text-white text-xs font-bold cursor-pointer transition-all shadow-[0_0_12px_rgba(124,58,237,0.4)]';
         button.textContent = 'Tải Mod';
 
         button.addEventListener('click', async function () {

@@ -90,10 +90,10 @@
 </div>
 <!-- Platform Quick Filter Tags (Responsive horizontal scroll on mobile) -->
 <div class="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 text-xs font-semibold">
-<span class="px-3 py-1.5 rounded-lg bg-dark-surface border border-brand/40 text-brand-light whitespace-nowrap"><i class="fa-solid fa-layer-group mr-1.5"></i>Tất cả</span>
-<span class="px-3 py-1.5 rounded-lg bg-[#190f26] border border-dark-border text-gray-400 hover:text-white transition-colors cursor-pointer whitespace-nowrap"><i class="fa-brands fa-playstation mr-1.5 text-blue-400"></i>PlayStation</span>
-<span class="px-3 py-1.5 rounded-lg bg-[#190f26] border border-dark-border text-gray-400 hover:text-white transition-colors cursor-pointer whitespace-nowrap"><i class="fa-brands fa-xbox mr-1.5 text-green-400"></i>Xbox</span>
-<span class="px-3 py-1.5 rounded-lg bg-[#190f26] border border-dark-border text-gray-400 hover:text-white transition-colors cursor-pointer whitespace-nowrap"><i class="fa-solid fa-gamepad mr-1.5 text-red-400"></i>Switch</span>
+<span class="platform-chip is-active px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap"><i class="fa-solid fa-layer-group mr-1.5"></i>Tất cả</span>
+<span class="platform-chip px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap"><i class="fa-brands fa-playstation mr-1.5 text-blue-400"></i>PlayStation</span>
+<span class="platform-chip px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap"><i class="fa-brands fa-xbox mr-1.5 text-green-400"></i>Xbox</span>
+<span class="platform-chip px-3 py-1.5 rounded-lg cursor-pointer whitespace-nowrap"><i class="fa-solid fa-gamepad mr-1.5 text-red-400"></i>Switch</span>
 </div>
 </div>
 <!-- Keep the physical catalog card sizing in sync with the digital catalog. -->
@@ -250,7 +250,7 @@
 </div>
 <button aria-label="Đóng chat" class="text-white/80 hover:text-white bg-black/20 w-8 h-8 rounded-full flex items-center justify-center transition-colors relative z-10" onclick="toggleChat()"><i class="fa-solid fa-times text-sm"></i></button>
 </div>
-<div class="flex-grow p-4 overflow-y-auto bg-[#0d0714] flex flex-col gap-3.5 text-xs sm:text-sm scroll-smooth" id="chat-messages">
+<div class="flex-grow p-4 overflow-y-auto bg-dark-bg flex flex-col gap-3.5 text-xs sm:text-sm scroll-smooth" id="chat-messages">
 <div class="flex gap-2.5">
 <div class="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-gradient-to-br from-brand to-brand-dark flex items-center justify-center flex-shrink-0 mt-0.5 shadow-[0_0_12px_rgba(157,78,221,0.5)] border border-brand-light/30">
 <i class="fa-solid fa-robot text-white text-xs"></i>
@@ -266,13 +266,13 @@
 <input class="w-full bg-dark-bg border border-dark-border text-white text-xs sm:text-sm rounded-xl pl-3.5 pr-8 py-2.5 focus:outline-none focus:border-brand-light transition-all shadow-inner" id="chat-input" placeholder="Nhập cấu hình PC (VD: i5, 16gb, 3060)..." type="text">
 <i class="fa-solid fa-keyboard absolute right-3 top-3 text-gray-500 text-xs"></i>
 </div>
-<button aria-label="Gửi tin" class="bg-brand text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-brand-light transition-all flex-shrink-0 shadow-[0_0_12px_rgba(157,78,221,0.5)] active:scale-95" onclick="sendMessage()">
+<button aria-label="Gửi tin" class="bg-brand text-white w-10 h-10 rounded-xl flex items-center justify-center hover:bg-brand-dark transition-all flex-shrink-0 shadow-[0_0_12px_rgba(157,78,221,0.5)] active:scale-95" onclick="sendMessage()">
 <i class="fa-solid fa-paper-plane text-sm"></i>
 </button>
 </div>
 </div>
 <!-- Chatbot Toggle Button -->
-<button aria-label="PC2GAMES AI" class="bg-gradient-to-r from-brand to-brand-light hover:from-brand-light hover:to-white text-white hover:text-brand-dark w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-[0_0_25px_rgba(157,78,221,0.7)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 relative z-50 group border-2 border-brand-light/40" id="chat-toggle-btn" onclick="toggleChat()" title="PC2GAMES AI">
+<button aria-label="PC2GAMES AI" class="bg-gradient-to-r from-brand to-brand-dark hover:brightness-110 text-white w-14 h-14 sm:w-16 sm:h-16 rounded-full shadow-[0_0_25px_rgba(157,78,221,0.7)] flex items-center justify-center transition-all duration-300 hover:scale-105 active:scale-95 relative z-50 group border-2 border-brand-light/40" id="chat-toggle-btn" onclick="toggleChat()" title="PC2GAMES AI">
 <i class="fa-solid fa-microchip text-2xl sm:text-3xl transition-transform duration-300"></i>
 <span class="absolute top-1 right-1 w-3.5 h-3.5 bg-red-500 border-2 border-dark-bg rounded-full animate-pulse"></span>
 </button>
@@ -292,7 +292,7 @@
 <h1 class="text-2xl sm:text-3xl font-black text-white mb-1 uppercase tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-white to-brand-light font-display">Kho Báu 5GUYS</h2>
 <p class="text-brand-light/80 text-xs sm:text-sm font-semibold tracking-wider uppercase">Đặc quyền dành riêng cho Gamer</p>
 </div>
-<div class="space-y-3.5 text-xs sm:text-sm text-gray-300 overflow-y-auto pr-1 sm:pr-2 bg-[#0d0714] p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-dark-border relative z-10 flex-grow shadow-inner">
+<div class="space-y-3.5 text-xs sm:text-sm text-gray-300 overflow-y-auto pr-1 sm:pr-2 bg-dark-bg p-4 sm:p-5 rounded-xl sm:rounded-2xl border border-dark-border relative z-10 flex-grow shadow-inner">
 <p class="leading-relaxed text-xs sm:text-sm font-medium mb-3 text-white text-center">Tham gia hệ sinh thái 5GUYS để mở khóa các phần quà giá trị thực:</p>
 <div class="flex items-start gap-3 p-3 rounded-xl bg-dark-surface/60 border border-brand/10">
 <div class="w-9 h-9 rounded-lg bg-yellow-500/20 flex items-center justify-center flex-shrink-0 border border-yellow-500/30 text-yellow-400">

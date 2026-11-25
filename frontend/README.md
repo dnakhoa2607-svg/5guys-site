@@ -46,9 +46,8 @@ Khởi chạy qua máy chủ tĩnh (ví dụ VS Code Live Server tại `http://1
 | :--- | :--- |
 | `assets/layout.js` | **Master Layout:** Chèn Navbar (`data-part="nav"`) và Footer (`data-part="footer"`, trỏ *Điều khoản dịch vụ* tới `terms.html` & *Chính sách bảo mật* tới `privacy.html`) đồng nhất cho các trang |
 | `assets/shared.js` | Lớp lõi `window.G5`: gọi API (`G5.api`), quản lý phiên JWT, bộ đệm giỏ hàng/đơn hàng, bảng dịch mã lỗi `G5.errorText`, `G5.isAdmin()`, `G5.isPublisher()`, hàm chống XSS `G5.esc()`, tự động gắn link *Quản trị* / *Nhà phát hành* lên menu, `G5.askAi()`, âm thanh Web Audio 8-bit & Konami Easter Egg |
-| `assets/shared.css` | Quy tắc responsive thống nhất (chống tràn ngang mobile 320px+, đồng nhất nút chat/CSKH, hỗ trợ `prefers-reduced-motion`) |
-| `assets/tailwind-config.js` | Cấu hình token màu Cyberpunk dùng cho phần lớn trang storefront & account |
-| `assets/tailwind-config-hub.js` | Cấu hình token màu riêng cho 3 trang Hub (`library.html`, `rental.html`, `mods.html`) |
+| `assets/shared.css` | Hệ thống biến màu 4 tầng OKLCH (`:root` Dark + `[data-theme="light"]`), lớp component UI dùng chung (`.card`, `.btn`, `.ghost`, `.inp`, `.chip`) và quy tắc responsive thống nhất |
+| `assets/tailwind-config.js` | Cấu hình Tailwind hợp nhất duy nhất cho cả 20 trang (đọc động từ biến `--g5-*-rgb` trong `shared.css`, hỗ trợ đầy đủ opacity modifier) |
 | `assets/catalog.js` | Render thẻ game động từ `GET /api/products`, fallback ảnh bìa & nút **"Thử tải lại"** khi mất kết nối API |
 | `assets/detail.js` | Xử lý chuyển đổi định dạng Số/Đĩa, render Đặc tả bản vật lý, Modal Gallery Video/Ảnh, viết & bình chọn Review, hiển thị phản hồi Nhà phát hành |
 | `assets/search.js` | Logic tìm kiếm, lọc đa tiêu chí (kiểm tra `available_formats` cho game Hybrid và tự gán đúng định dạng khi thêm vào giỏ), sắp xếp và phân trang kết quả |

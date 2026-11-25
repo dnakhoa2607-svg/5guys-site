@@ -12,38 +12,10 @@
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
 <script src="assets/tailwind-config.js"></script>
 <style>
-        * {
-            box-sizing: border-box;
-        }
-
         body {
-            background-color: #12091c;
-            color: #f3e8ff;
-            overflow-x: hidden;
-            font-family: 'Inter', sans-serif;
             -webkit-tap-highlight-color: transparent;
         }
-        
-        h1, h2, h3, h4, .logo-font, .font-display {
-            font-family: 'Inter', sans-serif;
-            letter-spacing: -0.02em;
-        }
 
-        /* Custom Scrollbar */
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #12091c; }
-        ::-webkit-scrollbar-thumb { background: #3c096c; border-radius: 9999px; }
-        ::-webkit-scrollbar-thumb:hover { background: #9d4edd; }
-
-        /* Game Card Hover Micro-Interactions */
-        .game-card {
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s cubic-bezier(0.4, 0, 0.2, 1), border-color 0.3s ease;
-            will-change: transform, box-shadow;
-        }
-        .game-card:hover {
-            transform: translateY(-6px) scale(1.015);
-            box-shadow: 0 20px 35px -10px rgba(157, 78, 221, 0.45), 0 0 20px rgba(157, 78, 221, 0.25) inset;
-        }
         @media (hover: none) {
             .game-card:active {
                 transform: scale(0.98);

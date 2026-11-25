@@ -8,13 +8,13 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="assets/shared.css">
 <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
-<script src="assets/tailwind-config-hub.js"></script>
+<script src="assets/tailwind-config.js"></script>
 <script>window.G5_REQUIRE_AUTH=true</script><script src="assets/shared.js"></script>
 <style>
-    .active-nav-tab { background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%) !important; color: #ffffff !important; box-shadow: 0 0 20px rgba(157,78,221,0.6) !important; border: 1px solid rgba(224,182,255,0.4) !important; font-weight: 700 !important; }
-    .inactive-nav-tab { background: rgba(36,24,50,0.6) !important; color: #d0c2d5 !important; border: 1px solid rgba(77,67,83,0.3) !important; }
+    .active-nav-tab { background: var(--btn-bg) !important; color: var(--btn-text) !important; box-shadow: var(--shadow-btn) !important; border: 1px solid rgb(var(--g5-brand-300-rgb) / 0.4) !important; font-weight: 700 !important; }
+    .inactive-nav-tab { background: rgb(var(--g5-bg-container-rgb) / 0.7) !important; color: var(--text-body) !important; border: 1px solid rgb(var(--g5-border-subtle-rgb) / 0.6) !important; }
     .panel-enter { opacity: 1 !important; transform: scale(1) translateY(0) !important; pointer-events: auto !important; }
-    .inactive-nav-tab:hover { background: rgba(48,36,61,0.9) !important; color: #ffffff !important; }
+    .inactive-nav-tab:hover { background: var(--bg-surface) !important; color: var(--text-primary) !important; }
   </style>
 </head>
 <body class="bg-background text-on-surface antialiased selection:bg-brand-purple selection:text-white min-h-screen flex flex-col">

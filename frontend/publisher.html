@@ -10,40 +10,17 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="assets/tailwind-config.js"></script>
   <style>
-    body { background: #12091c; color: #f3e8ff; font-family: Inter, sans-serif; }
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: .45rem;
-      background: #9d4edd; color: #fff; font-weight: 700; border-radius: .6rem;
-      padding: .55rem 1.1rem; font-size: .875rem; border: 1px solid rgba(199,125,255,.35);
-      box-shadow: 0 0 18px -4px rgba(157,78,221,.45); transition: .2s; cursor: pointer;
-    }
-    .btn:hover { background: #c77dff; }
-    .btn:disabled { opacity: .45; cursor: not-allowed; pointer-events: none; }
-    .ghost {
-      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
-      background: #12091c; border: 1px solid #3c096c; border-radius: .6rem;
-      padding: .45rem .9rem; font-size: .82rem; font-weight: 600; color: #e9d5ff;
-      transition: .2s; cursor: pointer;
-    }
-    .ghost:hover { border-color: #c77dff; color: #fff; }
-    .ghost.active-pill { background: #9d4edd; border-color: #c77dff; color: #fff; }
-    .studio-card {
-      background: #2a1645; border: 1px solid #3c096c; border-radius: 1rem; min-width: 0;
-    }
-    .inp {
-      background: #12091c; border: 1px solid #3c096c; border-radius: .6rem;
-      color: #f3e8ff; padding: .55rem .8rem; font-size: .875rem; width: 100%;
-      transition: border-color .2s, box-shadow .2s;
-    }
-    .inp:focus { outline: 0; border-color: #c77dff; box-shadow: 0 0 0 2px rgba(199,125,255,.22); }
-    .inp:disabled { opacity: .45; cursor: not-allowed; background: #160c22; color: #9ca3af; }
-    select.inp option { background: #12091c; color: #f3e8ff; }
+    .btn { padding: .55rem 1.1rem; font-size: .875rem; border-radius: .6rem; }
+    .ghost { padding: .45rem .9rem; font-size: .82rem; font-weight: 600; border-radius: .6rem; }
+    .ghost.active-pill { background: var(--btn-bg); border-color: var(--brand-300); color: var(--btn-text); }
+    .studio-card { background: var(--bg-surface); border: 1px solid var(--border-subtle); border-radius: 1rem; min-width: 0; }
+    .inp { padding: .55rem .8rem; font-size: .875rem; width: 100%; border-radius: .6rem !important; }
+    .inp:disabled { background: var(--bg-shell) !important; color: var(--text-muted); }
     .pill {
       display: inline-flex; align-items: center; gap: .3rem;
       font-size: .72rem; font-weight: 700; border-radius: 9999px;
       padding: .18rem .65rem; border: 1px solid; white-space: nowrap;
     }
-    .mono { font-variant-numeric: tabular-nums; }
   </style>
   <script>window.G5_REQUIRE_AUTH = true;</script>
   <link rel="stylesheet" href="assets/shared.css">

@@ -535,8 +535,15 @@ nav [data-desktop-nav] > a {
   max-width: 100%;
 }
 
+nav [data-nav-role-trigger].is-current {
+  background: rgb(var(--g5-brand-500-rgb) / 0.3);
+  border-color: rgb(var(--g5-brand-300-rgb) / 0.75);
+  color: var(--brand-200);
+}
+
 /* --- Small laptop / tablet --- */
 @media (max-width: 1279px) {
+  nav .g5-nav-inner,
   nav .max-w-7xl,
   nav .max-w-6xl {
     max-width: 100%;

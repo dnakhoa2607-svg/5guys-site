@@ -6,7 +6,7 @@
 ![Frontend](https://img.shields.io/badge/Frontend-HTML5%20%2B%20Tailwind%20%2B%20Vanilla%20JS-9d4edd)
 ![2FA](https://img.shields.io/badge/Auth-Bcrypt%20%2B%20JWT%20%2B%202FA%20TOTP-c77dff)
 
-> **Đồ án Cuối kỳ Môn Nhập môn Công nghệ Thông tin**  
+> **Đồ án Giữa kỳ Môn Nhập môn Công nghệ Thông tin**  
 > **Đơn vị thực hiện:** Nhóm **5Guys** — Lớp **26C01**, Khoa Công nghệ Thông tin, Trường Đại học Khoa học Tự nhiên — ĐHQG TP.HCM (HCMUS).
 
 ---
